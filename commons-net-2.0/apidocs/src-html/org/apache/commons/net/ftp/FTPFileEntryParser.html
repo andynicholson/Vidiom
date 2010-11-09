@@ -1,0 +1,218 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.commons.net.ftp;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.io.BufferedReader;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.io.IOException;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.List;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    /**<a name="line.23"></a>
+<FONT color="green">024</FONT>     * FTPFileEntryParser defines the interface for parsing a single FTP file<a name="line.24"></a>
+<FONT color="green">025</FONT>     * listing and converting that information into an<a name="line.25"></a>
+<FONT color="green">026</FONT>     * {@link org.apache.commons.net.ftp.FTPFile} instance.<a name="line.26"></a>
+<FONT color="green">027</FONT>     * Sometimes you will want to parse unusual listing formats, in which<a name="line.27"></a>
+<FONT color="green">028</FONT>     * case you would create your own implementation of FTPFileEntryParser and<a name="line.28"></a>
+<FONT color="green">029</FONT>     * if necessary, subclass FTPFile.<a name="line.29"></a>
+<FONT color="green">030</FONT>     * &lt;p&gt;<a name="line.30"></a>
+<FONT color="green">031</FONT>     * Here are some examples showing how to use one of the classes that<a name="line.31"></a>
+<FONT color="green">032</FONT>     * implement this interface.<a name="line.32"></a>
+<FONT color="green">033</FONT>     * &lt;p&gt;<a name="line.33"></a>
+<FONT color="green">034</FONT>     * The first example shows how to get an &lt;b&gt;iterable&lt;/b&gt; list of files in which the<a name="line.34"></a>
+<FONT color="green">035</FONT>     * more expensive &lt;code&gt;FTPFile&lt;/code&gt; objects are not created until needed.  This<a name="line.35"></a>
+<FONT color="green">036</FONT>     * is suitable for paged displays.   It requires that a parser object be created<a name="line.36"></a>
+<FONT color="green">037</FONT>     * beforehand: &lt;code&gt;parser&lt;/code&gt; is an object (in the package<a name="line.37"></a>
+<FONT color="green">038</FONT>     * &lt;code&gt;org.apache.commons.net.ftp.parser&lt;/code&gt;)<a name="line.38"></a>
+<FONT color="green">039</FONT>     * implementing this inteface.<a name="line.39"></a>
+<FONT color="green">040</FONT>     *<a name="line.40"></a>
+<FONT color="green">041</FONT>     * &lt;pre&gt;<a name="line.41"></a>
+<FONT color="green">042</FONT>     *    FTPClient f=FTPClient();<a name="line.42"></a>
+<FONT color="green">043</FONT>     *    f.connect(server);<a name="line.43"></a>
+<FONT color="green">044</FONT>     *    f.login(username, password);<a name="line.44"></a>
+<FONT color="green">045</FONT>     *    FTPFileList list = f.createFileList(directory, parser);<a name="line.45"></a>
+<FONT color="green">046</FONT>     *    FTPFileIterator iter = list.iterator();<a name="line.46"></a>
+<FONT color="green">047</FONT>     *<a name="line.47"></a>
+<FONT color="green">048</FONT>     *    while (iter.hasNext()) {<a name="line.48"></a>
+<FONT color="green">049</FONT>     *       FTPFile[] files = iter.getNext(25);  // "page size" you want<a name="line.49"></a>
+<FONT color="green">050</FONT>     *       //do whatever you want with these files, display them, etc.<a name="line.50"></a>
+<FONT color="green">051</FONT>     *       //expensive FTPFile objects not created until needed.<a name="line.51"></a>
+<FONT color="green">052</FONT>     *    }<a name="line.52"></a>
+<FONT color="green">053</FONT>     * &lt;/pre&gt;<a name="line.53"></a>
+<FONT color="green">054</FONT>     *<a name="line.54"></a>
+<FONT color="green">055</FONT>     * The second example uses the revised &lt;code&gt;FTPClient.listFiles()&lt;/code&gt;<a name="line.55"></a>
+<FONT color="green">056</FONT>     * API to pull the whole list from the subfolder &lt;code&gt;subfolder&lt;/code&gt; in<a name="line.56"></a>
+<FONT color="green">057</FONT>     * one call, attempting to automatically detect the parser type.  This<a name="line.57"></a>
+<FONT color="green">058</FONT>     * method, without a parserKey parameter, indicates that autodection should<a name="line.58"></a>
+<FONT color="green">059</FONT>     * be used.<a name="line.59"></a>
+<FONT color="green">060</FONT>     *<a name="line.60"></a>
+<FONT color="green">061</FONT>     * &lt;pre&gt;<a name="line.61"></a>
+<FONT color="green">062</FONT>     *    FTPClient f=FTPClient();<a name="line.62"></a>
+<FONT color="green">063</FONT>     *    f.connect(server);<a name="line.63"></a>
+<FONT color="green">064</FONT>     *    f.login(username, password);<a name="line.64"></a>
+<FONT color="green">065</FONT>     *    FTPFile[] files = f.listFiles("subfolder");<a name="line.65"></a>
+<FONT color="green">066</FONT>     * &lt;/pre&gt;<a name="line.66"></a>
+<FONT color="green">067</FONT>     *<a name="line.67"></a>
+<FONT color="green">068</FONT>     * The third example uses the revised &lt;code&gt;FTPClient.listFiles()&lt;/code&gt;&gt;<a name="line.68"></a>
+<FONT color="green">069</FONT>     * API to pull the whole list from the current working directory in one call,<a name="line.69"></a>
+<FONT color="green">070</FONT>     * but specifying by classname the parser to be used.  For this particular<a name="line.70"></a>
+<FONT color="green">071</FONT>     * parser class, this approach is necessary since there is no way to<a name="line.71"></a>
+<FONT color="green">072</FONT>     * autodetect this server type.<a name="line.72"></a>
+<FONT color="green">073</FONT>     *<a name="line.73"></a>
+<FONT color="green">074</FONT>     * &lt;pre&gt;<a name="line.74"></a>
+<FONT color="green">075</FONT>     *    FTPClient f=FTPClient();<a name="line.75"></a>
+<FONT color="green">076</FONT>     *    f.connect(server);<a name="line.76"></a>
+<FONT color="green">077</FONT>     *    f.login(username, password);<a name="line.77"></a>
+<FONT color="green">078</FONT>     *    FTPFile[] files = f.listFiles(<a name="line.78"></a>
+<FONT color="green">079</FONT>     *      "org.apache.commons.net.ftp.parser.EnterpriseUnixFTPFileEntryParser",<a name="line.79"></a>
+<FONT color="green">080</FONT>     *      ".");<a name="line.80"></a>
+<FONT color="green">081</FONT>     * &lt;/pre&gt;<a name="line.81"></a>
+<FONT color="green">082</FONT>     *<a name="line.82"></a>
+<FONT color="green">083</FONT>     * The fourth example uses the revised &lt;code&gt;FTPClient.listFiles()&lt;/code&gt;<a name="line.83"></a>
+<FONT color="green">084</FONT>     * API to pull a single file listing in an arbitrary directory in one call,<a name="line.84"></a>
+<FONT color="green">085</FONT>     * specifying by KEY the parser to be used, in this case, VMS.<a name="line.85"></a>
+<FONT color="green">086</FONT>     *<a name="line.86"></a>
+<FONT color="green">087</FONT>     * &lt;pre&gt;<a name="line.87"></a>
+<FONT color="green">088</FONT>     *    FTPClient f=FTPClient();<a name="line.88"></a>
+<FONT color="green">089</FONT>     *    f.connect(server);<a name="line.89"></a>
+<FONT color="green">090</FONT>     *    f.login(username, password);<a name="line.90"></a>
+<FONT color="green">091</FONT>     *    FTPFile[] files = f.listFiles("VMS", "subfolder/foo.java");<a name="line.91"></a>
+<FONT color="green">092</FONT>     * &lt;/pre&gt;<a name="line.92"></a>
+<FONT color="green">093</FONT>     *<a name="line.93"></a>
+<FONT color="green">094</FONT>     * @author &lt;a href="mailto:scohen@apache.org"&gt;Steve Cohen&lt;/a&gt;<a name="line.94"></a>
+<FONT color="green">095</FONT>     * @version $Id: FTPFileEntryParser.java 636854 2008-03-13 19:55:01Z sebb $<a name="line.95"></a>
+<FONT color="green">096</FONT>     * @see org.apache.commons.net.ftp.FTPFile<a name="line.96"></a>
+<FONT color="green">097</FONT>     * @see org.apache.commons.net.ftp.FTPClient#createFileList<a name="line.97"></a>
+<FONT color="green">098</FONT>     */<a name="line.98"></a>
+<FONT color="green">099</FONT>    public interface FTPFileEntryParser<a name="line.99"></a>
+<FONT color="green">100</FONT>    {<a name="line.100"></a>
+<FONT color="green">101</FONT>        /**<a name="line.101"></a>
+<FONT color="green">102</FONT>         * Parses a line of an FTP server file listing and converts it into a usable<a name="line.102"></a>
+<FONT color="green">103</FONT>         * format in the form of an &lt;code&gt; FTPFile &lt;/code&gt; instance.  If the<a name="line.103"></a>
+<FONT color="green">104</FONT>         * file listing line doesn't describe a file, &lt;code&gt; null &lt;/code&gt; should be<a name="line.104"></a>
+<FONT color="green">105</FONT>         * returned, otherwise a &lt;code&gt; FTPFile &lt;/code&gt; instance representing the<a name="line.105"></a>
+<FONT color="green">106</FONT>         * files in the directory is returned.<a name="line.106"></a>
+<FONT color="green">107</FONT>         * &lt;p&gt;<a name="line.107"></a>
+<FONT color="green">108</FONT>         * @param listEntry A line of text from the file listing<a name="line.108"></a>
+<FONT color="green">109</FONT>         * @return An FTPFile instance corresponding to the supplied entry<a name="line.109"></a>
+<FONT color="green">110</FONT>         */<a name="line.110"></a>
+<FONT color="green">111</FONT>        FTPFile parseFTPEntry(String listEntry);<a name="line.111"></a>
+<FONT color="green">112</FONT>    <a name="line.112"></a>
+<FONT color="green">113</FONT>        /**<a name="line.113"></a>
+<FONT color="green">114</FONT>         * Reads the next entry using the supplied BufferedReader object up to<a name="line.114"></a>
+<FONT color="green">115</FONT>         * whatever delemits one entry from the next.  Implementors must define<a name="line.115"></a>
+<FONT color="green">116</FONT>         * this for the particular ftp system being parsed.  In many but not all<a name="line.116"></a>
+<FONT color="green">117</FONT>         * cases, this can be defined simply by calling BufferedReader.readLine().<a name="line.117"></a>
+<FONT color="green">118</FONT>         *<a name="line.118"></a>
+<FONT color="green">119</FONT>         * @param reader The BufferedReader object from which entries are to be<a name="line.119"></a>
+<FONT color="green">120</FONT>         * read.<a name="line.120"></a>
+<FONT color="green">121</FONT>         *<a name="line.121"></a>
+<FONT color="green">122</FONT>         * @return A string representing the next ftp entry or null if none found.<a name="line.122"></a>
+<FONT color="green">123</FONT>         * @exception IOException thrown on any IO Error reading from the reader.<a name="line.123"></a>
+<FONT color="green">124</FONT>         */<a name="line.124"></a>
+<FONT color="green">125</FONT>        String readNextEntry(BufferedReader reader) throws IOException;<a name="line.125"></a>
+<FONT color="green">126</FONT>    <a name="line.126"></a>
+<FONT color="green">127</FONT>    <a name="line.127"></a>
+<FONT color="green">128</FONT>        /**<a name="line.128"></a>
+<FONT color="green">129</FONT>         * This method is a hook for those implementors (such as<a name="line.129"></a>
+<FONT color="green">130</FONT>         * VMSVersioningFTPEntryParser, and possibly others) which need to<a name="line.130"></a>
+<FONT color="green">131</FONT>         * perform some action upon the FTPFileList after it has been created<a name="line.131"></a>
+<FONT color="green">132</FONT>         * from the server stream, but before any clients see the list.<a name="line.132"></a>
+<FONT color="green">133</FONT>         *<a name="line.133"></a>
+<FONT color="green">134</FONT>         * The default implementation can be a no-op.<a name="line.134"></a>
+<FONT color="green">135</FONT>         *<a name="line.135"></a>
+<FONT color="green">136</FONT>         * @param original Original list after it has been created from the server stream<a name="line.136"></a>
+<FONT color="green">137</FONT>         *<a name="line.137"></a>
+<FONT color="green">138</FONT>         * @return Original list as processed by this method.<a name="line.138"></a>
+<FONT color="green">139</FONT>         */<a name="line.139"></a>
+<FONT color="green">140</FONT>        List&lt;String&gt; preParse(List&lt;String&gt; original);<a name="line.140"></a>
+<FONT color="green">141</FONT>    <a name="line.141"></a>
+<FONT color="green">142</FONT>    <a name="line.142"></a>
+<FONT color="green">143</FONT>    }<a name="line.143"></a>
+<FONT color="green">144</FONT>    <a name="line.144"></a>
+<FONT color="green">145</FONT>    <a name="line.145"></a>
+<FONT color="green">146</FONT>    /* Emacs configuration<a name="line.146"></a>
+<FONT color="green">147</FONT>     * Local variables:        **<a name="line.147"></a>
+<FONT color="green">148</FONT>     * mode:             java  **<a name="line.148"></a>
+<FONT color="green">149</FONT>     * c-basic-offset:   4     **<a name="line.149"></a>
+<FONT color="green">150</FONT>     * indent-tabs-mode: nil   **<a name="line.150"></a>
+<FONT color="green">151</FONT>     * End:                    **<a name="line.151"></a>
+<FONT color="green">152</FONT>     */<a name="line.152"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

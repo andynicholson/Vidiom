@@ -1,0 +1,150 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.commons.net.daytime;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.io.IOException;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.net.DatagramPacket;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.net.InetAddress;<a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.commons.net.DatagramSocketClient;<a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>    /***<a name="line.26"></a>
+<FONT color="green">027</FONT>     * The DaytimeUDPClient class is a UDP implementation of a client for the<a name="line.27"></a>
+<FONT color="green">028</FONT>     * Daytime protocol described in RFC 867.  To use the class, merely<a name="line.28"></a>
+<FONT color="green">029</FONT>     * open a local datagram socket with<a name="line.29"></a>
+<FONT color="green">030</FONT>     * {@link org.apache.commons.net.DatagramSocketClient#open  open }<a name="line.30"></a>
+<FONT color="green">031</FONT>     * and call {@link #getTime  getTime } to retrieve the daytime<a name="line.31"></a>
+<FONT color="green">032</FONT>     * string, then<a name="line.32"></a>
+<FONT color="green">033</FONT>     * call {@link org.apache.commons.net.DatagramSocketClient#close  close }<a name="line.33"></a>
+<FONT color="green">034</FONT>     * to close the connection properly.  Unlike<a name="line.34"></a>
+<FONT color="green">035</FONT>     * {@link org.apache.commons.net.daytime.DaytimeTCPClient},<a name="line.35"></a>
+<FONT color="green">036</FONT>     * successive calls to {@link #getTime  getTime } are permitted<a name="line.36"></a>
+<FONT color="green">037</FONT>     * without re-establishing a connection.  That is because UDP is a<a name="line.37"></a>
+<FONT color="green">038</FONT>     * connectionless protocol and the Daytime protocol is stateless.<a name="line.38"></a>
+<FONT color="green">039</FONT>     * &lt;p&gt;<a name="line.39"></a>
+<FONT color="green">040</FONT>     * &lt;p&gt;<a name="line.40"></a>
+<FONT color="green">041</FONT>     * @author Daniel F. Savarese<a name="line.41"></a>
+<FONT color="green">042</FONT>     * @see DaytimeTCPClient<a name="line.42"></a>
+<FONT color="green">043</FONT>     ***/<a name="line.43"></a>
+<FONT color="green">044</FONT>    <a name="line.44"></a>
+<FONT color="green">045</FONT>    public final class DaytimeUDPClient extends DatagramSocketClient<a name="line.45"></a>
+<FONT color="green">046</FONT>    {<a name="line.46"></a>
+<FONT color="green">047</FONT>        /*** The default daytime port.  It is set to 13 according to RFC 867. ***/<a name="line.47"></a>
+<FONT color="green">048</FONT>        public static final int DEFAULT_PORT = 13;<a name="line.48"></a>
+<FONT color="green">049</FONT>    <a name="line.49"></a>
+<FONT color="green">050</FONT>        private byte[] __dummyData = new byte[1];<a name="line.50"></a>
+<FONT color="green">051</FONT>        // Received dates should be less than 256 bytes<a name="line.51"></a>
+<FONT color="green">052</FONT>        private byte[] __timeData = new byte[256];<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>        /***<a name="line.54"></a>
+<FONT color="green">055</FONT>         * Retrieves the time string from the specified server and port and<a name="line.55"></a>
+<FONT color="green">056</FONT>         * returns it.<a name="line.56"></a>
+<FONT color="green">057</FONT>         * &lt;p&gt;<a name="line.57"></a>
+<FONT color="green">058</FONT>         * @param host The address of the server.<a name="line.58"></a>
+<FONT color="green">059</FONT>         * @param port The port of the service.<a name="line.59"></a>
+<FONT color="green">060</FONT>         * @return The time string.<a name="line.60"></a>
+<FONT color="green">061</FONT>         * @exception IOException If an error occurs while retrieving the time.<a name="line.61"></a>
+<FONT color="green">062</FONT>         ***/<a name="line.62"></a>
+<FONT color="green">063</FONT>        public String getTime(InetAddress host, int port) throws IOException<a name="line.63"></a>
+<FONT color="green">064</FONT>        {<a name="line.64"></a>
+<FONT color="green">065</FONT>            DatagramPacket sendPacket, receivePacket;<a name="line.65"></a>
+<FONT color="green">066</FONT>    <a name="line.66"></a>
+<FONT color="green">067</FONT>            sendPacket =<a name="line.67"></a>
+<FONT color="green">068</FONT>                new DatagramPacket(__dummyData, __dummyData.length, host, port);<a name="line.68"></a>
+<FONT color="green">069</FONT>            receivePacket = new DatagramPacket(__timeData, __timeData.length);<a name="line.69"></a>
+<FONT color="green">070</FONT>    <a name="line.70"></a>
+<FONT color="green">071</FONT>            _socket_.send(sendPacket);<a name="line.71"></a>
+<FONT color="green">072</FONT>            _socket_.receive(receivePacket);<a name="line.72"></a>
+<FONT color="green">073</FONT>    <a name="line.73"></a>
+<FONT color="green">074</FONT>            return new String(receivePacket.getData(), 0, receivePacket.getLength());<a name="line.74"></a>
+<FONT color="green">075</FONT>        }<a name="line.75"></a>
+<FONT color="green">076</FONT>    <a name="line.76"></a>
+<FONT color="green">077</FONT>        /*** Same as &lt;code&gt;getTime(host, DaytimeUDPClient.DEFAULT_PORT);&lt;/code&gt; ***/<a name="line.77"></a>
+<FONT color="green">078</FONT>        public String getTime(InetAddress host) throws IOException<a name="line.78"></a>
+<FONT color="green">079</FONT>        {<a name="line.79"></a>
+<FONT color="green">080</FONT>            return getTime(host, DEFAULT_PORT);<a name="line.80"></a>
+<FONT color="green">081</FONT>        }<a name="line.81"></a>
+<FONT color="green">082</FONT>    <a name="line.82"></a>
+<FONT color="green">083</FONT>    }<a name="line.83"></a>
+<FONT color="green">084</FONT>    <a name="line.84"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

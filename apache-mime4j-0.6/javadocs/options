@@ -1,0 +1,24 @@
+-classpath
+'/home/oleg/src/apache.org/james/apache-mime4j-0.6/target/classes:/home/oleg/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar'
+-encoding
+'UTF-8'
+-overview
+'/home/oleg/src/apache.org/james/apache-mime4j-0.6/src/main/javadoc/overview.html'
+-protected
+-sourcepath
+'/home/oleg/src/apache.org/james/apache-mime4j-0.6/src/main/java:/home/oleg/src/apache.org/james/apache-mime4j-0.6/target/generated-sources/javacc:/home/oleg/src/apache.org/james/apache-mime4j-0.6/src/main/javadoc'
+-author
+-bottom
+'Copyright &#169; 2004-2009 <a href="http://www.apache.org">The Apache Software Foundation</a>. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/home/oleg/src/apache.org/james/apache-mime4j-0.6/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Apache JAMES Mime4j 0.6 API'
+-use
+-version
+-windowtitle
+'Apache JAMES Mime4j 0.6 API'

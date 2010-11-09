@@ -1,0 +1,646 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.commons.net.ftp;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.text.DateFormatSymbols;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.Collection;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.util.Locale;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import java.util.Map;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import java.util.StringTokenizer;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.util.TreeMap;<a name="line.25"></a>
+<FONT color="green">026</FONT>    <a name="line.26"></a>
+<FONT color="green">027</FONT>    /**<a name="line.27"></a>
+<FONT color="green">028</FONT>     * &lt;p&gt;<a name="line.28"></a>
+<FONT color="green">029</FONT>     * This class implements an alternate means of configuring the<a name="line.29"></a>
+<FONT color="green">030</FONT>     * {@link  org.apache.commons.net.ftp.FTPClient  FTPClient} object and<a name="line.30"></a>
+<FONT color="green">031</FONT>     * also subordinate objects which it uses.  Any class implementing the <a name="line.31"></a>
+<FONT color="green">032</FONT>     * {@link  org.apache.commons.net.ftp.Configurable  Configurable } <a name="line.32"></a>
+<FONT color="green">033</FONT>     * interface can be configured by this object. <a name="line.33"></a>
+<FONT color="green">034</FONT>     * &lt;/p&gt;&lt;p&gt;<a name="line.34"></a>
+<FONT color="green">035</FONT>     * In particular this class was designed primarily to support configuration<a name="line.35"></a>
+<FONT color="green">036</FONT>     * of FTP servers which express file timestamps in formats and languages <a name="line.36"></a>
+<FONT color="green">037</FONT>     * other than those for the US locale, which although it is the most common<a name="line.37"></a>
+<FONT color="green">038</FONT>     * is not universal.  Unfortunately, nothing in the FTP spec allows this to <a name="line.38"></a>
+<FONT color="green">039</FONT>     * be determined in an automated way, so manual configuration such as this<a name="line.39"></a>
+<FONT color="green">040</FONT>     * is necessary.<a name="line.40"></a>
+<FONT color="green">041</FONT>     * &lt;/p&gt;&lt;p&gt;<a name="line.41"></a>
+<FONT color="green">042</FONT>     * This functionality was designed to allow existing clients to work exactly<a name="line.42"></a>
+<FONT color="green">043</FONT>     * as before without requiring use of this component.  This component should<a name="line.43"></a>
+<FONT color="green">044</FONT>     * only need to be explicitly invoked by the user of this package for problem<a name="line.44"></a>
+<FONT color="green">045</FONT>     * cases that previous implementations could not solve.<a name="line.45"></a>
+<FONT color="green">046</FONT>     * &lt;/p&gt;<a name="line.46"></a>
+<FONT color="green">047</FONT>     * &lt;h3&gt;Examples of use of FTPClientConfig&lt;/h3&gt;<a name="line.47"></a>
+<FONT color="green">048</FONT>     * Use cases:<a name="line.48"></a>
+<FONT color="green">049</FONT>     * You are trying to access a server that <a name="line.49"></a>
+<FONT color="green">050</FONT>     * &lt;ul&gt; <a name="line.50"></a>
+<FONT color="green">051</FONT>     * &lt;li&gt;lists files with timestamps that use month names in languages other <a name="line.51"></a>
+<FONT color="green">052</FONT>     * than English&lt;/li&gt;<a name="line.52"></a>
+<FONT color="green">053</FONT>     * &lt;li&gt;lists files with timestamps that use date formats other <a name="line.53"></a>
+<FONT color="green">054</FONT>     * than the American English "standard" &lt;code&gt;MM dd yyyy&lt;/code&gt;&lt;/li&gt;<a name="line.54"></a>
+<FONT color="green">055</FONT>     * &lt;li&gt;is in different timezone and you need accurate timestamps for <a name="line.55"></a>
+<FONT color="green">056</FONT>     * dependency checking as in Ant&lt;/li&gt;<a name="line.56"></a>
+<FONT color="green">057</FONT>     * &lt;/ul&gt;<a name="line.57"></a>
+<FONT color="green">058</FONT>     * &lt;p&gt;<a name="line.58"></a>
+<FONT color="green">059</FONT>     * Unpaged (whole list) access on a UNIX server that uses French month names<a name="line.59"></a>
+<FONT color="green">060</FONT>     * but uses the "standard" &lt;code&gt;MMM d yyyy&lt;/code&gt; date formatting<a name="line.60"></a>
+<FONT color="green">061</FONT>     * &lt;pre&gt;<a name="line.61"></a>
+<FONT color="green">062</FONT>     *    FTPClient f=FTPClient();<a name="line.62"></a>
+<FONT color="green">063</FONT>     *    FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX);<a name="line.63"></a>
+<FONT color="green">064</FONT>     *    conf.setServerLanguageCode("fr");<a name="line.64"></a>
+<FONT color="green">065</FONT>     *    f.configure(conf);<a name="line.65"></a>
+<FONT color="green">066</FONT>     *    f.connect(server);<a name="line.66"></a>
+<FONT color="green">067</FONT>     *    f.login(username, password);<a name="line.67"></a>
+<FONT color="green">068</FONT>     *    FTPFile[] files = listFiles(directory);<a name="line.68"></a>
+<FONT color="green">069</FONT>     * &lt;/pre&gt;<a name="line.69"></a>
+<FONT color="green">070</FONT>     * &lt;/p&gt;<a name="line.70"></a>
+<FONT color="green">071</FONT>     * &lt;p&gt;<a name="line.71"></a>
+<FONT color="green">072</FONT>     * Paged access on a UNIX server that uses Danish month names<a name="line.72"></a>
+<FONT color="green">073</FONT>     * and "European" date formatting in Denmark's time zone, when you<a name="line.73"></a>
+<FONT color="green">074</FONT>     * are in some other time zone.<a name="line.74"></a>
+<FONT color="green">075</FONT>     * &lt;pre&gt;<a name="line.75"></a>
+<FONT color="green">076</FONT>     *    FTPClient f=FTPClient();<a name="line.76"></a>
+<FONT color="green">077</FONT>     *    FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX);<a name="line.77"></a>
+<FONT color="green">078</FONT>     *    conf.setServerLanguageCode("da");<a name="line.78"></a>
+<FONT color="green">079</FONT>     *    conf.setDefaultDateFormat("d MMM yyyy");<a name="line.79"></a>
+<FONT color="green">080</FONT>     *    conf.setRecentDateFormat("d MMM HH:mm");<a name="line.80"></a>
+<FONT color="green">081</FONT>     *    conf.setTimeZoneId("Europe/Copenhagen");<a name="line.81"></a>
+<FONT color="green">082</FONT>     *    f.configure(conf);<a name="line.82"></a>
+<FONT color="green">083</FONT>     *    f.connect(server);<a name="line.83"></a>
+<FONT color="green">084</FONT>     *    f.login(username, password);<a name="line.84"></a>
+<FONT color="green">085</FONT>     *    FTPListParseEngine engine =<a name="line.85"></a>
+<FONT color="green">086</FONT>     *       f.initiateListParsing("com.whatever.YourOwnParser", directory);<a name="line.86"></a>
+<FONT color="green">087</FONT>     *<a name="line.87"></a>
+<FONT color="green">088</FONT>     *    while (engine.hasNext()) {<a name="line.88"></a>
+<FONT color="green">089</FONT>     *       FTPFile[] files = engine.getNext(25);  // "page size" you want<a name="line.89"></a>
+<FONT color="green">090</FONT>     *       //do whatever you want with these files, display them, etc.<a name="line.90"></a>
+<FONT color="green">091</FONT>     *       //expensive FTPFile objects not created until needed.<a name="line.91"></a>
+<FONT color="green">092</FONT>     *    }<a name="line.92"></a>
+<FONT color="green">093</FONT>     * &lt;/pre&gt;<a name="line.93"></a>
+<FONT color="green">094</FONT>     * &lt;/p&gt; <a name="line.94"></a>
+<FONT color="green">095</FONT>     * &lt;p&gt;<a name="line.95"></a>
+<FONT color="green">096</FONT>     * Unpaged (whole list) access on a VMS server that uses month names<a name="line.96"></a>
+<FONT color="green">097</FONT>     * in a language not {@link #getSupportedLanguageCodes() supported} by the system.<a name="line.97"></a>
+<FONT color="green">098</FONT>     * but uses the "standard" &lt;code&gt;MMM d yyyy&lt;/code&gt; date formatting<a name="line.98"></a>
+<FONT color="green">099</FONT>     * &lt;pre&gt;<a name="line.99"></a>
+<FONT color="green">100</FONT>     *    FTPClient f=FTPClient();<a name="line.100"></a>
+<FONT color="green">101</FONT>     *    FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_VMS);<a name="line.101"></a>
+<FONT color="green">102</FONT>     *    conf.setShortMonthNames(<a name="line.102"></a>
+<FONT color="green">103</FONT>     *        "jan|feb|mar|apr|ma\u00ED|j\u00FAn|j\u00FAl|\u00e1g\u00FA|sep|okt|n\u00F3v|des");<a name="line.103"></a>
+<FONT color="green">104</FONT>     *    f.configure(conf);<a name="line.104"></a>
+<FONT color="green">105</FONT>     *    f.connect(server);<a name="line.105"></a>
+<FONT color="green">106</FONT>     *    f.login(username, password);<a name="line.106"></a>
+<FONT color="green">107</FONT>     *    FTPFile[] files = listFiles(directory);<a name="line.107"></a>
+<FONT color="green">108</FONT>     * &lt;/pre&gt;<a name="line.108"></a>
+<FONT color="green">109</FONT>     * &lt;/p&gt;<a name="line.109"></a>
+<FONT color="green">110</FONT>     * &lt;p&gt;<a name="line.110"></a>
+<FONT color="green">111</FONT>     * Unpaged (whole list) access on a Windows-NT server in a different time zone.<a name="line.111"></a>
+<FONT color="green">112</FONT>     * (Note, since the NT Format uses numeric date formatting, language issues<a name="line.112"></a>
+<FONT color="green">113</FONT>     * are irrelevant here).<a name="line.113"></a>
+<FONT color="green">114</FONT>     * &lt;pre&gt;<a name="line.114"></a>
+<FONT color="green">115</FONT>     *    FTPClient f=FTPClient();<a name="line.115"></a>
+<FONT color="green">116</FONT>     *    FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_NT);<a name="line.116"></a>
+<FONT color="green">117</FONT>     *    conf.setTimeZoneId("America/Denver");<a name="line.117"></a>
+<FONT color="green">118</FONT>     *    f.configure(conf);<a name="line.118"></a>
+<FONT color="green">119</FONT>     *    f.connect(server);<a name="line.119"></a>
+<FONT color="green">120</FONT>     *    f.login(username, password);<a name="line.120"></a>
+<FONT color="green">121</FONT>     *    FTPFile[] files = listFiles(directory);<a name="line.121"></a>
+<FONT color="green">122</FONT>     * &lt;/pre&gt;<a name="line.122"></a>
+<FONT color="green">123</FONT>     * &lt;/p&gt;<a name="line.123"></a>
+<FONT color="green">124</FONT>     * Unpaged (whole list) access on a Windows-NT server in a different time zone<a name="line.124"></a>
+<FONT color="green">125</FONT>     * but which has been configured to use a unix-style listing format.<a name="line.125"></a>
+<FONT color="green">126</FONT>     * &lt;pre&gt;<a name="line.126"></a>
+<FONT color="green">127</FONT>     *    FTPClient f=FTPClient();<a name="line.127"></a>
+<FONT color="green">128</FONT>     *    FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX);<a name="line.128"></a>
+<FONT color="green">129</FONT>     *    conf.setTimeZoneId("America/Denver");<a name="line.129"></a>
+<FONT color="green">130</FONT>     *    f.configure(conf);<a name="line.130"></a>
+<FONT color="green">131</FONT>     *    f.connect(server);<a name="line.131"></a>
+<FONT color="green">132</FONT>     *    f.login(username, password);<a name="line.132"></a>
+<FONT color="green">133</FONT>     *    FTPFile[] files = listFiles(directory);<a name="line.133"></a>
+<FONT color="green">134</FONT>     * &lt;/pre&gt;<a name="line.134"></a>
+<FONT color="green">135</FONT>     * &lt;/p&gt;<a name="line.135"></a>
+<FONT color="green">136</FONT>     * @since 1.4<a name="line.136"></a>
+<FONT color="green">137</FONT>     * @see org.apache.commons.net.ftp.Configurable<a name="line.137"></a>
+<FONT color="green">138</FONT>     * @see org.apache.commons.net.ftp.FTPClient<a name="line.138"></a>
+<FONT color="green">139</FONT>     * @see org.apache.commons.net.ftp.parser.FTPTimestampParserImpl#configure(FTPClientConfig)<a name="line.139"></a>
+<FONT color="green">140</FONT>     * @see org.apache.commons.net.ftp.parser.ConfigurableFTPFileEntryParserImpl<a name="line.140"></a>
+<FONT color="green">141</FONT>     */<a name="line.141"></a>
+<FONT color="green">142</FONT>    public class FTPClientConfig<a name="line.142"></a>
+<FONT color="green">143</FONT>    {<a name="line.143"></a>
+<FONT color="green">144</FONT>        <a name="line.144"></a>
+<FONT color="green">145</FONT>        /**<a name="line.145"></a>
+<FONT color="green">146</FONT>         * Identifier by which a unix-based ftp server is known throughout<a name="line.146"></a>
+<FONT color="green">147</FONT>         * the commons-net ftp system.<a name="line.147"></a>
+<FONT color="green">148</FONT>         */<a name="line.148"></a>
+<FONT color="green">149</FONT>        public static final String SYST_UNIX  = "UNIX";<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>        /**<a name="line.151"></a>
+<FONT color="green">152</FONT>         * Identifier by which a vms-based ftp server is known throughout<a name="line.152"></a>
+<FONT color="green">153</FONT>         * the commons-net ftp system.<a name="line.153"></a>
+<FONT color="green">154</FONT>         */<a name="line.154"></a>
+<FONT color="green">155</FONT>        public static final String SYST_VMS   = "VMS";<a name="line.155"></a>
+<FONT color="green">156</FONT>        <a name="line.156"></a>
+<FONT color="green">157</FONT>        /**<a name="line.157"></a>
+<FONT color="green">158</FONT>         * Identifier by which a WindowsNT-based ftp server is known throughout<a name="line.158"></a>
+<FONT color="green">159</FONT>         * the commons-net ftp system.<a name="line.159"></a>
+<FONT color="green">160</FONT>         */<a name="line.160"></a>
+<FONT color="green">161</FONT>        public static final String SYST_NT    = "WINDOWS";<a name="line.161"></a>
+<FONT color="green">162</FONT>    <a name="line.162"></a>
+<FONT color="green">163</FONT>        /**<a name="line.163"></a>
+<FONT color="green">164</FONT>         * Identifier by which an OS/2-based ftp server is known throughout<a name="line.164"></a>
+<FONT color="green">165</FONT>         * the commons-net ftp system.<a name="line.165"></a>
+<FONT color="green">166</FONT>         */<a name="line.166"></a>
+<FONT color="green">167</FONT>        public static final String SYST_OS2   = "OS/2";<a name="line.167"></a>
+<FONT color="green">168</FONT>    <a name="line.168"></a>
+<FONT color="green">169</FONT>        /**<a name="line.169"></a>
+<FONT color="green">170</FONT>         * Identifier by which an OS/400-based ftp server is known throughout<a name="line.170"></a>
+<FONT color="green">171</FONT>         * the commons-net ftp system.<a name="line.171"></a>
+<FONT color="green">172</FONT>         */<a name="line.172"></a>
+<FONT color="green">173</FONT>        public static final String SYST_OS400 = "OS/400";<a name="line.173"></a>
+<FONT color="green">174</FONT>        <a name="line.174"></a>
+<FONT color="green">175</FONT>        /**<a name="line.175"></a>
+<FONT color="green">176</FONT>         * Identifier by which an AS/400-based ftp server is known throughout<a name="line.176"></a>
+<FONT color="green">177</FONT>         * the commons-net ftp system.<a name="line.177"></a>
+<FONT color="green">178</FONT>         */<a name="line.178"></a>
+<FONT color="green">179</FONT>        public static final String SYST_AS400 = "AS/400";<a name="line.179"></a>
+<FONT color="green">180</FONT>        <a name="line.180"></a>
+<FONT color="green">181</FONT>        /**<a name="line.181"></a>
+<FONT color="green">182</FONT>         * Identifier by which an MVS-based ftp server is known throughout<a name="line.182"></a>
+<FONT color="green">183</FONT>         * the commons-net ftp system.<a name="line.183"></a>
+<FONT color="green">184</FONT>         */<a name="line.184"></a>
+<FONT color="green">185</FONT>        public static final String SYST_MVS = "MVS";<a name="line.185"></a>
+<FONT color="green">186</FONT>    <a name="line.186"></a>
+<FONT color="green">187</FONT>        /**<a name="line.187"></a>
+<FONT color="green">188</FONT>         * Some servers return an "UNKNOWN Type: L8" message<a name="line.188"></a>
+<FONT color="green">189</FONT>         * in response to the SYST command. We set these to be a Unix-type system.<a name="line.189"></a>
+<FONT color="green">190</FONT>         * This may happen if the ftpd in question was compiled without system<a name="line.190"></a>
+<FONT color="green">191</FONT>         * information.<a name="line.191"></a>
+<FONT color="green">192</FONT>         *<a name="line.192"></a>
+<FONT color="green">193</FONT>         * NET-230 - Updated to be UPPERCASE so that the check done in<a name="line.193"></a>
+<FONT color="green">194</FONT>         * createFileEntryParser will succeed.<a name="line.194"></a>
+<FONT color="green">195</FONT>         *<a name="line.195"></a>
+<FONT color="green">196</FONT>         * @since 1.5<a name="line.196"></a>
+<FONT color="green">197</FONT>         */<a name="line.197"></a>
+<FONT color="green">198</FONT>        public static final String SYST_L8 = "TYPE: L8";<a name="line.198"></a>
+<FONT color="green">199</FONT>        <a name="line.199"></a>
+<FONT color="green">200</FONT>        /**<a name="line.200"></a>
+<FONT color="green">201</FONT>         * Identifier by which an Netware-based ftp server is known throughout<a name="line.201"></a>
+<FONT color="green">202</FONT>         * the commons-net ftp system.<a name="line.202"></a>
+<FONT color="green">203</FONT>         *<a name="line.203"></a>
+<FONT color="green">204</FONT>         * @since 1.5<a name="line.204"></a>
+<FONT color="green">205</FONT>         */<a name="line.205"></a>
+<FONT color="green">206</FONT>        public static final String SYST_NETWARE = "NETWARE";<a name="line.206"></a>
+<FONT color="green">207</FONT>        <a name="line.207"></a>
+<FONT color="green">208</FONT>        private final String serverSystemKey;<a name="line.208"></a>
+<FONT color="green">209</FONT>        private String defaultDateFormatStr = null;<a name="line.209"></a>
+<FONT color="green">210</FONT>        private String recentDateFormatStr = null;<a name="line.210"></a>
+<FONT color="green">211</FONT>        private boolean lenientFutureDates = false;<a name="line.211"></a>
+<FONT color="green">212</FONT>        private String serverLanguageCode = null;<a name="line.212"></a>
+<FONT color="green">213</FONT>        private String shortMonthNames = null;<a name="line.213"></a>
+<FONT color="green">214</FONT>        private String serverTimeZoneId = null;<a name="line.214"></a>
+<FONT color="green">215</FONT>        <a name="line.215"></a>
+<FONT color="green">216</FONT>        <a name="line.216"></a>
+<FONT color="green">217</FONT>        /**<a name="line.217"></a>
+<FONT color="green">218</FONT>         * The main constructor for an FTPClientConfig object<a name="line.218"></a>
+<FONT color="green">219</FONT>         * @param systemKey key representing system type of the  server being <a name="line.219"></a>
+<FONT color="green">220</FONT>         * connected to. See {@link #getServerSystemKey() serverSystemKey}<a name="line.220"></a>
+<FONT color="green">221</FONT>         */<a name="line.221"></a>
+<FONT color="green">222</FONT>        public FTPClientConfig(String systemKey) {<a name="line.222"></a>
+<FONT color="green">223</FONT>            this.serverSystemKey = systemKey;<a name="line.223"></a>
+<FONT color="green">224</FONT>        }<a name="line.224"></a>
+<FONT color="green">225</FONT>    <a name="line.225"></a>
+<FONT color="green">226</FONT>        /**<a name="line.226"></a>
+<FONT color="green">227</FONT>         * Convenience constructor mainly for use in testing.<a name="line.227"></a>
+<FONT color="green">228</FONT>         * Constructs a UNIX configuration. <a name="line.228"></a>
+<FONT color="green">229</FONT>         */<a name="line.229"></a>
+<FONT color="green">230</FONT>        public FTPClientConfig() {<a name="line.230"></a>
+<FONT color="green">231</FONT>            this(SYST_UNIX);<a name="line.231"></a>
+<FONT color="green">232</FONT>        }<a name="line.232"></a>
+<FONT color="green">233</FONT>    <a name="line.233"></a>
+<FONT color="green">234</FONT>        /**<a name="line.234"></a>
+<FONT color="green">235</FONT>         * Constructor which allows setting of all member fields<a name="line.235"></a>
+<FONT color="green">236</FONT>         * @param systemKey key representing system type of the  server being <a name="line.236"></a>
+<FONT color="green">237</FONT>         * connected to. See <a name="line.237"></a>
+<FONT color="green">238</FONT>         *  {@link #getServerSystemKey() serverSystemKey}<a name="line.238"></a>
+<FONT color="green">239</FONT>         * @param defaultDateFormatStr See <a name="line.239"></a>
+<FONT color="green">240</FONT>         *  {@link  #setDefaultDateFormatStr(String)  defaultDateFormatStr}<a name="line.240"></a>
+<FONT color="green">241</FONT>         * @param recentDateFormatStr See<a name="line.241"></a>
+<FONT color="green">242</FONT>         *  {@link  #setRecentDateFormatStr(String)  recentDateFormatStr}<a name="line.242"></a>
+<FONT color="green">243</FONT>         * @param serverLanguageCode See<a name="line.243"></a>
+<FONT color="green">244</FONT>         *  {@link  #setServerLanguageCode(String)  serverLanguageCode}<a name="line.244"></a>
+<FONT color="green">245</FONT>         * @param shortMonthNames See<a name="line.245"></a>
+<FONT color="green">246</FONT>         *  {@link  #setShortMonthNames(String)  shortMonthNames}<a name="line.246"></a>
+<FONT color="green">247</FONT>         * @param serverTimeZoneId See<a name="line.247"></a>
+<FONT color="green">248</FONT>         *  {@link  #setServerTimeZoneId(String)  serverTimeZoneId}<a name="line.248"></a>
+<FONT color="green">249</FONT>         */<a name="line.249"></a>
+<FONT color="green">250</FONT>        public FTPClientConfig(String systemKey,<a name="line.250"></a>
+<FONT color="green">251</FONT>                               String defaultDateFormatStr,<a name="line.251"></a>
+<FONT color="green">252</FONT>                               String recentDateFormatStr,<a name="line.252"></a>
+<FONT color="green">253</FONT>                               String serverLanguageCode,<a name="line.253"></a>
+<FONT color="green">254</FONT>                               String shortMonthNames,<a name="line.254"></a>
+<FONT color="green">255</FONT>                               String serverTimeZoneId)<a name="line.255"></a>
+<FONT color="green">256</FONT>        {<a name="line.256"></a>
+<FONT color="green">257</FONT>            this(systemKey);<a name="line.257"></a>
+<FONT color="green">258</FONT>            this.defaultDateFormatStr = defaultDateFormatStr;<a name="line.258"></a>
+<FONT color="green">259</FONT>            this.recentDateFormatStr = recentDateFormatStr;<a name="line.259"></a>
+<FONT color="green">260</FONT>            this.serverLanguageCode = serverLanguageCode;<a name="line.260"></a>
+<FONT color="green">261</FONT>            this.shortMonthNames = shortMonthNames;<a name="line.261"></a>
+<FONT color="green">262</FONT>            this.serverTimeZoneId = serverTimeZoneId;<a name="line.262"></a>
+<FONT color="green">263</FONT>        }<a name="line.263"></a>
+<FONT color="green">264</FONT>        <a name="line.264"></a>
+<FONT color="green">265</FONT>        private static Map&lt;String, Object&gt; LANGUAGE_CODE_MAP = new TreeMap&lt;String, Object&gt;();<a name="line.265"></a>
+<FONT color="green">266</FONT>        static {<a name="line.266"></a>
+<FONT color="green">267</FONT>            <a name="line.267"></a>
+<FONT color="green">268</FONT>            // if there are other commonly used month name encodings which<a name="line.268"></a>
+<FONT color="green">269</FONT>            // correspond to particular locales, please add them here.<a name="line.269"></a>
+<FONT color="green">270</FONT>            <a name="line.270"></a>
+<FONT color="green">271</FONT>            <a name="line.271"></a>
+<FONT color="green">272</FONT>            <a name="line.272"></a>
+<FONT color="green">273</FONT>            // many locales code short names for months as all three letters<a name="line.273"></a>
+<FONT color="green">274</FONT>            // these we handle simply.<a name="line.274"></a>
+<FONT color="green">275</FONT>            LANGUAGE_CODE_MAP.put("en", Locale.ENGLISH);<a name="line.275"></a>
+<FONT color="green">276</FONT>            LANGUAGE_CODE_MAP.put("de",Locale.GERMAN);<a name="line.276"></a>
+<FONT color="green">277</FONT>            LANGUAGE_CODE_MAP.put("it",Locale.ITALIAN);<a name="line.277"></a>
+<FONT color="green">278</FONT>            LANGUAGE_CODE_MAP.put("es", new Locale("es", "", "")); // spanish<a name="line.278"></a>
+<FONT color="green">279</FONT>            LANGUAGE_CODE_MAP.put("pt", new Locale("pt", "", "")); // portuguese<a name="line.279"></a>
+<FONT color="green">280</FONT>            LANGUAGE_CODE_MAP.put("da", new Locale("da", "", "")); // danish<a name="line.280"></a>
+<FONT color="green">281</FONT>            LANGUAGE_CODE_MAP.put("sv", new Locale("sv", "", "")); // swedish<a name="line.281"></a>
+<FONT color="green">282</FONT>            LANGUAGE_CODE_MAP.put("no", new Locale("no", "", "")); // norwegian<a name="line.282"></a>
+<FONT color="green">283</FONT>            LANGUAGE_CODE_MAP.put("nl", new Locale("nl", "", "")); // dutch<a name="line.283"></a>
+<FONT color="green">284</FONT>            LANGUAGE_CODE_MAP.put("ro", new Locale("ro", "", "")); // romanian<a name="line.284"></a>
+<FONT color="green">285</FONT>            LANGUAGE_CODE_MAP.put("sq", new Locale("sq", "", "")); // albanian<a name="line.285"></a>
+<FONT color="green">286</FONT>            LANGUAGE_CODE_MAP.put("sh", new Locale("sh", "", "")); // serbo-croatian<a name="line.286"></a>
+<FONT color="green">287</FONT>            LANGUAGE_CODE_MAP.put("sk", new Locale("sk", "", "")); // slovak<a name="line.287"></a>
+<FONT color="green">288</FONT>            LANGUAGE_CODE_MAP.put("sl", new Locale("sl", "", "")); // slovenian<a name="line.288"></a>
+<FONT color="green">289</FONT>    <a name="line.289"></a>
+<FONT color="green">290</FONT>    <a name="line.290"></a>
+<FONT color="green">291</FONT>            // some don't<a name="line.291"></a>
+<FONT color="green">292</FONT>            LANGUAGE_CODE_MAP.put("fr",<a name="line.292"></a>
+<FONT color="green">293</FONT>                    "jan|f\u00e9v|mar|avr|mai|jun|jui|ao\u00fb|sep|oct|nov|d\u00e9c");  //french<a name="line.293"></a>
+<FONT color="green">294</FONT>                <a name="line.294"></a>
+<FONT color="green">295</FONT>        }<a name="line.295"></a>
+<FONT color="green">296</FONT>        <a name="line.296"></a>
+<FONT color="green">297</FONT>        /**<a name="line.297"></a>
+<FONT color="green">298</FONT>         * Getter for the serverSystemKey property.  This property<a name="line.298"></a>
+<FONT color="green">299</FONT>         * specifies the general type of server to which the client connects.<a name="line.299"></a>
+<FONT color="green">300</FONT>         * Should be either one of the &lt;code&gt;FTPClientConfig.SYST_*&lt;/code&gt; codes<a name="line.300"></a>
+<FONT color="green">301</FONT>         * or else the fully qualified class name of a parser implementing both<a name="line.301"></a>
+<FONT color="green">302</FONT>         * the &lt;code&gt;FTPFileEntryParser&lt;/code&gt; and &lt;code&gt;Configurable&lt;/code&gt;<a name="line.302"></a>
+<FONT color="green">303</FONT>         * interfaces.<a name="line.303"></a>
+<FONT color="green">304</FONT>         * @return Returns the serverSystemKey property.<a name="line.304"></a>
+<FONT color="green">305</FONT>         */<a name="line.305"></a>
+<FONT color="green">306</FONT>        public String getServerSystemKey() {<a name="line.306"></a>
+<FONT color="green">307</FONT>            return serverSystemKey;<a name="line.307"></a>
+<FONT color="green">308</FONT>        }<a name="line.308"></a>
+<FONT color="green">309</FONT>        <a name="line.309"></a>
+<FONT color="green">310</FONT>        /**<a name="line.310"></a>
+<FONT color="green">311</FONT>         * getter for the {@link  #setDefaultDateFormatStr(String)  defaultDateFormatStr} <a name="line.311"></a>
+<FONT color="green">312</FONT>         * property.  <a name="line.312"></a>
+<FONT color="green">313</FONT>         * @return Returns the defaultDateFormatStr property.<a name="line.313"></a>
+<FONT color="green">314</FONT>         */<a name="line.314"></a>
+<FONT color="green">315</FONT>        public String getDefaultDateFormatStr() {<a name="line.315"></a>
+<FONT color="green">316</FONT>            return defaultDateFormatStr;<a name="line.316"></a>
+<FONT color="green">317</FONT>        }<a name="line.317"></a>
+<FONT color="green">318</FONT>        <a name="line.318"></a>
+<FONT color="green">319</FONT>        /**<a name="line.319"></a>
+<FONT color="green">320</FONT>         * getter for the {@link  #setRecentDateFormatStr(String)  recentDateFormatStr} property.<a name="line.320"></a>
+<FONT color="green">321</FONT>         * @return Returns the recentDateFormatStr property.<a name="line.321"></a>
+<FONT color="green">322</FONT>         */<a name="line.322"></a>
+<FONT color="green">323</FONT>    <a name="line.323"></a>
+<FONT color="green">324</FONT>        public String getRecentDateFormatStr() {<a name="line.324"></a>
+<FONT color="green">325</FONT>            return recentDateFormatStr;<a name="line.325"></a>
+<FONT color="green">326</FONT>        }<a name="line.326"></a>
+<FONT color="green">327</FONT>        <a name="line.327"></a>
+<FONT color="green">328</FONT>        /**<a name="line.328"></a>
+<FONT color="green">329</FONT>         * getter for the {@link  #setServerTimeZoneId(String)  serverTimeZoneId} property.<a name="line.329"></a>
+<FONT color="green">330</FONT>         * @return Returns the serverTimeZoneId property.<a name="line.330"></a>
+<FONT color="green">331</FONT>         */<a name="line.331"></a>
+<FONT color="green">332</FONT>        public String getServerTimeZoneId() {<a name="line.332"></a>
+<FONT color="green">333</FONT>            return serverTimeZoneId;<a name="line.333"></a>
+<FONT color="green">334</FONT>        }<a name="line.334"></a>
+<FONT color="green">335</FONT>        <a name="line.335"></a>
+<FONT color="green">336</FONT>        /**<a name="line.336"></a>
+<FONT color="green">337</FONT>         * &lt;p&gt;<a name="line.337"></a>
+<FONT color="green">338</FONT>         * getter for the {@link  #setShortMonthNames(String)  shortMonthNames} <a name="line.338"></a>
+<FONT color="green">339</FONT>         * property.  <a name="line.339"></a>
+<FONT color="green">340</FONT>         * &lt;/p&gt;<a name="line.340"></a>
+<FONT color="green">341</FONT>         * @return Returns the shortMonthNames.<a name="line.341"></a>
+<FONT color="green">342</FONT>         */<a name="line.342"></a>
+<FONT color="green">343</FONT>        public String getShortMonthNames() {<a name="line.343"></a>
+<FONT color="green">344</FONT>            return shortMonthNames;<a name="line.344"></a>
+<FONT color="green">345</FONT>        }<a name="line.345"></a>
+<FONT color="green">346</FONT>        <a name="line.346"></a>
+<FONT color="green">347</FONT>        /**<a name="line.347"></a>
+<FONT color="green">348</FONT>         * &lt;p&gt;<a name="line.348"></a>
+<FONT color="green">349</FONT>         * getter for the {@link  #setServerLanguageCode(String)  serverLanguageCode} property.<a name="line.349"></a>
+<FONT color="green">350</FONT>         * &lt;/p&gt;  <a name="line.350"></a>
+<FONT color="green">351</FONT>         * @return Returns the serverLanguageCode property.<a name="line.351"></a>
+<FONT color="green">352</FONT>         */<a name="line.352"></a>
+<FONT color="green">353</FONT>        public String getServerLanguageCode() {<a name="line.353"></a>
+<FONT color="green">354</FONT>            return serverLanguageCode;<a name="line.354"></a>
+<FONT color="green">355</FONT>        }<a name="line.355"></a>
+<FONT color="green">356</FONT>        <a name="line.356"></a>
+<FONT color="green">357</FONT>        /**<a name="line.357"></a>
+<FONT color="green">358</FONT>         * &lt;p&gt;<a name="line.358"></a>
+<FONT color="green">359</FONT>         * getter for the {@link  #setLenientFutureDates(boolean)  lenientFutureDates} property.<a name="line.359"></a>
+<FONT color="green">360</FONT>         * &lt;/p&gt;  <a name="line.360"></a>
+<FONT color="green">361</FONT>         * @return Returns the lenientFutureDates.<a name="line.361"></a>
+<FONT color="green">362</FONT>         * @since 1.5<a name="line.362"></a>
+<FONT color="green">363</FONT>         */<a name="line.363"></a>
+<FONT color="green">364</FONT>        public boolean isLenientFutureDates() {<a name="line.364"></a>
+<FONT color="green">365</FONT>            return lenientFutureDates;<a name="line.365"></a>
+<FONT color="green">366</FONT>        }<a name="line.366"></a>
+<FONT color="green">367</FONT>        /**<a name="line.367"></a>
+<FONT color="green">368</FONT>         * &lt;p&gt;<a name="line.368"></a>
+<FONT color="green">369</FONT>         * setter for the defaultDateFormatStr property.  This property<a name="line.369"></a>
+<FONT color="green">370</FONT>         * specifies the main date format that will be used by a parser configured<a name="line.370"></a>
+<FONT color="green">371</FONT>         * by this configuration to parse file timestamps.  If this is not<a name="line.371"></a>
+<FONT color="green">372</FONT>         * specified, such a parser will use as a default value, the most commonly<a name="line.372"></a>
+<FONT color="green">373</FONT>         * used format which will be in as used in &lt;code&gt;en_US&lt;/code&gt; locales.<a name="line.373"></a>
+<FONT color="green">374</FONT>         * &lt;/p&gt;&lt;p&gt;<a name="line.374"></a>
+<FONT color="green">375</FONT>         * This should be in the format described for <a name="line.375"></a>
+<FONT color="green">376</FONT>         * &lt;code&gt;java.text.SimpleDateFormat&lt;/code&gt;. <a name="line.376"></a>
+<FONT color="green">377</FONT>         * property.<a name="line.377"></a>
+<FONT color="green">378</FONT>         * &lt;/p&gt;<a name="line.378"></a>
+<FONT color="green">379</FONT>         * @param defaultDateFormatStr The defaultDateFormatStr to set.<a name="line.379"></a>
+<FONT color="green">380</FONT>         */<a name="line.380"></a>
+<FONT color="green">381</FONT>        public void setDefaultDateFormatStr(String defaultDateFormatStr) {<a name="line.381"></a>
+<FONT color="green">382</FONT>            this.defaultDateFormatStr = defaultDateFormatStr;<a name="line.382"></a>
+<FONT color="green">383</FONT>        }<a name="line.383"></a>
+<FONT color="green">384</FONT>        <a name="line.384"></a>
+<FONT color="green">385</FONT>        /**<a name="line.385"></a>
+<FONT color="green">386</FONT>         * &lt;p&gt;<a name="line.386"></a>
+<FONT color="green">387</FONT>         * setter for the recentDateFormatStr property.  This property<a name="line.387"></a>
+<FONT color="green">388</FONT>         * specifies a secondary date format that will be used by a parser <a name="line.388"></a>
+<FONT color="green">389</FONT>         * configured by this configuration to parse file timestamps, typically <a name="line.389"></a>
+<FONT color="green">390</FONT>         * those less than a year old.  If this is  not specified, such a parser <a name="line.390"></a>
+<FONT color="green">391</FONT>         * will not attempt to parse using an alternate format.<a name="line.391"></a>
+<FONT color="green">392</FONT>         * &lt;/p&gt;<a name="line.392"></a>
+<FONT color="green">393</FONT>         * This is used primarily in unix-based systems.<a name="line.393"></a>
+<FONT color="green">394</FONT>         * &lt;/p&gt;<a name="line.394"></a>
+<FONT color="green">395</FONT>         * This should be in the format described for <a name="line.395"></a>
+<FONT color="green">396</FONT>         * &lt;code&gt;java.text.SimpleDateFormat&lt;/code&gt;.<a name="line.396"></a>
+<FONT color="green">397</FONT>         * &lt;/p&gt;<a name="line.397"></a>
+<FONT color="green">398</FONT>         * @param recentDateFormatStr The recentDateFormatStr to set.<a name="line.398"></a>
+<FONT color="green">399</FONT>         */<a name="line.399"></a>
+<FONT color="green">400</FONT>        public void setRecentDateFormatStr(String recentDateFormatStr) {<a name="line.400"></a>
+<FONT color="green">401</FONT>            this.recentDateFormatStr = recentDateFormatStr;<a name="line.401"></a>
+<FONT color="green">402</FONT>        }<a name="line.402"></a>
+<FONT color="green">403</FONT>        <a name="line.403"></a>
+<FONT color="green">404</FONT>        /**<a name="line.404"></a>
+<FONT color="green">405</FONT>         * &lt;p&gt;<a name="line.405"></a>
+<FONT color="green">406</FONT>         * setter for the lenientFutureDates property.  This boolean property<a name="line.406"></a>
+<FONT color="green">407</FONT>         * (default: false) only has meaning when a <a name="line.407"></a>
+<FONT color="green">408</FONT>         * {@link  #setRecentDateFormatStr(String)  recentDateFormatStr} property<a name="line.408"></a>
+<FONT color="green">409</FONT>         * has been set.  In that case, if this property is set true, then the<a name="line.409"></a>
+<FONT color="green">410</FONT>         * parser, when it encounters a listing parseable with the recent date <a name="line.410"></a>
+<FONT color="green">411</FONT>         * format, will only consider a date to belong to the previous year if<a name="line.411"></a>
+<FONT color="green">412</FONT>         * it is more than one day in the future.  This will allow all <a name="line.412"></a>
+<FONT color="green">413</FONT>         * out-of-synch situations (whether based on "slop" - i.e. servers simply <a name="line.413"></a>
+<FONT color="green">414</FONT>         * out of synch with one another or because of time zone differences - <a name="line.414"></a>
+<FONT color="green">415</FONT>         * but in the latter case it is highly recommended to use the <a name="line.415"></a>
+<FONT color="green">416</FONT>         * {@link  #setServerTimeZoneId(String)  serverTimeZoneId} property<a name="line.416"></a>
+<FONT color="green">417</FONT>         * instead) to resolve correctly.<a name="line.417"></a>
+<FONT color="green">418</FONT>         * &lt;/p&gt;&lt;p&gt;<a name="line.418"></a>
+<FONT color="green">419</FONT>         * This is used primarily in unix-based systems.<a name="line.419"></a>
+<FONT color="green">420</FONT>         * &lt;/p&gt;<a name="line.420"></a>
+<FONT color="green">421</FONT>         * @param lenientFutureDates set true to compensate for out-of-synch <a name="line.421"></a>
+<FONT color="green">422</FONT>         * conditions.<a name="line.422"></a>
+<FONT color="green">423</FONT>         */<a name="line.423"></a>
+<FONT color="green">424</FONT>        public void setLenientFutureDates(boolean lenientFutureDates) {<a name="line.424"></a>
+<FONT color="green">425</FONT>            this.lenientFutureDates = lenientFutureDates;<a name="line.425"></a>
+<FONT color="green">426</FONT>        }<a name="line.426"></a>
+<FONT color="green">427</FONT>        /**<a name="line.427"></a>
+<FONT color="green">428</FONT>         * &lt;p&gt;<a name="line.428"></a>
+<FONT color="green">429</FONT>         * setter for the serverTimeZoneId property.  This property<a name="line.429"></a>
+<FONT color="green">430</FONT>         * allows a time zone to be specified corresponding to that known to be <a name="line.430"></a>
+<FONT color="green">431</FONT>         * used by an FTP server in file listings.  This might be particularly <a name="line.431"></a>
+<FONT color="green">432</FONT>         * useful to clients such as Ant that try to use these timestamps for <a name="line.432"></a>
+<FONT color="green">433</FONT>         * dependency checking.<a name="line.433"></a>
+<FONT color="green">434</FONT>         * &lt;/p&gt;&lt;p&gt;<a name="line.434"></a>
+<FONT color="green">435</FONT>         * This should be one of the identifiers used by <a name="line.435"></a>
+<FONT color="green">436</FONT>         * &lt;code&gt;java.util.TimeZone&lt;/code&gt; to refer to time zones, for example, <a name="line.436"></a>
+<FONT color="green">437</FONT>         * &lt;code&gt;America/Chicago&lt;/code&gt; or &lt;code&gt;Asia/Rangoon&lt;/code&gt;.<a name="line.437"></a>
+<FONT color="green">438</FONT>         * &lt;/p&gt;<a name="line.438"></a>
+<FONT color="green">439</FONT>         * @param serverTimeZoneId The serverTimeZoneId to set.<a name="line.439"></a>
+<FONT color="green">440</FONT>         */<a name="line.440"></a>
+<FONT color="green">441</FONT>        public void setServerTimeZoneId(String serverTimeZoneId) {<a name="line.441"></a>
+<FONT color="green">442</FONT>            this.serverTimeZoneId = serverTimeZoneId;<a name="line.442"></a>
+<FONT color="green">443</FONT>        }<a name="line.443"></a>
+<FONT color="green">444</FONT>        <a name="line.444"></a>
+<FONT color="green">445</FONT>        /**<a name="line.445"></a>
+<FONT color="green">446</FONT>         * &lt;p&gt;<a name="line.446"></a>
+<FONT color="green">447</FONT>         * setter for the shortMonthNames property.  <a name="line.447"></a>
+<FONT color="green">448</FONT>         * This property allows the user to specify a set of month names<a name="line.448"></a>
+<FONT color="green">449</FONT>         * used by the server that is different from those that may be <a name="line.449"></a>
+<FONT color="green">450</FONT>         * specified using the {@link  #setServerLanguageCode(String)  serverLanguageCode}<a name="line.450"></a>
+<FONT color="green">451</FONT>         * property.<a name="line.451"></a>
+<FONT color="green">452</FONT>         * &lt;/p&gt;&lt;p&gt;<a name="line.452"></a>
+<FONT color="green">453</FONT>         * This should be a string containing twelve strings each composed of<a name="line.453"></a>
+<FONT color="green">454</FONT>         * three characters, delimited by pipe (|) characters.  Currently, <a name="line.454"></a>
+<FONT color="green">455</FONT>         * only 8-bit ASCII characters are known to be supported.  For example,<a name="line.455"></a>
+<FONT color="green">456</FONT>         * a set of month names used by a hypothetical Icelandic FTP server might <a name="line.456"></a>
+<FONT color="green">457</FONT>         * conceivably be specified as <a name="line.457"></a>
+<FONT color="green">458</FONT>         * &lt;code&gt;"jan|feb|mar|apr|ma&amp;#xED;|j&amp;#xFA;n|j&amp;#xFA;l|&amp;#xE1;g&amp;#xFA;|sep|okt|n&amp;#xF3;v|des"&lt;/code&gt;.  <a name="line.458"></a>
+<FONT color="green">459</FONT>         * &lt;/p&gt;<a name="line.459"></a>
+<FONT color="green">460</FONT>         * @param shortMonthNames The value to set to the shortMonthNames property.<a name="line.460"></a>
+<FONT color="green">461</FONT>         */<a name="line.461"></a>
+<FONT color="green">462</FONT>        public void setShortMonthNames(String shortMonthNames) {<a name="line.462"></a>
+<FONT color="green">463</FONT>            this.shortMonthNames = shortMonthNames;<a name="line.463"></a>
+<FONT color="green">464</FONT>        }<a name="line.464"></a>
+<FONT color="green">465</FONT>        <a name="line.465"></a>
+<FONT color="green">466</FONT>        /**<a name="line.466"></a>
+<FONT color="green">467</FONT>         * &lt;p&gt;<a name="line.467"></a>
+<FONT color="green">468</FONT>         * setter for the serverLanguageCode property.  This property allows<a name="line.468"></a>
+<FONT color="green">469</FONT>         * user to specify a <a name="line.469"></a>
+<FONT color="green">470</FONT>         * &lt;a href="http://www.ics.uci.edu/pub/ietf/http/related/iso639.txt"&gt;<a name="line.470"></a>
+<FONT color="green">471</FONT>         * two-letter ISO-639 language code&lt;/a&gt; that will be used to <a name="line.471"></a>
+<FONT color="green">472</FONT>         * configure the set of month names used by the file timestamp parser.<a name="line.472"></a>
+<FONT color="green">473</FONT>         * If neither this nor the {@link #setShortMonthNames(String) shortMonthNames} <a name="line.473"></a>
+<FONT color="green">474</FONT>         * is specified, parsing will assume English month names, which may or <a name="line.474"></a>
+<FONT color="green">475</FONT>         * may not be significant, depending on whether the date format(s) <a name="line.475"></a>
+<FONT color="green">476</FONT>         * specified via {@link  #setDefaultDateFormatStr(String)  defaultDateFormatStr} <a name="line.476"></a>
+<FONT color="green">477</FONT>         * and/or {@link  #setRecentDateFormatStr(String)  recentDateFormatStr} are using <a name="line.477"></a>
+<FONT color="green">478</FONT>         * numeric or alphabetic month names.<a name="line.478"></a>
+<FONT color="green">479</FONT>         * &lt;/p&gt;<a name="line.479"></a>
+<FONT color="green">480</FONT>         * &lt;p&gt;If the code supplied is not supported here, &lt;code&gt;en_US&lt;/code&gt;<a name="line.480"></a>
+<FONT color="green">481</FONT>         * month names will be used.  We are supporting here those language <a name="line.481"></a>
+<FONT color="green">482</FONT>         * codes which, when a &lt;code&gt; java.util.Locale&lt;/code&gt; is constucted<a name="line.482"></a>
+<FONT color="green">483</FONT>         * using it, and a &lt;code&gt;java.text.SimpleDateFormat&lt;/code&gt; is <a name="line.483"></a>
+<FONT color="green">484</FONT>         * constructed using that Locale, the array returned by the <a name="line.484"></a>
+<FONT color="green">485</FONT>         * SimpleDateFormat's &lt;code&gt;getShortMonths()&lt;/code&gt; method consists<a name="line.485"></a>
+<FONT color="green">486</FONT>         * solely of three 8-bit ASCII character strings.  Additionally, <a name="line.486"></a>
+<FONT color="green">487</FONT>         * languages which do not meet this requirement are included if a <a name="line.487"></a>
+<FONT color="green">488</FONT>         * common alternative set of short month names is known to be used.<a name="line.488"></a>
+<FONT color="green">489</FONT>         * This means that users who can tell us of additional such encodings<a name="line.489"></a>
+<FONT color="green">490</FONT>         * may get them added to the list of supported languages by contacting<a name="line.490"></a>
+<FONT color="green">491</FONT>         * the jakarta-commons-net team.<a name="line.491"></a>
+<FONT color="green">492</FONT>         * &lt;/p&gt;<a name="line.492"></a>
+<FONT color="green">493</FONT>         * &lt;p&gt;&lt;strong&gt;<a name="line.493"></a>
+<FONT color="green">494</FONT>         * Please note that this attribute will NOT be used to determine a <a name="line.494"></a>
+<FONT color="green">495</FONT>         * locale-based date format for the language.  &lt;/strong&gt;  <a name="line.495"></a>
+<FONT color="green">496</FONT>         * Experience has shown that many if not most FTP servers outside the<a name="line.496"></a>
+<FONT color="green">497</FONT>         * United States employ the standard &lt;code&gt;en_US&lt;/code&gt; date format <a name="line.497"></a>
+<FONT color="green">498</FONT>         * orderings of &lt;code&gt;MMM d yyyy&lt;/code&gt; and &lt;code&gt;MMM d HH:mm&lt;/code&gt; <a name="line.498"></a>
+<FONT color="green">499</FONT>         * and attempting to deduce this automatically here would cause more<a name="line.499"></a>
+<FONT color="green">500</FONT>         * problems than it would solve.  The date format must be changed <a name="line.500"></a>
+<FONT color="green">501</FONT>         * via the {@link  #setDefaultDateFormatStr(String)  defaultDateFormatStr} and/or <a name="line.501"></a>
+<FONT color="green">502</FONT>         * {@link  #setRecentDateFormatStr(String)  recentDateFormatStr} parameters.<a name="line.502"></a>
+<FONT color="green">503</FONT>         * &lt;/p&gt;<a name="line.503"></a>
+<FONT color="green">504</FONT>         * @param serverLanguageCode The value to set to the serverLanguageCode property.  <a name="line.504"></a>
+<FONT color="green">505</FONT>         */<a name="line.505"></a>
+<FONT color="green">506</FONT>        public void setServerLanguageCode(String serverLanguageCode) {<a name="line.506"></a>
+<FONT color="green">507</FONT>            this.serverLanguageCode = serverLanguageCode;<a name="line.507"></a>
+<FONT color="green">508</FONT>        }<a name="line.508"></a>
+<FONT color="green">509</FONT>        <a name="line.509"></a>
+<FONT color="green">510</FONT>        /**<a name="line.510"></a>
+<FONT color="green">511</FONT>         * Looks up the supplied language code in the internally maintained table of <a name="line.511"></a>
+<FONT color="green">512</FONT>         * language codes.  Returns a DateFormatSymbols object configured with <a name="line.512"></a>
+<FONT color="green">513</FONT>         * short month names corresponding to the code.  If there is no corresponding<a name="line.513"></a>
+<FONT color="green">514</FONT>         * entry in the table, the object returned will be that for <a name="line.514"></a>
+<FONT color="green">515</FONT>         * &lt;code&gt;Locale.US&lt;/code&gt; <a name="line.515"></a>
+<FONT color="green">516</FONT>         * @param languageCode See {@link  #setServerLanguageCode(String)  serverLanguageCode}<a name="line.516"></a>
+<FONT color="green">517</FONT>         * @return a DateFormatSymbols object configured with short month names <a name="line.517"></a>
+<FONT color="green">518</FONT>         * corresponding to the supplied code, or with month names for  <a name="line.518"></a>
+<FONT color="green">519</FONT>         * &lt;code&gt;Locale.US&lt;/code&gt; if there is no corresponding entry in the internal<a name="line.519"></a>
+<FONT color="green">520</FONT>         * table.<a name="line.520"></a>
+<FONT color="green">521</FONT>         */<a name="line.521"></a>
+<FONT color="green">522</FONT>        public static DateFormatSymbols lookupDateFormatSymbols(String languageCode) <a name="line.522"></a>
+<FONT color="green">523</FONT>        {<a name="line.523"></a>
+<FONT color="green">524</FONT>            Object lang = LANGUAGE_CODE_MAP.get(languageCode);<a name="line.524"></a>
+<FONT color="green">525</FONT>            if (lang != null) {<a name="line.525"></a>
+<FONT color="green">526</FONT>                if (lang instanceof Locale) {<a name="line.526"></a>
+<FONT color="green">527</FONT>                    return new DateFormatSymbols((Locale) lang);<a name="line.527"></a>
+<FONT color="green">528</FONT>                } else if (lang instanceof String){<a name="line.528"></a>
+<FONT color="green">529</FONT>                    return getDateFormatSymbols((String) lang);<a name="line.529"></a>
+<FONT color="green">530</FONT>                }<a name="line.530"></a>
+<FONT color="green">531</FONT>            }<a name="line.531"></a>
+<FONT color="green">532</FONT>            return new DateFormatSymbols(Locale.US);<a name="line.532"></a>
+<FONT color="green">533</FONT>        }<a name="line.533"></a>
+<FONT color="green">534</FONT>        <a name="line.534"></a>
+<FONT color="green">535</FONT>        /**<a name="line.535"></a>
+<FONT color="green">536</FONT>         * Returns a DateFormatSymbols object configured with short month names<a name="line.536"></a>
+<FONT color="green">537</FONT>         * as in the supplied string<a name="line.537"></a>
+<FONT color="green">538</FONT>         * @param shortmonths This  should be as described in <a name="line.538"></a>
+<FONT color="green">539</FONT>         *  {@link  #setShortMonthNames(String)  shortMonthNames}<a name="line.539"></a>
+<FONT color="green">540</FONT>         * @return a DateFormatSymbols object configured with short month names<a name="line.540"></a>
+<FONT color="green">541</FONT>         * as in the supplied string<a name="line.541"></a>
+<FONT color="green">542</FONT>         */<a name="line.542"></a>
+<FONT color="green">543</FONT>        public static DateFormatSymbols getDateFormatSymbols(String shortmonths) <a name="line.543"></a>
+<FONT color="green">544</FONT>        {<a name="line.544"></a>
+<FONT color="green">545</FONT>            String[] months = splitShortMonthString(shortmonths);<a name="line.545"></a>
+<FONT color="green">546</FONT>            DateFormatSymbols dfs = new DateFormatSymbols(Locale.US);<a name="line.546"></a>
+<FONT color="green">547</FONT>            dfs.setShortMonths(months);<a name="line.547"></a>
+<FONT color="green">548</FONT>            return dfs;<a name="line.548"></a>
+<FONT color="green">549</FONT>        }<a name="line.549"></a>
+<FONT color="green">550</FONT>        <a name="line.550"></a>
+<FONT color="green">551</FONT>        private static String[] splitShortMonthString(String shortmonths) {<a name="line.551"></a>
+<FONT color="green">552</FONT>            StringTokenizer st = new StringTokenizer(shortmonths, "|");<a name="line.552"></a>
+<FONT color="green">553</FONT>            int monthcnt = st.countTokens();<a name="line.553"></a>
+<FONT color="green">554</FONT>            if (12 != monthcnt) {<a name="line.554"></a>
+<FONT color="green">555</FONT>                throw new IllegalArgumentException(<a name="line.555"></a>
+<FONT color="green">556</FONT>                        "expecting a pipe-delimited string containing 12 tokens");<a name="line.556"></a>
+<FONT color="green">557</FONT>            }<a name="line.557"></a>
+<FONT color="green">558</FONT>            String[] months = new String[13];<a name="line.558"></a>
+<FONT color="green">559</FONT>            int pos = 0;<a name="line.559"></a>
+<FONT color="green">560</FONT>            while(st.hasMoreTokens()) {<a name="line.560"></a>
+<FONT color="green">561</FONT>                months[pos++] = st.nextToken();<a name="line.561"></a>
+<FONT color="green">562</FONT>            }<a name="line.562"></a>
+<FONT color="green">563</FONT>            months[pos]="";<a name="line.563"></a>
+<FONT color="green">564</FONT>            return months;<a name="line.564"></a>
+<FONT color="green">565</FONT>        }<a name="line.565"></a>
+<FONT color="green">566</FONT>    <a name="line.566"></a>
+<FONT color="green">567</FONT>        /**<a name="line.567"></a>
+<FONT color="green">568</FONT>         * Returns a Collection of all the language codes currently supported<a name="line.568"></a>
+<FONT color="green">569</FONT>         * by this class. See {@link  #setServerLanguageCode(String)  serverLanguageCode}  <a name="line.569"></a>
+<FONT color="green">570</FONT>         * for a functional descrption of language codes within this system. <a name="line.570"></a>
+<FONT color="green">571</FONT>         *<a name="line.571"></a>
+<FONT color="green">572</FONT>         * @return a Collection of all the language codes currently supported<a name="line.572"></a>
+<FONT color="green">573</FONT>         * by this class<a name="line.573"></a>
+<FONT color="green">574</FONT>         */<a name="line.574"></a>
+<FONT color="green">575</FONT>        public static Collection&lt;String&gt; getSupportedLanguageCodes() {<a name="line.575"></a>
+<FONT color="green">576</FONT>            return LANGUAGE_CODE_MAP.keySet();<a name="line.576"></a>
+<FONT color="green">577</FONT>        }<a name="line.577"></a>
+<FONT color="green">578</FONT>        <a name="line.578"></a>
+<FONT color="green">579</FONT>        <a name="line.579"></a>
+<FONT color="green">580</FONT>    }<a name="line.580"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

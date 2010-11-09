@@ -1,0 +1,1579 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.commons.net.ftp;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.io.BufferedReader;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.io.BufferedWriter;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.io.IOException;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.io.InputStreamReader;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import java.io.OutputStreamWriter;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import java.net.InetAddress;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.net.Socket;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.net.SocketException;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.ArrayList;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.Arrays;<a name="line.28"></a>
+<FONT color="green">029</FONT>    <a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.commons.net.MalformedServerReplyException;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import org.apache.commons.net.ProtocolCommandListener;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import org.apache.commons.net.ProtocolCommandSupport;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import org.apache.commons.net.SocketClient;<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>    /***<a name="line.35"></a>
+<FONT color="green">036</FONT>     * FTP provides the basic the functionality necessary to implement your<a name="line.36"></a>
+<FONT color="green">037</FONT>     * own FTP client.  It extends org.apache.commons.net.SocketClient since<a name="line.37"></a>
+<FONT color="green">038</FONT>     * extending TelnetClient was causing unwanted behavior (like connections<a name="line.38"></a>
+<FONT color="green">039</FONT>     * that did not time out properly).<a name="line.39"></a>
+<FONT color="green">040</FONT>     * &lt;p&gt;<a name="line.40"></a>
+<FONT color="green">041</FONT>     * To derive the full benefits of the FTP class requires some knowledge<a name="line.41"></a>
+<FONT color="green">042</FONT>     * of the FTP protocol defined in RFC 959.  However, there is no reason<a name="line.42"></a>
+<FONT color="green">043</FONT>     * why you should have to use the FTP class.  The<a name="line.43"></a>
+<FONT color="green">044</FONT>     * {@link org.apache.commons.net.ftp.FTPClient} class,<a name="line.44"></a>
+<FONT color="green">045</FONT>     * derived from FTP,<a name="line.45"></a>
+<FONT color="green">046</FONT>     * implements all the functionality required of an FTP client.  The<a name="line.46"></a>
+<FONT color="green">047</FONT>     * FTP class is made public to provide access to various FTP constants<a name="line.47"></a>
+<FONT color="green">048</FONT>     * and to make it easier for adventurous programmers (or those with<a name="line.48"></a>
+<FONT color="green">049</FONT>     * special needs) to interact with the FTP protocol and implement their<a name="line.49"></a>
+<FONT color="green">050</FONT>     * own clients.  A set of methods with names corresponding to the FTP<a name="line.50"></a>
+<FONT color="green">051</FONT>     * command names are provided to facilitate this interaction.<a name="line.51"></a>
+<FONT color="green">052</FONT>     * &lt;p&gt;<a name="line.52"></a>
+<FONT color="green">053</FONT>     * You should keep in mind that the FTP server may choose to prematurely<a name="line.53"></a>
+<FONT color="green">054</FONT>     * close a connection if the client has been idle for longer than a<a name="line.54"></a>
+<FONT color="green">055</FONT>     * given time period (usually 900 seconds).  The FTP class will detect a<a name="line.55"></a>
+<FONT color="green">056</FONT>     * premature FTP server connection closing when it receives a<a name="line.56"></a>
+<FONT color="green">057</FONT>     * {@link org.apache.commons.net.ftp.FTPReply#SERVICE_NOT_AVAILABLE FTPReply.SERVICE_NOT_AVAILABLE }<a name="line.57"></a>
+<FONT color="green">058</FONT>     *  response to a command.<a name="line.58"></a>
+<FONT color="green">059</FONT>     * When that occurs, the FTP class method encountering that reply will throw<a name="line.59"></a>
+<FONT color="green">060</FONT>     * an {@link org.apache.commons.net.ftp.FTPConnectionClosedException}<a name="line.60"></a>
+<FONT color="green">061</FONT>     * .  &lt;code&gt;FTPConectionClosedException&lt;/code&gt;<a name="line.61"></a>
+<FONT color="green">062</FONT>     * is a subclass of &lt;code&gt; IOException &lt;/code&gt; and therefore need not be<a name="line.62"></a>
+<FONT color="green">063</FONT>     * caught separately, but if you are going to catch it separately, its<a name="line.63"></a>
+<FONT color="green">064</FONT>     * catch block must appear before the more general &lt;code&gt; IOException &lt;/code&gt;<a name="line.64"></a>
+<FONT color="green">065</FONT>     * catch block.  When you encounter an<a name="line.65"></a>
+<FONT color="green">066</FONT>     * {@link org.apache.commons.net.ftp.FTPConnectionClosedException}<a name="line.66"></a>
+<FONT color="green">067</FONT>     * , you must disconnect the connection with<a name="line.67"></a>
+<FONT color="green">068</FONT>     * {@link #disconnect  disconnect() } to properly clean up the<a name="line.68"></a>
+<FONT color="green">069</FONT>     * system resources used by FTP.  Before disconnecting, you may check the<a name="line.69"></a>
+<FONT color="green">070</FONT>     * last reply code and text with<a name="line.70"></a>
+<FONT color="green">071</FONT>     * {@link #getReplyCode  getReplyCode },<a name="line.71"></a>
+<FONT color="green">072</FONT>     * {@link #getReplyString  getReplyString },<a name="line.72"></a>
+<FONT color="green">073</FONT>     * and {@link #getReplyStrings  getReplyStrings}.<a name="line.73"></a>
+<FONT color="green">074</FONT>     * You may avoid server disconnections while the client is idle by<a name="line.74"></a>
+<FONT color="green">075</FONT>     * periodicaly sending NOOP commands to the server.<a name="line.75"></a>
+<FONT color="green">076</FONT>     * &lt;p&gt;<a name="line.76"></a>
+<FONT color="green">077</FONT>     * Rather than list it separately for each method, we mention here that<a name="line.77"></a>
+<FONT color="green">078</FONT>     * every method communicating with the server and throwing an IOException<a name="line.78"></a>
+<FONT color="green">079</FONT>     * can also throw a<a name="line.79"></a>
+<FONT color="green">080</FONT>     * {@link org.apache.commons.net.MalformedServerReplyException}<a name="line.80"></a>
+<FONT color="green">081</FONT>     * , which is a subclass<a name="line.81"></a>
+<FONT color="green">082</FONT>     * of IOException.  A MalformedServerReplyException will be thrown when<a name="line.82"></a>
+<FONT color="green">083</FONT>     * the reply received from the server deviates enough from the protocol<a name="line.83"></a>
+<FONT color="green">084</FONT>     * specification that it cannot be interpreted in a useful manner despite<a name="line.84"></a>
+<FONT color="green">085</FONT>     * attempts to be as lenient as possible.<a name="line.85"></a>
+<FONT color="green">086</FONT>     * &lt;p&gt;<a name="line.86"></a>
+<FONT color="green">087</FONT>     * &lt;p&gt;<a name="line.87"></a>
+<FONT color="green">088</FONT>     * @author Daniel F. Savarese<a name="line.88"></a>
+<FONT color="green">089</FONT>     * @author Rory Winston <a name="line.89"></a>
+<FONT color="green">090</FONT>     * @author Joseph Hindsley<a name="line.90"></a>
+<FONT color="green">091</FONT>     * @see FTPClient<a name="line.91"></a>
+<FONT color="green">092</FONT>     * @see FTPConnectionClosedException<a name="line.92"></a>
+<FONT color="green">093</FONT>     * @see org.apache.commons.net.MalformedServerReplyException<a name="line.93"></a>
+<FONT color="green">094</FONT>     * @version $Id: FTP.java 658520 2008-05-21 01:14:11Z sebb $<a name="line.94"></a>
+<FONT color="green">095</FONT>     ***/<a name="line.95"></a>
+<FONT color="green">096</FONT>    <a name="line.96"></a>
+<FONT color="green">097</FONT>    public class FTP extends SocketClient<a name="line.97"></a>
+<FONT color="green">098</FONT>    {<a name="line.98"></a>
+<FONT color="green">099</FONT>        /*** The default FTP data port (20). ***/<a name="line.99"></a>
+<FONT color="green">100</FONT>        public static final int DEFAULT_DATA_PORT = 20;<a name="line.100"></a>
+<FONT color="green">101</FONT>        /*** The default FTP control port (21). ***/<a name="line.101"></a>
+<FONT color="green">102</FONT>        public static final int DEFAULT_PORT = 21;<a name="line.102"></a>
+<FONT color="green">103</FONT>    <a name="line.103"></a>
+<FONT color="green">104</FONT>        /***<a name="line.104"></a>
+<FONT color="green">105</FONT>         * A constant used to indicate the file(s) being transfered should<a name="line.105"></a>
+<FONT color="green">106</FONT>         * be treated as ASCII.  This is the default file type.  All constants<a name="line.106"></a>
+<FONT color="green">107</FONT>         * ending in &lt;code&gt;FILE_TYPE&lt;/code&gt; are used to indicate file types.<a name="line.107"></a>
+<FONT color="green">108</FONT>         ***/<a name="line.108"></a>
+<FONT color="green">109</FONT>        public static final int ASCII_FILE_TYPE = 0;<a name="line.109"></a>
+<FONT color="green">110</FONT>    <a name="line.110"></a>
+<FONT color="green">111</FONT>        /***<a name="line.111"></a>
+<FONT color="green">112</FONT>         * A constant used to indicate the file(s) being transfered should<a name="line.112"></a>
+<FONT color="green">113</FONT>         * be treated as EBCDIC.  Note however that there are several different<a name="line.113"></a>
+<FONT color="green">114</FONT>         * EBCDIC formats.  All constants ending in &lt;code&gt;FILE_TYPE&lt;/code&gt;<a name="line.114"></a>
+<FONT color="green">115</FONT>         * are used to indicate file types.<a name="line.115"></a>
+<FONT color="green">116</FONT>         ***/<a name="line.116"></a>
+<FONT color="green">117</FONT>        public static final int EBCDIC_FILE_TYPE = 1;<a name="line.117"></a>
+<FONT color="green">118</FONT>    <a name="line.118"></a>
+<FONT color="green">119</FONT>       <a name="line.119"></a>
+<FONT color="green">120</FONT>        /***<a name="line.120"></a>
+<FONT color="green">121</FONT>         * A constant used to indicate the file(s) being transfered should<a name="line.121"></a>
+<FONT color="green">122</FONT>         * be treated as a binary image, i.e., no translations should be<a name="line.122"></a>
+<FONT color="green">123</FONT>         * performed.  All constants ending in &lt;code&gt;FILE_TYPE&lt;/code&gt; are used to<a name="line.123"></a>
+<FONT color="green">124</FONT>         * indicate file types.<a name="line.124"></a>
+<FONT color="green">125</FONT>         ***/<a name="line.125"></a>
+<FONT color="green">126</FONT>        public static final int BINARY_FILE_TYPE = 2;<a name="line.126"></a>
+<FONT color="green">127</FONT>    <a name="line.127"></a>
+<FONT color="green">128</FONT>        /***<a name="line.128"></a>
+<FONT color="green">129</FONT>         * A constant used to indicate the file(s) being transfered should<a name="line.129"></a>
+<FONT color="green">130</FONT>         * be treated as a local type.  All constants ending in<a name="line.130"></a>
+<FONT color="green">131</FONT>         * &lt;code&gt;FILE_TYPE&lt;/code&gt; are used to indicate file types.<a name="line.131"></a>
+<FONT color="green">132</FONT>         ***/<a name="line.132"></a>
+<FONT color="green">133</FONT>        public static final int LOCAL_FILE_TYPE = 3;<a name="line.133"></a>
+<FONT color="green">134</FONT>    <a name="line.134"></a>
+<FONT color="green">135</FONT>        /***<a name="line.135"></a>
+<FONT color="green">136</FONT>         * A constant used for text files to indicate a non-print text format.<a name="line.136"></a>
+<FONT color="green">137</FONT>         * This is the default format.<a name="line.137"></a>
+<FONT color="green">138</FONT>         * All constants ending in &lt;code&gt;TEXT_FORMAT&lt;/code&gt; are used to indicate<a name="line.138"></a>
+<FONT color="green">139</FONT>         * text formatting for text transfers (both ASCII and EBCDIC).<a name="line.139"></a>
+<FONT color="green">140</FONT>         ***/<a name="line.140"></a>
+<FONT color="green">141</FONT>        public static final int NON_PRINT_TEXT_FORMAT = 4;<a name="line.141"></a>
+<FONT color="green">142</FONT>    <a name="line.142"></a>
+<FONT color="green">143</FONT>        /***<a name="line.143"></a>
+<FONT color="green">144</FONT>         * A constant used to indicate a text file contains format vertical format<a name="line.144"></a>
+<FONT color="green">145</FONT>         * control characters.<a name="line.145"></a>
+<FONT color="green">146</FONT>         * All constants ending in &lt;code&gt;TEXT_FORMAT&lt;/code&gt; are used to indicate<a name="line.146"></a>
+<FONT color="green">147</FONT>         * text formatting for text transfers (both ASCII and EBCDIC).<a name="line.147"></a>
+<FONT color="green">148</FONT>         ***/<a name="line.148"></a>
+<FONT color="green">149</FONT>        public static final int TELNET_TEXT_FORMAT = 5;<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>        /***<a name="line.151"></a>
+<FONT color="green">152</FONT>         * A constant used to indicate a text file contains ASA vertical format<a name="line.152"></a>
+<FONT color="green">153</FONT>         * control characters.<a name="line.153"></a>
+<FONT color="green">154</FONT>         * All constants ending in &lt;code&gt;TEXT_FORMAT&lt;/code&gt; are used to indicate<a name="line.154"></a>
+<FONT color="green">155</FONT>         * text formatting for text transfers (both ASCII and EBCDIC).<a name="line.155"></a>
+<FONT color="green">156</FONT>         ***/<a name="line.156"></a>
+<FONT color="green">157</FONT>        public static final int CARRIAGE_CONTROL_TEXT_FORMAT = 6;<a name="line.157"></a>
+<FONT color="green">158</FONT>    <a name="line.158"></a>
+<FONT color="green">159</FONT>        /***<a name="line.159"></a>
+<FONT color="green">160</FONT>         * A constant used to indicate a file is to be treated as a continuous<a name="line.160"></a>
+<FONT color="green">161</FONT>         * sequence of bytes.  This is the default structure.  All constants ending<a name="line.161"></a>
+<FONT color="green">162</FONT>         * in &lt;code&gt;_STRUCTURE&lt;/code&gt; are used to indicate file structure for<a name="line.162"></a>
+<FONT color="green">163</FONT>         * file transfers.<a name="line.163"></a>
+<FONT color="green">164</FONT>         ***/<a name="line.164"></a>
+<FONT color="green">165</FONT>        public static final int FILE_STRUCTURE = 7;<a name="line.165"></a>
+<FONT color="green">166</FONT>    <a name="line.166"></a>
+<FONT color="green">167</FONT>        /***<a name="line.167"></a>
+<FONT color="green">168</FONT>         * A constant used to indicate a file is to be treated as a sequence<a name="line.168"></a>
+<FONT color="green">169</FONT>         * of records.  All constants ending in &lt;code&gt;_STRUCTURE&lt;/code&gt;<a name="line.169"></a>
+<FONT color="green">170</FONT>         * are used to indicate file structure for file transfers.<a name="line.170"></a>
+<FONT color="green">171</FONT>         ***/<a name="line.171"></a>
+<FONT color="green">172</FONT>        public static final int RECORD_STRUCTURE = 8;<a name="line.172"></a>
+<FONT color="green">173</FONT>    <a name="line.173"></a>
+<FONT color="green">174</FONT>        /***<a name="line.174"></a>
+<FONT color="green">175</FONT>         * A constant used to indicate a file is to be treated as a set of<a name="line.175"></a>
+<FONT color="green">176</FONT>         * independent indexed pages.  All constants ending in<a name="line.176"></a>
+<FONT color="green">177</FONT>         * &lt;code&gt;_STRUCTURE&lt;/code&gt; are used to indicate file structure for file<a name="line.177"></a>
+<FONT color="green">178</FONT>         * transfers.<a name="line.178"></a>
+<FONT color="green">179</FONT>         ***/<a name="line.179"></a>
+<FONT color="green">180</FONT>        public static final int PAGE_STRUCTURE = 9;<a name="line.180"></a>
+<FONT color="green">181</FONT>    <a name="line.181"></a>
+<FONT color="green">182</FONT>        /***<a name="line.182"></a>
+<FONT color="green">183</FONT>         * A constant used to indicate a file is to be transfered as a stream<a name="line.183"></a>
+<FONT color="green">184</FONT>         * of bytes.  This is the default transfer mode.  All constants ending<a name="line.184"></a>
+<FONT color="green">185</FONT>         * in &lt;code&gt;TRANSFER_MODE&lt;/code&gt; are used to indicate file transfer<a name="line.185"></a>
+<FONT color="green">186</FONT>         * modes.<a name="line.186"></a>
+<FONT color="green">187</FONT>         ***/<a name="line.187"></a>
+<FONT color="green">188</FONT>        public static final int STREAM_TRANSFER_MODE = 10;<a name="line.188"></a>
+<FONT color="green">189</FONT>    <a name="line.189"></a>
+<FONT color="green">190</FONT>        /***<a name="line.190"></a>
+<FONT color="green">191</FONT>         * A constant used to indicate a file is to be transfered as a series<a name="line.191"></a>
+<FONT color="green">192</FONT>         * of blocks.  All constants ending in &lt;code&gt;TRANSFER_MODE&lt;/code&gt; are used<a name="line.192"></a>
+<FONT color="green">193</FONT>         * to indicate file transfer modes.<a name="line.193"></a>
+<FONT color="green">194</FONT>         ***/<a name="line.194"></a>
+<FONT color="green">195</FONT>        public static final int BLOCK_TRANSFER_MODE = 11;<a name="line.195"></a>
+<FONT color="green">196</FONT>    <a name="line.196"></a>
+<FONT color="green">197</FONT>        /***<a name="line.197"></a>
+<FONT color="green">198</FONT>         * A constant used to indicate a file is to be transfered as FTP<a name="line.198"></a>
+<FONT color="green">199</FONT>         * compressed data.  All constants ending in &lt;code&gt;TRANSFER_MODE&lt;/code&gt;<a name="line.199"></a>
+<FONT color="green">200</FONT>         * are used to indicate file transfer modes.<a name="line.200"></a>
+<FONT color="green">201</FONT>         ***/<a name="line.201"></a>
+<FONT color="green">202</FONT>        public static final int COMPRESSED_TRANSFER_MODE = 12;<a name="line.202"></a>
+<FONT color="green">203</FONT>    <a name="line.203"></a>
+<FONT color="green">204</FONT>        // We have to ensure that the protocol communication is in ASCII<a name="line.204"></a>
+<FONT color="green">205</FONT>        // but we use ISO-8859-1 just in case 8-bit characters cross<a name="line.205"></a>
+<FONT color="green">206</FONT>        // the wire.<a name="line.206"></a>
+<FONT color="green">207</FONT>        /**<a name="line.207"></a>
+<FONT color="green">208</FONT>         * The default character encoding used for communicating over an<a name="line.208"></a>
+<FONT color="green">209</FONT>         * FTP control connection.  The default encoding is an<a name="line.209"></a>
+<FONT color="green">210</FONT>         * ASCII-compatible encoding.  Some FTP servers expect other<a name="line.210"></a>
+<FONT color="green">211</FONT>         * encodings.  You can change the encoding used by an FTP instance<a name="line.211"></a>
+<FONT color="green">212</FONT>         * with {@link #setControlEncoding setControlEncoding}.<a name="line.212"></a>
+<FONT color="green">213</FONT>         */<a name="line.213"></a>
+<FONT color="green">214</FONT>        public static final String DEFAULT_CONTROL_ENCODING = "ISO-8859-1";<a name="line.214"></a>
+<FONT color="green">215</FONT>        private static final String __modes = "AEILNTCFRPSBC";<a name="line.215"></a>
+<FONT color="green">216</FONT>    <a name="line.216"></a>
+<FONT color="green">217</FONT>        private StringBuilder __commandBuffer = new StringBuilder();<a name="line.217"></a>
+<FONT color="green">218</FONT>    <a name="line.218"></a>
+<FONT color="green">219</FONT>        protected int _replyCode;<a name="line.219"></a>
+<FONT color="green">220</FONT>        protected ArrayList&lt;String&gt; _replyLines;<a name="line.220"></a>
+<FONT color="green">221</FONT>        protected boolean _newReplyString;<a name="line.221"></a>
+<FONT color="green">222</FONT>        protected String _replyString;<a name="line.222"></a>
+<FONT color="green">223</FONT>        protected String _controlEncoding;<a name="line.223"></a>
+<FONT color="green">224</FONT>        <a name="line.224"></a>
+<FONT color="green">225</FONT>        /**<a name="line.225"></a>
+<FONT color="green">226</FONT>         * This is used to signal whether a block of multiline responses beginning<a name="line.226"></a>
+<FONT color="green">227</FONT>         * with xxx must be terminated by the same numeric code xxx<a name="line.227"></a>
+<FONT color="green">228</FONT>         * See section 4.2 of RFX 959 for details. <a name="line.228"></a>
+<FONT color="green">229</FONT>         */<a name="line.229"></a>
+<FONT color="green">230</FONT>        protected boolean strictMultilineParsing = false;<a name="line.230"></a>
+<FONT color="green">231</FONT>    <a name="line.231"></a>
+<FONT color="green">232</FONT>        /**<a name="line.232"></a>
+<FONT color="green">233</FONT>         * Wraps SocketClient._input_ to facilitate the writing of text<a name="line.233"></a>
+<FONT color="green">234</FONT>         * to the FTP control connection.  Do not access the control<a name="line.234"></a>
+<FONT color="green">235</FONT>         * connection via SocketClient._input_.  This member starts<a name="line.235"></a>
+<FONT color="green">236</FONT>         * with a null value, is initialized in {@link #_connectAction_},<a name="line.236"></a>
+<FONT color="green">237</FONT>         * and set to null in {@link #disconnect}.<a name="line.237"></a>
+<FONT color="green">238</FONT>         */<a name="line.238"></a>
+<FONT color="green">239</FONT>        protected BufferedReader _controlInput_;<a name="line.239"></a>
+<FONT color="green">240</FONT>    <a name="line.240"></a>
+<FONT color="green">241</FONT>        /**<a name="line.241"></a>
+<FONT color="green">242</FONT>         * Wraps SocketClient._output_ to facilitate the reading of text<a name="line.242"></a>
+<FONT color="green">243</FONT>         * from the FTP control connection.  Do not access the control<a name="line.243"></a>
+<FONT color="green">244</FONT>         * connection via SocketClient._output_.  This member starts<a name="line.244"></a>
+<FONT color="green">245</FONT>         * with a null value, is initialized in {@link #_connectAction_},<a name="line.245"></a>
+<FONT color="green">246</FONT>         * and set to null in {@link #disconnect}.<a name="line.246"></a>
+<FONT color="green">247</FONT>         */<a name="line.247"></a>
+<FONT color="green">248</FONT>        protected BufferedWriter _controlOutput_;<a name="line.248"></a>
+<FONT color="green">249</FONT>    <a name="line.249"></a>
+<FONT color="green">250</FONT>        /***<a name="line.250"></a>
+<FONT color="green">251</FONT>         * A ProtocolCommandSupport object used to manage the registering of<a name="line.251"></a>
+<FONT color="green">252</FONT>         * ProtocolCommandListeners and te firing of ProtocolCommandEvents.<a name="line.252"></a>
+<FONT color="green">253</FONT>         ***/<a name="line.253"></a>
+<FONT color="green">254</FONT>        protected ProtocolCommandSupport _commandSupport_;<a name="line.254"></a>
+<FONT color="green">255</FONT>    <a name="line.255"></a>
+<FONT color="green">256</FONT>        /***<a name="line.256"></a>
+<FONT color="green">257</FONT>         * The default FTP constructor.  Sets the default port to<a name="line.257"></a>
+<FONT color="green">258</FONT>         * &lt;code&gt;DEFAULT_PORT&lt;/code&gt; and initializes internal data structures<a name="line.258"></a>
+<FONT color="green">259</FONT>         * for saving FTP reply information.<a name="line.259"></a>
+<FONT color="green">260</FONT>         ***/<a name="line.260"></a>
+<FONT color="green">261</FONT>        public FTP()<a name="line.261"></a>
+<FONT color="green">262</FONT>        {<a name="line.262"></a>
+<FONT color="green">263</FONT>            super();<a name="line.263"></a>
+<FONT color="green">264</FONT>            setDefaultPort(DEFAULT_PORT);<a name="line.264"></a>
+<FONT color="green">265</FONT>            _replyLines = new ArrayList&lt;String&gt;();<a name="line.265"></a>
+<FONT color="green">266</FONT>            _newReplyString = false;<a name="line.266"></a>
+<FONT color="green">267</FONT>            _replyString = null;<a name="line.267"></a>
+<FONT color="green">268</FONT>            _commandSupport_ = new ProtocolCommandSupport(this);<a name="line.268"></a>
+<FONT color="green">269</FONT>            _controlEncoding = DEFAULT_CONTROL_ENCODING;<a name="line.269"></a>
+<FONT color="green">270</FONT>        }<a name="line.270"></a>
+<FONT color="green">271</FONT>    <a name="line.271"></a>
+<FONT color="green">272</FONT>        // The RFC-compliant multiline termination check<a name="line.272"></a>
+<FONT color="green">273</FONT>        private boolean __strictCheck(String line, String code) {<a name="line.273"></a>
+<FONT color="green">274</FONT>            return (!(line.startsWith(code) &amp;&amp; line.charAt(3) == ' '));<a name="line.274"></a>
+<FONT color="green">275</FONT>        }<a name="line.275"></a>
+<FONT color="green">276</FONT>        <a name="line.276"></a>
+<FONT color="green">277</FONT>        // The strict check is too strong a condition because of non-conforming ftp<a name="line.277"></a>
+<FONT color="green">278</FONT>        // servers like ftp.funet.fi which sent 226 as the last line of a<a name="line.278"></a>
+<FONT color="green">279</FONT>        // 426 multi-line reply in response to ls /.  We relax the condition to<a name="line.279"></a>
+<FONT color="green">280</FONT>        // test that the line starts with a digit rather than starting with<a name="line.280"></a>
+<FONT color="green">281</FONT>        // the code.<a name="line.281"></a>
+<FONT color="green">282</FONT>        private boolean __lenientCheck(String line) {<a name="line.282"></a>
+<FONT color="green">283</FONT>            return (!(line.length() &gt;= 4 &amp;&amp; line.charAt(3) != '-' &amp;&amp;<a name="line.283"></a>
+<FONT color="green">284</FONT>                    Character.isDigit(line.charAt(0))));<a name="line.284"></a>
+<FONT color="green">285</FONT>        }<a name="line.285"></a>
+<FONT color="green">286</FONT>        <a name="line.286"></a>
+<FONT color="green">287</FONT>        private void __getReply() throws IOException<a name="line.287"></a>
+<FONT color="green">288</FONT>        {<a name="line.288"></a>
+<FONT color="green">289</FONT>            int length;<a name="line.289"></a>
+<FONT color="green">290</FONT>    <a name="line.290"></a>
+<FONT color="green">291</FONT>            _newReplyString = true;<a name="line.291"></a>
+<FONT color="green">292</FONT>            _replyLines.clear();<a name="line.292"></a>
+<FONT color="green">293</FONT>    <a name="line.293"></a>
+<FONT color="green">294</FONT>            String line = _controlInput_.readLine();<a name="line.294"></a>
+<FONT color="green">295</FONT>    <a name="line.295"></a>
+<FONT color="green">296</FONT>            if (line == null)<a name="line.296"></a>
+<FONT color="green">297</FONT>                throw new FTPConnectionClosedException(<a name="line.297"></a>
+<FONT color="green">298</FONT>                    "Connection closed without indication.");<a name="line.298"></a>
+<FONT color="green">299</FONT>    <a name="line.299"></a>
+<FONT color="green">300</FONT>            // In case we run into an anomaly we don't want fatal index exceptions<a name="line.300"></a>
+<FONT color="green">301</FONT>            // to be thrown.<a name="line.301"></a>
+<FONT color="green">302</FONT>            length = line.length();<a name="line.302"></a>
+<FONT color="green">303</FONT>            if (length &lt; 3)<a name="line.303"></a>
+<FONT color="green">304</FONT>                throw new MalformedServerReplyException(<a name="line.304"></a>
+<FONT color="green">305</FONT>                    "Truncated server reply: " + line);<a name="line.305"></a>
+<FONT color="green">306</FONT>            <a name="line.306"></a>
+<FONT color="green">307</FONT>            String code = null;<a name="line.307"></a>
+<FONT color="green">308</FONT>            try<a name="line.308"></a>
+<FONT color="green">309</FONT>            {<a name="line.309"></a>
+<FONT color="green">310</FONT>                code = line.substring(0, 3);<a name="line.310"></a>
+<FONT color="green">311</FONT>                _replyCode = Integer.parseInt(code);<a name="line.311"></a>
+<FONT color="green">312</FONT>            }<a name="line.312"></a>
+<FONT color="green">313</FONT>            catch (NumberFormatException e)<a name="line.313"></a>
+<FONT color="green">314</FONT>            {<a name="line.314"></a>
+<FONT color="green">315</FONT>                throw new MalformedServerReplyException(<a name="line.315"></a>
+<FONT color="green">316</FONT>                    "Could not parse response code.\nServer Reply: " + line);<a name="line.316"></a>
+<FONT color="green">317</FONT>            }<a name="line.317"></a>
+<FONT color="green">318</FONT>    <a name="line.318"></a>
+<FONT color="green">319</FONT>            _replyLines.add(line);<a name="line.319"></a>
+<FONT color="green">320</FONT>    <a name="line.320"></a>
+<FONT color="green">321</FONT>            // Get extra lines if message continues.<a name="line.321"></a>
+<FONT color="green">322</FONT>            if (length &gt; 3 &amp;&amp; line.charAt(3) == '-')<a name="line.322"></a>
+<FONT color="green">323</FONT>            {<a name="line.323"></a>
+<FONT color="green">324</FONT>                do<a name="line.324"></a>
+<FONT color="green">325</FONT>                {<a name="line.325"></a>
+<FONT color="green">326</FONT>                    line = _controlInput_.readLine();<a name="line.326"></a>
+<FONT color="green">327</FONT>    <a name="line.327"></a>
+<FONT color="green">328</FONT>                    if (line == null)<a name="line.328"></a>
+<FONT color="green">329</FONT>                        throw new FTPConnectionClosedException(<a name="line.329"></a>
+<FONT color="green">330</FONT>                            "Connection closed without indication.");<a name="line.330"></a>
+<FONT color="green">331</FONT>    <a name="line.331"></a>
+<FONT color="green">332</FONT>                    _replyLines.add(line);<a name="line.332"></a>
+<FONT color="green">333</FONT>    <a name="line.333"></a>
+<FONT color="green">334</FONT>                    // The length() check handles problems that could arise from readLine()<a name="line.334"></a>
+<FONT color="green">335</FONT>                    // returning too soon after encountering a naked CR or some other<a name="line.335"></a>
+<FONT color="green">336</FONT>                    // anomaly.<a name="line.336"></a>
+<FONT color="green">337</FONT>                }<a name="line.337"></a>
+<FONT color="green">338</FONT>                while ( isStrictMultilineParsing() ? __strictCheck(line, code) : __lenientCheck(line));<a name="line.338"></a>
+<FONT color="green">339</FONT>            }<a name="line.339"></a>
+<FONT color="green">340</FONT>    <a name="line.340"></a>
+<FONT color="green">341</FONT>            if (_commandSupport_.getListenerCount() &gt; 0) {<a name="line.341"></a>
+<FONT color="green">342</FONT>                _commandSupport_.fireReplyReceived(_replyCode, getReplyString());<a name="line.342"></a>
+<FONT color="green">343</FONT>            }<a name="line.343"></a>
+<FONT color="green">344</FONT>    <a name="line.344"></a>
+<FONT color="green">345</FONT>            if (_replyCode == FTPReply.SERVICE_NOT_AVAILABLE) {<a name="line.345"></a>
+<FONT color="green">346</FONT>                throw new FTPConnectionClosedException("FTP response 421 received.  Server closed connection.");<a name="line.346"></a>
+<FONT color="green">347</FONT>            }<a name="line.347"></a>
+<FONT color="green">348</FONT>        }<a name="line.348"></a>
+<FONT color="green">349</FONT>    <a name="line.349"></a>
+<FONT color="green">350</FONT>        /**<a name="line.350"></a>
+<FONT color="green">351</FONT>         * Initiates control connections and gets initial reply.<a name="line.351"></a>
+<FONT color="green">352</FONT>         * Initializes {@link #_controlInput_} and {@link #_controlOutput_}.<a name="line.352"></a>
+<FONT color="green">353</FONT>         */<a name="line.353"></a>
+<FONT color="green">354</FONT>        @Override<a name="line.354"></a>
+<FONT color="green">355</FONT>        protected void _connectAction_() throws IOException<a name="line.355"></a>
+<FONT color="green">356</FONT>        {<a name="line.356"></a>
+<FONT color="green">357</FONT>            super._connectAction_();<a name="line.357"></a>
+<FONT color="green">358</FONT>            _controlInput_ =<a name="line.358"></a>
+<FONT color="green">359</FONT>                new BufferedReader(new InputStreamReader(_socket_.getInputStream(),<a name="line.359"></a>
+<FONT color="green">360</FONT>                                                         getControlEncoding()));<a name="line.360"></a>
+<FONT color="green">361</FONT>            _controlOutput_ =<a name="line.361"></a>
+<FONT color="green">362</FONT>                new BufferedWriter(new OutputStreamWriter(_socket_.getOutputStream(),<a name="line.362"></a>
+<FONT color="green">363</FONT>                                                          getControlEncoding()));<a name="line.363"></a>
+<FONT color="green">364</FONT>            __getReply();<a name="line.364"></a>
+<FONT color="green">365</FONT>            // If we received code 120, we have to fetch completion reply.<a name="line.365"></a>
+<FONT color="green">366</FONT>            if (FTPReply.isPositivePreliminary(_replyCode))<a name="line.366"></a>
+<FONT color="green">367</FONT>                __getReply();<a name="line.367"></a>
+<FONT color="green">368</FONT>        }<a name="line.368"></a>
+<FONT color="green">369</FONT>    <a name="line.369"></a>
+<FONT color="green">370</FONT>    <a name="line.370"></a>
+<FONT color="green">371</FONT>        /**<a name="line.371"></a>
+<FONT color="green">372</FONT>         * Sets the character encoding used by the FTP control connection.<a name="line.372"></a>
+<FONT color="green">373</FONT>         * Some FTP servers require that commands be issued in a non-ASCII<a name="line.373"></a>
+<FONT color="green">374</FONT>         * encoding like UTF-8 so that filenames with multi-byte character<a name="line.374"></a>
+<FONT color="green">375</FONT>         * representations (e.g, Big 8) can be specified.<a name="line.375"></a>
+<FONT color="green">376</FONT>         *<a name="line.376"></a>
+<FONT color="green">377</FONT>         * @param encoding The new character encoding for the control connection.<a name="line.377"></a>
+<FONT color="green">378</FONT>         */<a name="line.378"></a>
+<FONT color="green">379</FONT>        public void setControlEncoding(String encoding) {<a name="line.379"></a>
+<FONT color="green">380</FONT>            _controlEncoding = encoding;<a name="line.380"></a>
+<FONT color="green">381</FONT>        }<a name="line.381"></a>
+<FONT color="green">382</FONT>    <a name="line.382"></a>
+<FONT color="green">383</FONT>    <a name="line.383"></a>
+<FONT color="green">384</FONT>        /**<a name="line.384"></a>
+<FONT color="green">385</FONT>         * @return The character encoding used to communicate over the<a name="line.385"></a>
+<FONT color="green">386</FONT>         * control connection.<a name="line.386"></a>
+<FONT color="green">387</FONT>         */<a name="line.387"></a>
+<FONT color="green">388</FONT>        public String getControlEncoding() {<a name="line.388"></a>
+<FONT color="green">389</FONT>            return _controlEncoding;<a name="line.389"></a>
+<FONT color="green">390</FONT>        }<a name="line.390"></a>
+<FONT color="green">391</FONT>    <a name="line.391"></a>
+<FONT color="green">392</FONT>    <a name="line.392"></a>
+<FONT color="green">393</FONT>        /***<a name="line.393"></a>
+<FONT color="green">394</FONT>         * Adds a ProtocolCommandListener.  Delegates this task to<a name="line.394"></a>
+<FONT color="green">395</FONT>         * {@link #_commandSupport_  _commandSupport_ }.<a name="line.395"></a>
+<FONT color="green">396</FONT>         * &lt;p&gt;<a name="line.396"></a>
+<FONT color="green">397</FONT>         * @param listener  The ProtocolCommandListener to add.<a name="line.397"></a>
+<FONT color="green">398</FONT>         ***/<a name="line.398"></a>
+<FONT color="green">399</FONT>        public void addProtocolCommandListener(ProtocolCommandListener listener)<a name="line.399"></a>
+<FONT color="green">400</FONT>        {<a name="line.400"></a>
+<FONT color="green">401</FONT>            _commandSupport_.addProtocolCommandListener(listener);<a name="line.401"></a>
+<FONT color="green">402</FONT>        }<a name="line.402"></a>
+<FONT color="green">403</FONT>    <a name="line.403"></a>
+<FONT color="green">404</FONT>        /***<a name="line.404"></a>
+<FONT color="green">405</FONT>         * Removes a ProtocolCommandListener.  Delegates this task to<a name="line.405"></a>
+<FONT color="green">406</FONT>         * {@link #_commandSupport_  _commandSupport_ }.<a name="line.406"></a>
+<FONT color="green">407</FONT>         * &lt;p&gt;<a name="line.407"></a>
+<FONT color="green">408</FONT>         * @param listener  The ProtocolCommandListener to remove.<a name="line.408"></a>
+<FONT color="green">409</FONT>         ***/<a name="line.409"></a>
+<FONT color="green">410</FONT>        public void removeProtocolCommandListener(ProtocolCommandListener listener)<a name="line.410"></a>
+<FONT color="green">411</FONT>        {<a name="line.411"></a>
+<FONT color="green">412</FONT>            _commandSupport_.removeProtocolCommandListener(listener);<a name="line.412"></a>
+<FONT color="green">413</FONT>        }<a name="line.413"></a>
+<FONT color="green">414</FONT>    <a name="line.414"></a>
+<FONT color="green">415</FONT>    <a name="line.415"></a>
+<FONT color="green">416</FONT>        /***<a name="line.416"></a>
+<FONT color="green">417</FONT>         * Closes the control connection to the FTP server and sets to null<a name="line.417"></a>
+<FONT color="green">418</FONT>         * some internal data so that the memory may be reclaimed by the<a name="line.418"></a>
+<FONT color="green">419</FONT>         * garbage collector.  The reply text and code information from the<a name="line.419"></a>
+<FONT color="green">420</FONT>         * last command is voided so that the memory it used may be reclaimed.<a name="line.420"></a>
+<FONT color="green">421</FONT>         * Also sets {@link #_controlInput_} and {@link #_controlOutput_} to null.<a name="line.421"></a>
+<FONT color="green">422</FONT>         * &lt;p&gt;<a name="line.422"></a>
+<FONT color="green">423</FONT>         * @exception IOException If an error occurs while disconnecting.<a name="line.423"></a>
+<FONT color="green">424</FONT>         ***/<a name="line.424"></a>
+<FONT color="green">425</FONT>        @Override<a name="line.425"></a>
+<FONT color="green">426</FONT>        public void disconnect() throws IOException<a name="line.426"></a>
+<FONT color="green">427</FONT>        {<a name="line.427"></a>
+<FONT color="green">428</FONT>            super.disconnect();<a name="line.428"></a>
+<FONT color="green">429</FONT>            _controlInput_ = null;<a name="line.429"></a>
+<FONT color="green">430</FONT>            _controlOutput_ = null;<a name="line.430"></a>
+<FONT color="green">431</FONT>            _newReplyString = false;<a name="line.431"></a>
+<FONT color="green">432</FONT>            _replyString = null;<a name="line.432"></a>
+<FONT color="green">433</FONT>        }<a name="line.433"></a>
+<FONT color="green">434</FONT>    <a name="line.434"></a>
+<FONT color="green">435</FONT>    <a name="line.435"></a>
+<FONT color="green">436</FONT>        /***<a name="line.436"></a>
+<FONT color="green">437</FONT>         * Sends an FTP command to the server, waits for a reply and returns the<a name="line.437"></a>
+<FONT color="green">438</FONT>         * numerical response code.  After invocation, for more detailed<a name="line.438"></a>
+<FONT color="green">439</FONT>         * information, the actual reply text can be accessed by calling<a name="line.439"></a>
+<FONT color="green">440</FONT>         * {@link #getReplyString  getReplyString } or<a name="line.440"></a>
+<FONT color="green">441</FONT>         * {@link #getReplyStrings  getReplyStrings }.<a name="line.441"></a>
+<FONT color="green">442</FONT>         * &lt;p&gt;<a name="line.442"></a>
+<FONT color="green">443</FONT>         * @param command  The text representation of the  FTP command to send.<a name="line.443"></a>
+<FONT color="green">444</FONT>         * @param args The arguments to the FTP command.  If this parameter is<a name="line.444"></a>
+<FONT color="green">445</FONT>         *             set to null, then the command is sent with no argument.<a name="line.445"></a>
+<FONT color="green">446</FONT>         * @return The integer value of the FTP reply code returned by the server<a name="line.446"></a>
+<FONT color="green">447</FONT>         *         in response to the command.<a name="line.447"></a>
+<FONT color="green">448</FONT>         * @exception FTPConnectionClosedException<a name="line.448"></a>
+<FONT color="green">449</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.449"></a>
+<FONT color="green">450</FONT>         *      of the client being idle or some other reason causing the server<a name="line.450"></a>
+<FONT color="green">451</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.451"></a>
+<FONT color="green">452</FONT>         *      as an IOException or independently as itself.<a name="line.452"></a>
+<FONT color="green">453</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.453"></a>
+<FONT color="green">454</FONT>         *      command or receiving the server reply.<a name="line.454"></a>
+<FONT color="green">455</FONT>         ***/<a name="line.455"></a>
+<FONT color="green">456</FONT>        public int sendCommand(String command, String args) throws IOException<a name="line.456"></a>
+<FONT color="green">457</FONT>        {<a name="line.457"></a>
+<FONT color="green">458</FONT>            String message;<a name="line.458"></a>
+<FONT color="green">459</FONT>    <a name="line.459"></a>
+<FONT color="green">460</FONT>            __commandBuffer.setLength(0);<a name="line.460"></a>
+<FONT color="green">461</FONT>            __commandBuffer.append(command);<a name="line.461"></a>
+<FONT color="green">462</FONT>    <a name="line.462"></a>
+<FONT color="green">463</FONT>            if (args != null)<a name="line.463"></a>
+<FONT color="green">464</FONT>            {<a name="line.464"></a>
+<FONT color="green">465</FONT>                __commandBuffer.append(' ');<a name="line.465"></a>
+<FONT color="green">466</FONT>                __commandBuffer.append(args);<a name="line.466"></a>
+<FONT color="green">467</FONT>            }<a name="line.467"></a>
+<FONT color="green">468</FONT>            __commandBuffer.append(SocketClient.NETASCII_EOL);<a name="line.468"></a>
+<FONT color="green">469</FONT>    <a name="line.469"></a>
+<FONT color="green">470</FONT>            try{<a name="line.470"></a>
+<FONT color="green">471</FONT>            _controlOutput_.write(message = __commandBuffer.toString());<a name="line.471"></a>
+<FONT color="green">472</FONT>                _controlOutput_.flush();<a name="line.472"></a>
+<FONT color="green">473</FONT>            }<a name="line.473"></a>
+<FONT color="green">474</FONT>            catch (SocketException e)<a name="line.474"></a>
+<FONT color="green">475</FONT>            {<a name="line.475"></a>
+<FONT color="green">476</FONT>                if (!isConnected() || !socketIsConnected(_socket_))<a name="line.476"></a>
+<FONT color="green">477</FONT>                {<a name="line.477"></a>
+<FONT color="green">478</FONT>                    throw new FTPConnectionClosedException("Connection unexpectedly closed.");<a name="line.478"></a>
+<FONT color="green">479</FONT>                }<a name="line.479"></a>
+<FONT color="green">480</FONT>                else<a name="line.480"></a>
+<FONT color="green">481</FONT>                {<a name="line.481"></a>
+<FONT color="green">482</FONT>                    throw e;<a name="line.482"></a>
+<FONT color="green">483</FONT>                }<a name="line.483"></a>
+<FONT color="green">484</FONT>            }<a name="line.484"></a>
+<FONT color="green">485</FONT>        <a name="line.485"></a>
+<FONT color="green">486</FONT>    <a name="line.486"></a>
+<FONT color="green">487</FONT>            if (_commandSupport_.getListenerCount() &gt; 0)<a name="line.487"></a>
+<FONT color="green">488</FONT>                _commandSupport_.fireCommandSent(command, message);<a name="line.488"></a>
+<FONT color="green">489</FONT>    <a name="line.489"></a>
+<FONT color="green">490</FONT>            __getReply();<a name="line.490"></a>
+<FONT color="green">491</FONT>            return _replyCode;<a name="line.491"></a>
+<FONT color="green">492</FONT>        }<a name="line.492"></a>
+<FONT color="green">493</FONT>    <a name="line.493"></a>
+<FONT color="green">494</FONT>        /**<a name="line.494"></a>
+<FONT color="green">495</FONT>         * Checks if the socket is connected <a name="line.495"></a>
+<FONT color="green">496</FONT>         *<a name="line.496"></a>
+<FONT color="green">497</FONT>         * @param socket<a name="line.497"></a>
+<FONT color="green">498</FONT>         * @return true if connected<a name="line.498"></a>
+<FONT color="green">499</FONT>         */<a name="line.499"></a>
+<FONT color="green">500</FONT>        private boolean socketIsConnected(Socket socket)<a name="line.500"></a>
+<FONT color="green">501</FONT>        {<a name="line.501"></a>
+<FONT color="green">502</FONT>            if (socket == null)<a name="line.502"></a>
+<FONT color="green">503</FONT>            {<a name="line.503"></a>
+<FONT color="green">504</FONT>                return false;<a name="line.504"></a>
+<FONT color="green">505</FONT>            }<a name="line.505"></a>
+<FONT color="green">506</FONT>    <a name="line.506"></a>
+<FONT color="green">507</FONT>            return socket.isConnected();<a name="line.507"></a>
+<FONT color="green">508</FONT>            <a name="line.508"></a>
+<FONT color="green">509</FONT>        }<a name="line.509"></a>
+<FONT color="green">510</FONT>    <a name="line.510"></a>
+<FONT color="green">511</FONT>        /***<a name="line.511"></a>
+<FONT color="green">512</FONT>         * Sends an FTP command to the server, waits for a reply and returns the<a name="line.512"></a>
+<FONT color="green">513</FONT>         * numerical response code.  After invocation, for more detailed<a name="line.513"></a>
+<FONT color="green">514</FONT>         * information, the actual reply text can be accessed by calling<a name="line.514"></a>
+<FONT color="green">515</FONT>         * {@link #getReplyString  getReplyString } or<a name="line.515"></a>
+<FONT color="green">516</FONT>         * {@link #getReplyStrings  getReplyStrings }.<a name="line.516"></a>
+<FONT color="green">517</FONT>         * &lt;p&gt;<a name="line.517"></a>
+<FONT color="green">518</FONT>         * @param command  The FTPCommand constant corresponding to the FTP command<a name="line.518"></a>
+<FONT color="green">519</FONT>         *                 to send.<a name="line.519"></a>
+<FONT color="green">520</FONT>         * @param args The arguments to the FTP command.  If this parameter is<a name="line.520"></a>
+<FONT color="green">521</FONT>         *             set to null, then the command is sent with no argument.<a name="line.521"></a>
+<FONT color="green">522</FONT>         * @return The integer value of the FTP reply code returned by the server<a name="line.522"></a>
+<FONT color="green">523</FONT>         *         in response to the command.<a name="line.523"></a>
+<FONT color="green">524</FONT>         * @exception FTPConnectionClosedException<a name="line.524"></a>
+<FONT color="green">525</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.525"></a>
+<FONT color="green">526</FONT>         *      of the client being idle or some other reason causing the server<a name="line.526"></a>
+<FONT color="green">527</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.527"></a>
+<FONT color="green">528</FONT>         *      as an IOException or independently as itself.<a name="line.528"></a>
+<FONT color="green">529</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.529"></a>
+<FONT color="green">530</FONT>         *      command or receiving the server reply.<a name="line.530"></a>
+<FONT color="green">531</FONT>         ***/<a name="line.531"></a>
+<FONT color="green">532</FONT>        public int sendCommand(int command, String args) throws IOException<a name="line.532"></a>
+<FONT color="green">533</FONT>        {<a name="line.533"></a>
+<FONT color="green">534</FONT>            return sendCommand(FTPCommand._commands[command], args);<a name="line.534"></a>
+<FONT color="green">535</FONT>        }<a name="line.535"></a>
+<FONT color="green">536</FONT>    <a name="line.536"></a>
+<FONT color="green">537</FONT>    <a name="line.537"></a>
+<FONT color="green">538</FONT>        /***<a name="line.538"></a>
+<FONT color="green">539</FONT>         * Sends an FTP command with no arguments to the server, waits for a<a name="line.539"></a>
+<FONT color="green">540</FONT>         * reply and returns the numerical response code.  After invocation, for<a name="line.540"></a>
+<FONT color="green">541</FONT>         * more detailed information, the actual reply text can be accessed by<a name="line.541"></a>
+<FONT color="green">542</FONT>         * calling {@link #getReplyString  getReplyString } or<a name="line.542"></a>
+<FONT color="green">543</FONT>         * {@link #getReplyStrings  getReplyStrings }.<a name="line.543"></a>
+<FONT color="green">544</FONT>         * &lt;p&gt;<a name="line.544"></a>
+<FONT color="green">545</FONT>         * @param command  The text representation of the  FTP command to send.<a name="line.545"></a>
+<FONT color="green">546</FONT>         * @return The integer value of the FTP reply code returned by the server<a name="line.546"></a>
+<FONT color="green">547</FONT>         *         in response to the command.<a name="line.547"></a>
+<FONT color="green">548</FONT>         * @exception FTPConnectionClosedException<a name="line.548"></a>
+<FONT color="green">549</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.549"></a>
+<FONT color="green">550</FONT>         *      of the client being idle or some other reason causing the server<a name="line.550"></a>
+<FONT color="green">551</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.551"></a>
+<FONT color="green">552</FONT>         *      as an IOException or independently as itself.<a name="line.552"></a>
+<FONT color="green">553</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.553"></a>
+<FONT color="green">554</FONT>         *      command or receiving the server reply.<a name="line.554"></a>
+<FONT color="green">555</FONT>         ***/<a name="line.555"></a>
+<FONT color="green">556</FONT>        public int sendCommand(String command) throws IOException<a name="line.556"></a>
+<FONT color="green">557</FONT>        {<a name="line.557"></a>
+<FONT color="green">558</FONT>            return sendCommand(command, null);<a name="line.558"></a>
+<FONT color="green">559</FONT>        }<a name="line.559"></a>
+<FONT color="green">560</FONT>    <a name="line.560"></a>
+<FONT color="green">561</FONT>    <a name="line.561"></a>
+<FONT color="green">562</FONT>        /***<a name="line.562"></a>
+<FONT color="green">563</FONT>         * Sends an FTP command with no arguments to the server, waits for a<a name="line.563"></a>
+<FONT color="green">564</FONT>         * reply and returns the numerical response code.  After invocation, for<a name="line.564"></a>
+<FONT color="green">565</FONT>         * more detailed information, the actual reply text can be accessed by<a name="line.565"></a>
+<FONT color="green">566</FONT>         * calling {@link #getReplyString  getReplyString } or<a name="line.566"></a>
+<FONT color="green">567</FONT>         * {@link #getReplyStrings  getReplyStrings }.<a name="line.567"></a>
+<FONT color="green">568</FONT>         * &lt;p&gt;<a name="line.568"></a>
+<FONT color="green">569</FONT>         * @param command  The FTPCommand constant corresponding to the FTP command<a name="line.569"></a>
+<FONT color="green">570</FONT>         *                 to send.<a name="line.570"></a>
+<FONT color="green">571</FONT>         * @return The integer value of the FTP reply code returned by the server<a name="line.571"></a>
+<FONT color="green">572</FONT>         *         in response to the command.<a name="line.572"></a>
+<FONT color="green">573</FONT>         * @exception FTPConnectionClosedException<a name="line.573"></a>
+<FONT color="green">574</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.574"></a>
+<FONT color="green">575</FONT>         *      of the client being idle or some other reason causing the server<a name="line.575"></a>
+<FONT color="green">576</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.576"></a>
+<FONT color="green">577</FONT>         *      as an IOException or independently as itself.<a name="line.577"></a>
+<FONT color="green">578</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.578"></a>
+<FONT color="green">579</FONT>         *      command or receiving the server reply.<a name="line.579"></a>
+<FONT color="green">580</FONT>         ***/<a name="line.580"></a>
+<FONT color="green">581</FONT>        public int sendCommand(int command) throws IOException<a name="line.581"></a>
+<FONT color="green">582</FONT>        {<a name="line.582"></a>
+<FONT color="green">583</FONT>            return sendCommand(command, null);<a name="line.583"></a>
+<FONT color="green">584</FONT>        }<a name="line.584"></a>
+<FONT color="green">585</FONT>    <a name="line.585"></a>
+<FONT color="green">586</FONT>    <a name="line.586"></a>
+<FONT color="green">587</FONT>        /***<a name="line.587"></a>
+<FONT color="green">588</FONT>         * Returns the integer value of the reply code of the last FTP reply.<a name="line.588"></a>
+<FONT color="green">589</FONT>         * You will usually only use this method after you connect to the<a name="line.589"></a>
+<FONT color="green">590</FONT>         * FTP server to check that the connection was successful since<a name="line.590"></a>
+<FONT color="green">591</FONT>         * &lt;code&gt; connect &lt;/code&gt; is of type void.<a name="line.591"></a>
+<FONT color="green">592</FONT>         * &lt;p&gt;<a name="line.592"></a>
+<FONT color="green">593</FONT>         * @return The integer value of the reply code of the last FTP reply.<a name="line.593"></a>
+<FONT color="green">594</FONT>         ***/<a name="line.594"></a>
+<FONT color="green">595</FONT>        public int getReplyCode()<a name="line.595"></a>
+<FONT color="green">596</FONT>        {<a name="line.596"></a>
+<FONT color="green">597</FONT>            return _replyCode;<a name="line.597"></a>
+<FONT color="green">598</FONT>        }<a name="line.598"></a>
+<FONT color="green">599</FONT>    <a name="line.599"></a>
+<FONT color="green">600</FONT>        /***<a name="line.600"></a>
+<FONT color="green">601</FONT>         * Fetches a reply from the FTP server and returns the integer reply<a name="line.601"></a>
+<FONT color="green">602</FONT>         * code.  After calling this method, the actual reply text can be accessed<a name="line.602"></a>
+<FONT color="green">603</FONT>         * from either  calling {@link #getReplyString  getReplyString } or<a name="line.603"></a>
+<FONT color="green">604</FONT>         * {@link #getReplyStrings  getReplyStrings }.  Only use this<a name="line.604"></a>
+<FONT color="green">605</FONT>         * method if you are implementing your own FTP client or if you need to<a name="line.605"></a>
+<FONT color="green">606</FONT>         * fetch a secondary response from the FTP server.<a name="line.606"></a>
+<FONT color="green">607</FONT>         * &lt;p&gt;<a name="line.607"></a>
+<FONT color="green">608</FONT>         * @return The integer value of the reply code of the fetched FTP reply.<a name="line.608"></a>
+<FONT color="green">609</FONT>         * @exception FTPConnectionClosedException<a name="line.609"></a>
+<FONT color="green">610</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.610"></a>
+<FONT color="green">611</FONT>         *      of the client being idle or some other reason causing the server<a name="line.611"></a>
+<FONT color="green">612</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.612"></a>
+<FONT color="green">613</FONT>         *      as an IOException or independently as itself.<a name="line.613"></a>
+<FONT color="green">614</FONT>         * @exception IOException  If an I/O error occurs while receiving the<a name="line.614"></a>
+<FONT color="green">615</FONT>         *                         server reply.<a name="line.615"></a>
+<FONT color="green">616</FONT>         ***/<a name="line.616"></a>
+<FONT color="green">617</FONT>        public int getReply() throws IOException<a name="line.617"></a>
+<FONT color="green">618</FONT>        {<a name="line.618"></a>
+<FONT color="green">619</FONT>            __getReply();<a name="line.619"></a>
+<FONT color="green">620</FONT>            return _replyCode;<a name="line.620"></a>
+<FONT color="green">621</FONT>        }<a name="line.621"></a>
+<FONT color="green">622</FONT>    <a name="line.622"></a>
+<FONT color="green">623</FONT>    <a name="line.623"></a>
+<FONT color="green">624</FONT>        /***<a name="line.624"></a>
+<FONT color="green">625</FONT>         * Returns the lines of text from the last FTP server response as an array<a name="line.625"></a>
+<FONT color="green">626</FONT>         * of strings, one entry per line.  The end of line markers of each are<a name="line.626"></a>
+<FONT color="green">627</FONT>         * stripped from each line.<a name="line.627"></a>
+<FONT color="green">628</FONT>         * &lt;p&gt;<a name="line.628"></a>
+<FONT color="green">629</FONT>         * @return The lines of text from the last FTP response as an array.<a name="line.629"></a>
+<FONT color="green">630</FONT>         ***/<a name="line.630"></a>
+<FONT color="green">631</FONT>        public String[] getReplyStrings()<a name="line.631"></a>
+<FONT color="green">632</FONT>        {<a name="line.632"></a>
+<FONT color="green">633</FONT>            String[] lines;<a name="line.633"></a>
+<FONT color="green">634</FONT>            lines = new String[_replyLines.size()];<a name="line.634"></a>
+<FONT color="green">635</FONT>            _replyLines.addAll(Arrays.asList(lines));<a name="line.635"></a>
+<FONT color="green">636</FONT>            return lines;<a name="line.636"></a>
+<FONT color="green">637</FONT>        }<a name="line.637"></a>
+<FONT color="green">638</FONT>    <a name="line.638"></a>
+<FONT color="green">639</FONT>        /***<a name="line.639"></a>
+<FONT color="green">640</FONT>         * Returns the entire text of the last FTP server response exactly<a name="line.640"></a>
+<FONT color="green">641</FONT>         * as it was received, including all end of line markers in NETASCII<a name="line.641"></a>
+<FONT color="green">642</FONT>         * format.<a name="line.642"></a>
+<FONT color="green">643</FONT>         * &lt;p&gt;<a name="line.643"></a>
+<FONT color="green">644</FONT>         * @return The entire text from the last FTP response as a String.<a name="line.644"></a>
+<FONT color="green">645</FONT>         ***/<a name="line.645"></a>
+<FONT color="green">646</FONT>        public String getReplyString()<a name="line.646"></a>
+<FONT color="green">647</FONT>        {<a name="line.647"></a>
+<FONT color="green">648</FONT>            StringBuilder buffer;<a name="line.648"></a>
+<FONT color="green">649</FONT>    <a name="line.649"></a>
+<FONT color="green">650</FONT>            if (!_newReplyString) {<a name="line.650"></a>
+<FONT color="green">651</FONT>                return _replyString;<a name="line.651"></a>
+<FONT color="green">652</FONT>            }<a name="line.652"></a>
+<FONT color="green">653</FONT>    <a name="line.653"></a>
+<FONT color="green">654</FONT>            buffer = new StringBuilder(256);<a name="line.654"></a>
+<FONT color="green">655</FONT>            <a name="line.655"></a>
+<FONT color="green">656</FONT>            for (String line : _replyLines) {<a name="line.656"></a>
+<FONT color="green">657</FONT>                    buffer.append(line);<a name="line.657"></a>
+<FONT color="green">658</FONT>                    buffer.append(SocketClient.NETASCII_EOL);<a name="line.658"></a>
+<FONT color="green">659</FONT>            }<a name="line.659"></a>
+<FONT color="green">660</FONT>            <a name="line.660"></a>
+<FONT color="green">661</FONT>             _newReplyString = false;<a name="line.661"></a>
+<FONT color="green">662</FONT>    <a name="line.662"></a>
+<FONT color="green">663</FONT>            return (_replyString = buffer.toString());<a name="line.663"></a>
+<FONT color="green">664</FONT>        }<a name="line.664"></a>
+<FONT color="green">665</FONT>    <a name="line.665"></a>
+<FONT color="green">666</FONT>    <a name="line.666"></a>
+<FONT color="green">667</FONT>        /***<a name="line.667"></a>
+<FONT color="green">668</FONT>         * A convenience method to send the FTP USER command to the server,<a name="line.668"></a>
+<FONT color="green">669</FONT>         * receive the reply, and return the reply code.<a name="line.669"></a>
+<FONT color="green">670</FONT>         * &lt;p&gt;<a name="line.670"></a>
+<FONT color="green">671</FONT>         * @param username  The username to login under.<a name="line.671"></a>
+<FONT color="green">672</FONT>         * @return The reply code received from the server.<a name="line.672"></a>
+<FONT color="green">673</FONT>         * @exception FTPConnectionClosedException<a name="line.673"></a>
+<FONT color="green">674</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.674"></a>
+<FONT color="green">675</FONT>         *      of the client being idle or some other reason causing the server<a name="line.675"></a>
+<FONT color="green">676</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.676"></a>
+<FONT color="green">677</FONT>         *      as an IOException or independently as itself.<a name="line.677"></a>
+<FONT color="green">678</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.678"></a>
+<FONT color="green">679</FONT>         *      command or receiving the server reply.<a name="line.679"></a>
+<FONT color="green">680</FONT>         ***/<a name="line.680"></a>
+<FONT color="green">681</FONT>        public int user(String username) throws IOException<a name="line.681"></a>
+<FONT color="green">682</FONT>        {<a name="line.682"></a>
+<FONT color="green">683</FONT>            return sendCommand(FTPCommand.USER, username);<a name="line.683"></a>
+<FONT color="green">684</FONT>        }<a name="line.684"></a>
+<FONT color="green">685</FONT>    <a name="line.685"></a>
+<FONT color="green">686</FONT>        /**<a name="line.686"></a>
+<FONT color="green">687</FONT>         * A convenience method to send the FTP PASS command to the server,<a name="line.687"></a>
+<FONT color="green">688</FONT>         * receive the reply, and return the reply code.<a name="line.688"></a>
+<FONT color="green">689</FONT>         * @param password The plain text password of the username being logged into.<a name="line.689"></a>
+<FONT color="green">690</FONT>         * @return The reply code received from the server.<a name="line.690"></a>
+<FONT color="green">691</FONT>         * @exception FTPConnectionClosedException<a name="line.691"></a>
+<FONT color="green">692</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.692"></a>
+<FONT color="green">693</FONT>         *      of the client being idle or some other reason causing the server<a name="line.693"></a>
+<FONT color="green">694</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.694"></a>
+<FONT color="green">695</FONT>         *      as an IOException or independently as itself.<a name="line.695"></a>
+<FONT color="green">696</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.696"></a>
+<FONT color="green">697</FONT>         *      command or receiving the server reply.<a name="line.697"></a>
+<FONT color="green">698</FONT>         */<a name="line.698"></a>
+<FONT color="green">699</FONT>        public int pass(String password) throws IOException<a name="line.699"></a>
+<FONT color="green">700</FONT>        {<a name="line.700"></a>
+<FONT color="green">701</FONT>            return sendCommand(FTPCommand.PASS, password);<a name="line.701"></a>
+<FONT color="green">702</FONT>        }<a name="line.702"></a>
+<FONT color="green">703</FONT>    <a name="line.703"></a>
+<FONT color="green">704</FONT>        /***<a name="line.704"></a>
+<FONT color="green">705</FONT>         * A convenience method to send the FTP ACCT command to the server,<a name="line.705"></a>
+<FONT color="green">706</FONT>         * receive the reply, and return the reply code.<a name="line.706"></a>
+<FONT color="green">707</FONT>         * &lt;p&gt;<a name="line.707"></a>
+<FONT color="green">708</FONT>         * @param account  The account name to access.<a name="line.708"></a>
+<FONT color="green">709</FONT>         * @return The reply code received from the server.<a name="line.709"></a>
+<FONT color="green">710</FONT>         * @exception FTPConnectionClosedException<a name="line.710"></a>
+<FONT color="green">711</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.711"></a>
+<FONT color="green">712</FONT>         *      of the client being idle or some other reason causing the server<a name="line.712"></a>
+<FONT color="green">713</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.713"></a>
+<FONT color="green">714</FONT>         *      as an IOException or independently as itself.<a name="line.714"></a>
+<FONT color="green">715</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.715"></a>
+<FONT color="green">716</FONT>         *      command or receiving the server reply.<a name="line.716"></a>
+<FONT color="green">717</FONT>         ***/<a name="line.717"></a>
+<FONT color="green">718</FONT>        public int acct(String account) throws IOException<a name="line.718"></a>
+<FONT color="green">719</FONT>        {<a name="line.719"></a>
+<FONT color="green">720</FONT>            return sendCommand(FTPCommand.ACCT, account);<a name="line.720"></a>
+<FONT color="green">721</FONT>        }<a name="line.721"></a>
+<FONT color="green">722</FONT>    <a name="line.722"></a>
+<FONT color="green">723</FONT>    <a name="line.723"></a>
+<FONT color="green">724</FONT>        /***<a name="line.724"></a>
+<FONT color="green">725</FONT>         * A convenience method to send the FTP ABOR command to the server,<a name="line.725"></a>
+<FONT color="green">726</FONT>         * receive the reply, and return the reply code.<a name="line.726"></a>
+<FONT color="green">727</FONT>         * &lt;p&gt;<a name="line.727"></a>
+<FONT color="green">728</FONT>         * @return The reply code received from the server.<a name="line.728"></a>
+<FONT color="green">729</FONT>         * @exception FTPConnectionClosedException<a name="line.729"></a>
+<FONT color="green">730</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.730"></a>
+<FONT color="green">731</FONT>         *      of the client being idle or some other reason causing the server<a name="line.731"></a>
+<FONT color="green">732</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.732"></a>
+<FONT color="green">733</FONT>         *      as an IOException or independently as itself.<a name="line.733"></a>
+<FONT color="green">734</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.734"></a>
+<FONT color="green">735</FONT>         *      command or receiving the server reply.<a name="line.735"></a>
+<FONT color="green">736</FONT>         ***/<a name="line.736"></a>
+<FONT color="green">737</FONT>        public int abor() throws IOException<a name="line.737"></a>
+<FONT color="green">738</FONT>        {<a name="line.738"></a>
+<FONT color="green">739</FONT>            return sendCommand(FTPCommand.ABOR);<a name="line.739"></a>
+<FONT color="green">740</FONT>        }<a name="line.740"></a>
+<FONT color="green">741</FONT>    <a name="line.741"></a>
+<FONT color="green">742</FONT>        /***<a name="line.742"></a>
+<FONT color="green">743</FONT>         * A convenience method to send the FTP CWD command to the server,<a name="line.743"></a>
+<FONT color="green">744</FONT>         * receive the reply, and return the reply code.<a name="line.744"></a>
+<FONT color="green">745</FONT>         * &lt;p&gt;<a name="line.745"></a>
+<FONT color="green">746</FONT>         * @param directory The new working directory.<a name="line.746"></a>
+<FONT color="green">747</FONT>         * @return The reply code received from the server.<a name="line.747"></a>
+<FONT color="green">748</FONT>         * @exception FTPConnectionClosedException<a name="line.748"></a>
+<FONT color="green">749</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.749"></a>
+<FONT color="green">750</FONT>         *      of the client being idle or some other reason causing the server<a name="line.750"></a>
+<FONT color="green">751</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.751"></a>
+<FONT color="green">752</FONT>         *      as an IOException or independently as itself.<a name="line.752"></a>
+<FONT color="green">753</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.753"></a>
+<FONT color="green">754</FONT>         *      command or receiving the server reply.<a name="line.754"></a>
+<FONT color="green">755</FONT>         ***/<a name="line.755"></a>
+<FONT color="green">756</FONT>        public int cwd(String directory) throws IOException<a name="line.756"></a>
+<FONT color="green">757</FONT>        {<a name="line.757"></a>
+<FONT color="green">758</FONT>            return sendCommand(FTPCommand.CWD, directory);<a name="line.758"></a>
+<FONT color="green">759</FONT>        }<a name="line.759"></a>
+<FONT color="green">760</FONT>    <a name="line.760"></a>
+<FONT color="green">761</FONT>        /***<a name="line.761"></a>
+<FONT color="green">762</FONT>         * A convenience method to send the FTP CDUP command to the server,<a name="line.762"></a>
+<FONT color="green">763</FONT>         * receive the reply, and return the reply code.<a name="line.763"></a>
+<FONT color="green">764</FONT>         * &lt;p&gt;<a name="line.764"></a>
+<FONT color="green">765</FONT>         * @return The reply code received from the server.<a name="line.765"></a>
+<FONT color="green">766</FONT>         * @exception FTPConnectionClosedException<a name="line.766"></a>
+<FONT color="green">767</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.767"></a>
+<FONT color="green">768</FONT>         *      of the client being idle or some other reason causing the server<a name="line.768"></a>
+<FONT color="green">769</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.769"></a>
+<FONT color="green">770</FONT>         *      as an IOException or independently as itself.<a name="line.770"></a>
+<FONT color="green">771</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.771"></a>
+<FONT color="green">772</FONT>         *      command or receiving the server reply.<a name="line.772"></a>
+<FONT color="green">773</FONT>         ***/<a name="line.773"></a>
+<FONT color="green">774</FONT>        public int cdup() throws IOException<a name="line.774"></a>
+<FONT color="green">775</FONT>        {<a name="line.775"></a>
+<FONT color="green">776</FONT>            return sendCommand(FTPCommand.CDUP);<a name="line.776"></a>
+<FONT color="green">777</FONT>        }<a name="line.777"></a>
+<FONT color="green">778</FONT>    <a name="line.778"></a>
+<FONT color="green">779</FONT>        /***<a name="line.779"></a>
+<FONT color="green">780</FONT>         * A convenience method to send the FTP QUIT command to the server,<a name="line.780"></a>
+<FONT color="green">781</FONT>         * receive the reply, and return the reply code.<a name="line.781"></a>
+<FONT color="green">782</FONT>         * &lt;p&gt;<a name="line.782"></a>
+<FONT color="green">783</FONT>         * @return The reply code received from the server.<a name="line.783"></a>
+<FONT color="green">784</FONT>         * @exception FTPConnectionClosedException<a name="line.784"></a>
+<FONT color="green">785</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.785"></a>
+<FONT color="green">786</FONT>         *      of the client being idle or some other reason causing the server<a name="line.786"></a>
+<FONT color="green">787</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.787"></a>
+<FONT color="green">788</FONT>         *      as an IOException or independently as itself.<a name="line.788"></a>
+<FONT color="green">789</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.789"></a>
+<FONT color="green">790</FONT>         *      command or receiving the server reply.<a name="line.790"></a>
+<FONT color="green">791</FONT>         ***/<a name="line.791"></a>
+<FONT color="green">792</FONT>        public int quit() throws IOException<a name="line.792"></a>
+<FONT color="green">793</FONT>        {<a name="line.793"></a>
+<FONT color="green">794</FONT>            return sendCommand(FTPCommand.QUIT);<a name="line.794"></a>
+<FONT color="green">795</FONT>        }<a name="line.795"></a>
+<FONT color="green">796</FONT>    <a name="line.796"></a>
+<FONT color="green">797</FONT>        /***<a name="line.797"></a>
+<FONT color="green">798</FONT>         * A convenience method to send the FTP REIN command to the server,<a name="line.798"></a>
+<FONT color="green">799</FONT>         * receive the reply, and return the reply code.<a name="line.799"></a>
+<FONT color="green">800</FONT>         * &lt;p&gt;<a name="line.800"></a>
+<FONT color="green">801</FONT>         * @return The reply code received from the server.<a name="line.801"></a>
+<FONT color="green">802</FONT>         * @exception FTPConnectionClosedException<a name="line.802"></a>
+<FONT color="green">803</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.803"></a>
+<FONT color="green">804</FONT>         *      of the client being idle or some other reason causing the server<a name="line.804"></a>
+<FONT color="green">805</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.805"></a>
+<FONT color="green">806</FONT>         *      as an IOException or independently as itself.<a name="line.806"></a>
+<FONT color="green">807</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.807"></a>
+<FONT color="green">808</FONT>         *      command or receiving the server reply.<a name="line.808"></a>
+<FONT color="green">809</FONT>         ***/<a name="line.809"></a>
+<FONT color="green">810</FONT>        public int rein() throws IOException<a name="line.810"></a>
+<FONT color="green">811</FONT>        {<a name="line.811"></a>
+<FONT color="green">812</FONT>            return sendCommand(FTPCommand.REIN);<a name="line.812"></a>
+<FONT color="green">813</FONT>        }<a name="line.813"></a>
+<FONT color="green">814</FONT>    <a name="line.814"></a>
+<FONT color="green">815</FONT>        /***<a name="line.815"></a>
+<FONT color="green">816</FONT>         * A convenience method to send the FTP SMNT command to the server,<a name="line.816"></a>
+<FONT color="green">817</FONT>         * receive the reply, and return the reply code.<a name="line.817"></a>
+<FONT color="green">818</FONT>         * &lt;p&gt;<a name="line.818"></a>
+<FONT color="green">819</FONT>         * @param dir  The directory name.<a name="line.819"></a>
+<FONT color="green">820</FONT>         * @return The reply code received from the server.<a name="line.820"></a>
+<FONT color="green">821</FONT>         * @exception FTPConnectionClosedException<a name="line.821"></a>
+<FONT color="green">822</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.822"></a>
+<FONT color="green">823</FONT>         *      of the client being idle or some other reason causing the server<a name="line.823"></a>
+<FONT color="green">824</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.824"></a>
+<FONT color="green">825</FONT>         *      as an IOException or independently as itself.<a name="line.825"></a>
+<FONT color="green">826</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.826"></a>
+<FONT color="green">827</FONT>         *      command or receiving the server reply.<a name="line.827"></a>
+<FONT color="green">828</FONT>         ***/<a name="line.828"></a>
+<FONT color="green">829</FONT>        public int smnt(String dir) throws IOException<a name="line.829"></a>
+<FONT color="green">830</FONT>        {<a name="line.830"></a>
+<FONT color="green">831</FONT>            return sendCommand(FTPCommand.SMNT, dir);<a name="line.831"></a>
+<FONT color="green">832</FONT>        }<a name="line.832"></a>
+<FONT color="green">833</FONT>    <a name="line.833"></a>
+<FONT color="green">834</FONT>        /***<a name="line.834"></a>
+<FONT color="green">835</FONT>         * A convenience method to send the FTP PORT command to the server,<a name="line.835"></a>
+<FONT color="green">836</FONT>         * receive the reply, and return the reply code.<a name="line.836"></a>
+<FONT color="green">837</FONT>         * &lt;p&gt;<a name="line.837"></a>
+<FONT color="green">838</FONT>         * @param host  The host owning the port.<a name="line.838"></a>
+<FONT color="green">839</FONT>         * @param port  The new port.<a name="line.839"></a>
+<FONT color="green">840</FONT>         * @return The reply code received from the server.<a name="line.840"></a>
+<FONT color="green">841</FONT>         * @exception FTPConnectionClosedException<a name="line.841"></a>
+<FONT color="green">842</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.842"></a>
+<FONT color="green">843</FONT>         *      of the client being idle or some other reason causing the server<a name="line.843"></a>
+<FONT color="green">844</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.844"></a>
+<FONT color="green">845</FONT>         *      as an IOException or independently as itself.<a name="line.845"></a>
+<FONT color="green">846</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.846"></a>
+<FONT color="green">847</FONT>         *      command or receiving the server reply.<a name="line.847"></a>
+<FONT color="green">848</FONT>         ***/<a name="line.848"></a>
+<FONT color="green">849</FONT>        public int port(InetAddress host, int port) throws IOException<a name="line.849"></a>
+<FONT color="green">850</FONT>        {<a name="line.850"></a>
+<FONT color="green">851</FONT>            int num;<a name="line.851"></a>
+<FONT color="green">852</FONT>            StringBuffer info = new StringBuffer(24);<a name="line.852"></a>
+<FONT color="green">853</FONT>    <a name="line.853"></a>
+<FONT color="green">854</FONT>            info.append(host.getHostAddress().replace('.', ','));<a name="line.854"></a>
+<FONT color="green">855</FONT>            num = port &gt;&gt;&gt; 8;<a name="line.855"></a>
+<FONT color="green">856</FONT>            info.append(',');<a name="line.856"></a>
+<FONT color="green">857</FONT>            info.append(num);<a name="line.857"></a>
+<FONT color="green">858</FONT>            info.append(',');<a name="line.858"></a>
+<FONT color="green">859</FONT>            num = port &amp; 0xff;<a name="line.859"></a>
+<FONT color="green">860</FONT>            info.append(num);<a name="line.860"></a>
+<FONT color="green">861</FONT>    <a name="line.861"></a>
+<FONT color="green">862</FONT>            return sendCommand(FTPCommand.PORT, info.toString());<a name="line.862"></a>
+<FONT color="green">863</FONT>        }<a name="line.863"></a>
+<FONT color="green">864</FONT>    <a name="line.864"></a>
+<FONT color="green">865</FONT>        /***<a name="line.865"></a>
+<FONT color="green">866</FONT>         * A convenience method to send the FTP PASV command to the server,<a name="line.866"></a>
+<FONT color="green">867</FONT>         * receive the reply, and return the reply code.  Remember, it's up<a name="line.867"></a>
+<FONT color="green">868</FONT>         * to you to interpret the reply string containing the host/port<a name="line.868"></a>
+<FONT color="green">869</FONT>         * information.<a name="line.869"></a>
+<FONT color="green">870</FONT>         * &lt;p&gt;<a name="line.870"></a>
+<FONT color="green">871</FONT>         * @return The reply code received from the server.<a name="line.871"></a>
+<FONT color="green">872</FONT>         * @exception FTPConnectionClosedException<a name="line.872"></a>
+<FONT color="green">873</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.873"></a>
+<FONT color="green">874</FONT>         *      of the client being idle or some other reason causing the server<a name="line.874"></a>
+<FONT color="green">875</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.875"></a>
+<FONT color="green">876</FONT>         *      as an IOException or independently as itself.<a name="line.876"></a>
+<FONT color="green">877</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.877"></a>
+<FONT color="green">878</FONT>         *      command or receiving the server reply.<a name="line.878"></a>
+<FONT color="green">879</FONT>         ***/<a name="line.879"></a>
+<FONT color="green">880</FONT>        public int pasv() throws IOException<a name="line.880"></a>
+<FONT color="green">881</FONT>        {<a name="line.881"></a>
+<FONT color="green">882</FONT>            return sendCommand(FTPCommand.PASV);<a name="line.882"></a>
+<FONT color="green">883</FONT>        }<a name="line.883"></a>
+<FONT color="green">884</FONT>    <a name="line.884"></a>
+<FONT color="green">885</FONT>        /**<a name="line.885"></a>
+<FONT color="green">886</FONT>         * A convenience method to send the FTP TYPE command for text files<a name="line.886"></a>
+<FONT color="green">887</FONT>         * to the server, receive the reply, and return the reply code.<a name="line.887"></a>
+<FONT color="green">888</FONT>         * @param fileType  The type of the file (one of the &lt;code&gt;FILE_TYPE&lt;/code&gt;<a name="line.888"></a>
+<FONT color="green">889</FONT>         *              constants).<a name="line.889"></a>
+<FONT color="green">890</FONT>         * @param formatOrByteSize  The format of the file (one of the<a name="line.890"></a>
+<FONT color="green">891</FONT>         *              &lt;code&gt;_FORMAT&lt;/code&gt; constants.  In the case of<a name="line.891"></a>
+<FONT color="green">892</FONT>         *              &lt;code&gt;LOCAL_FILE_TYPE&lt;/code&gt;, the byte size.<a name="line.892"></a>
+<FONT color="green">893</FONT>         * @return The reply code received from the server.<a name="line.893"></a>
+<FONT color="green">894</FONT>         * @exception FTPConnectionClosedException<a name="line.894"></a>
+<FONT color="green">895</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.895"></a>
+<FONT color="green">896</FONT>         *      of the client being idle or some other reason causing the server<a name="line.896"></a>
+<FONT color="green">897</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.897"></a>
+<FONT color="green">898</FONT>         *      as an IOException or independently as itself.<a name="line.898"></a>
+<FONT color="green">899</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.899"></a>
+<FONT color="green">900</FONT>         *      command or receiving the server reply.<a name="line.900"></a>
+<FONT color="green">901</FONT>         */<a name="line.901"></a>
+<FONT color="green">902</FONT>        public int type(int fileType, int formatOrByteSize) throws IOException<a name="line.902"></a>
+<FONT color="green">903</FONT>        {<a name="line.903"></a>
+<FONT color="green">904</FONT>            StringBuffer arg = new StringBuffer();<a name="line.904"></a>
+<FONT color="green">905</FONT>    <a name="line.905"></a>
+<FONT color="green">906</FONT>            arg.append(__modes.charAt(fileType));<a name="line.906"></a>
+<FONT color="green">907</FONT>            arg.append(' ');<a name="line.907"></a>
+<FONT color="green">908</FONT>            if (fileType == LOCAL_FILE_TYPE)<a name="line.908"></a>
+<FONT color="green">909</FONT>                arg.append(formatOrByteSize);<a name="line.909"></a>
+<FONT color="green">910</FONT>            else<a name="line.910"></a>
+<FONT color="green">911</FONT>                arg.append(__modes.charAt(formatOrByteSize));<a name="line.911"></a>
+<FONT color="green">912</FONT>    <a name="line.912"></a>
+<FONT color="green">913</FONT>            return sendCommand(FTPCommand.TYPE, arg.toString());<a name="line.913"></a>
+<FONT color="green">914</FONT>        }<a name="line.914"></a>
+<FONT color="green">915</FONT>    <a name="line.915"></a>
+<FONT color="green">916</FONT>    <a name="line.916"></a>
+<FONT color="green">917</FONT>        /**<a name="line.917"></a>
+<FONT color="green">918</FONT>         * A convenience method to send the FTP TYPE command to the server,<a name="line.918"></a>
+<FONT color="green">919</FONT>         * receive the reply, and return the reply code.<a name="line.919"></a>
+<FONT color="green">920</FONT>         * &lt;p&gt;<a name="line.920"></a>
+<FONT color="green">921</FONT>         * @param fileType  The type of the file (one of the &lt;code&gt;FILE_TYPE&lt;/code&gt;<a name="line.921"></a>
+<FONT color="green">922</FONT>         *              constants).<a name="line.922"></a>
+<FONT color="green">923</FONT>         * @return The reply code received from the server.<a name="line.923"></a>
+<FONT color="green">924</FONT>         * @exception FTPConnectionClosedException<a name="line.924"></a>
+<FONT color="green">925</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.925"></a>
+<FONT color="green">926</FONT>         *      of the client being idle or some other reason causing the server<a name="line.926"></a>
+<FONT color="green">927</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.927"></a>
+<FONT color="green">928</FONT>         *      as an IOException or independently as itself.<a name="line.928"></a>
+<FONT color="green">929</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.929"></a>
+<FONT color="green">930</FONT>         *      command or receiving the server reply.<a name="line.930"></a>
+<FONT color="green">931</FONT>         */<a name="line.931"></a>
+<FONT color="green">932</FONT>        public int type(int fileType) throws IOException<a name="line.932"></a>
+<FONT color="green">933</FONT>        {<a name="line.933"></a>
+<FONT color="green">934</FONT>            return sendCommand(FTPCommand.TYPE,<a name="line.934"></a>
+<FONT color="green">935</FONT>                               __modes.substring(fileType, fileType + 1));<a name="line.935"></a>
+<FONT color="green">936</FONT>        }<a name="line.936"></a>
+<FONT color="green">937</FONT>    <a name="line.937"></a>
+<FONT color="green">938</FONT>        /***<a name="line.938"></a>
+<FONT color="green">939</FONT>         * A convenience method to send the FTP STRU command to the server,<a name="line.939"></a>
+<FONT color="green">940</FONT>         * receive the reply, and return the reply code.<a name="line.940"></a>
+<FONT color="green">941</FONT>         * &lt;p&gt;<a name="line.941"></a>
+<FONT color="green">942</FONT>         * @param structure  The structure of the file (one of the<a name="line.942"></a>
+<FONT color="green">943</FONT>         *         &lt;code&gt;_STRUCTURE&lt;/code&gt; constants).<a name="line.943"></a>
+<FONT color="green">944</FONT>         * @return The reply code received from the server.<a name="line.944"></a>
+<FONT color="green">945</FONT>         * @exception FTPConnectionClosedException<a name="line.945"></a>
+<FONT color="green">946</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.946"></a>
+<FONT color="green">947</FONT>         *      of the client being idle or some other reason causing the server<a name="line.947"></a>
+<FONT color="green">948</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.948"></a>
+<FONT color="green">949</FONT>         *      as an IOException or independently as itself.<a name="line.949"></a>
+<FONT color="green">950</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.950"></a>
+<FONT color="green">951</FONT>         *      command or receiving the server reply.<a name="line.951"></a>
+<FONT color="green">952</FONT>         ***/<a name="line.952"></a>
+<FONT color="green">953</FONT>        public int stru(int structure) throws IOException<a name="line.953"></a>
+<FONT color="green">954</FONT>        {<a name="line.954"></a>
+<FONT color="green">955</FONT>            return sendCommand(FTPCommand.STRU,<a name="line.955"></a>
+<FONT color="green">956</FONT>                               __modes.substring(structure, structure + 1));<a name="line.956"></a>
+<FONT color="green">957</FONT>        }<a name="line.957"></a>
+<FONT color="green">958</FONT>    <a name="line.958"></a>
+<FONT color="green">959</FONT>        /***<a name="line.959"></a>
+<FONT color="green">960</FONT>         * A convenience method to send the FTP MODE command to the server,<a name="line.960"></a>
+<FONT color="green">961</FONT>         * receive the reply, and return the reply code.<a name="line.961"></a>
+<FONT color="green">962</FONT>         * &lt;p&gt;<a name="line.962"></a>
+<FONT color="green">963</FONT>         * @param mode  The transfer mode to use (one of the<a name="line.963"></a>
+<FONT color="green">964</FONT>         *         &lt;code&gt;TRANSFER_MODE&lt;/code&gt; constants).<a name="line.964"></a>
+<FONT color="green">965</FONT>         * @return The reply code received from the server.<a name="line.965"></a>
+<FONT color="green">966</FONT>         * @exception FTPConnectionClosedException<a name="line.966"></a>
+<FONT color="green">967</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.967"></a>
+<FONT color="green">968</FONT>         *      of the client being idle or some other reason causing the server<a name="line.968"></a>
+<FONT color="green">969</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.969"></a>
+<FONT color="green">970</FONT>         *      as an IOException or independently as itself.<a name="line.970"></a>
+<FONT color="green">971</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.971"></a>
+<FONT color="green">972</FONT>         *      command or receiving the server reply.<a name="line.972"></a>
+<FONT color="green">973</FONT>         ***/<a name="line.973"></a>
+<FONT color="green">974</FONT>        public int mode(int mode) throws IOException<a name="line.974"></a>
+<FONT color="green">975</FONT>        {<a name="line.975"></a>
+<FONT color="green">976</FONT>            return sendCommand(FTPCommand.MODE,<a name="line.976"></a>
+<FONT color="green">977</FONT>                               __modes.substring(mode, mode + 1));<a name="line.977"></a>
+<FONT color="green">978</FONT>        }<a name="line.978"></a>
+<FONT color="green">979</FONT>    <a name="line.979"></a>
+<FONT color="green">980</FONT>        /***<a name="line.980"></a>
+<FONT color="green">981</FONT>         * A convenience method to send the FTP RETR command to the server,<a name="line.981"></a>
+<FONT color="green">982</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.982"></a>
+<FONT color="green">983</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.983"></a>
+<FONT color="green">984</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.984"></a>
+<FONT color="green">985</FONT>         * , which will handle all low level details for you.<a name="line.985"></a>
+<FONT color="green">986</FONT>         * &lt;p&gt;<a name="line.986"></a>
+<FONT color="green">987</FONT>         * @param pathname  The pathname of the file to retrieve.<a name="line.987"></a>
+<FONT color="green">988</FONT>         * @return The reply code received from the server.<a name="line.988"></a>
+<FONT color="green">989</FONT>         * @exception FTPConnectionClosedException<a name="line.989"></a>
+<FONT color="green">990</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.990"></a>
+<FONT color="green">991</FONT>         *      of the client being idle or some other reason causing the server<a name="line.991"></a>
+<FONT color="green">992</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.992"></a>
+<FONT color="green">993</FONT>         *      as an IOException or independently as itself.<a name="line.993"></a>
+<FONT color="green">994</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.994"></a>
+<FONT color="green">995</FONT>         *      command or receiving the server reply.<a name="line.995"></a>
+<FONT color="green">996</FONT>         ***/<a name="line.996"></a>
+<FONT color="green">997</FONT>        public int retr(String pathname) throws IOException<a name="line.997"></a>
+<FONT color="green">998</FONT>        {<a name="line.998"></a>
+<FONT color="green">999</FONT>            return sendCommand(FTPCommand.RETR, pathname);<a name="line.999"></a>
+<FONT color="green">1000</FONT>        }<a name="line.1000"></a>
+<FONT color="green">1001</FONT>    <a name="line.1001"></a>
+<FONT color="green">1002</FONT>        /***<a name="line.1002"></a>
+<FONT color="green">1003</FONT>         * A convenience method to send the FTP STOR command to the server,<a name="line.1003"></a>
+<FONT color="green">1004</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1004"></a>
+<FONT color="green">1005</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1005"></a>
+<FONT color="green">1006</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1006"></a>
+<FONT color="green">1007</FONT>         * , which will handle all low level details for you.<a name="line.1007"></a>
+<FONT color="green">1008</FONT>         * &lt;p&gt;<a name="line.1008"></a>
+<FONT color="green">1009</FONT>         * @param pathname  The pathname to use for the file when stored at<a name="line.1009"></a>
+<FONT color="green">1010</FONT>         *                  the remote end of the transfer.<a name="line.1010"></a>
+<FONT color="green">1011</FONT>         * @return The reply code received from the server.<a name="line.1011"></a>
+<FONT color="green">1012</FONT>         * @exception FTPConnectionClosedException<a name="line.1012"></a>
+<FONT color="green">1013</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1013"></a>
+<FONT color="green">1014</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1014"></a>
+<FONT color="green">1015</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1015"></a>
+<FONT color="green">1016</FONT>         *      as an IOException or independently as itself.<a name="line.1016"></a>
+<FONT color="green">1017</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1017"></a>
+<FONT color="green">1018</FONT>         *      command or receiving the server reply.<a name="line.1018"></a>
+<FONT color="green">1019</FONT>         ***/<a name="line.1019"></a>
+<FONT color="green">1020</FONT>        public int stor(String pathname) throws IOException<a name="line.1020"></a>
+<FONT color="green">1021</FONT>        {<a name="line.1021"></a>
+<FONT color="green">1022</FONT>            return sendCommand(FTPCommand.STOR, pathname);<a name="line.1022"></a>
+<FONT color="green">1023</FONT>        }<a name="line.1023"></a>
+<FONT color="green">1024</FONT>    <a name="line.1024"></a>
+<FONT color="green">1025</FONT>        /***<a name="line.1025"></a>
+<FONT color="green">1026</FONT>         * A convenience method to send the FTP STOU command to the server,<a name="line.1026"></a>
+<FONT color="green">1027</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1027"></a>
+<FONT color="green">1028</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1028"></a>
+<FONT color="green">1029</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1029"></a>
+<FONT color="green">1030</FONT>         * , which will handle all low level details for you.<a name="line.1030"></a>
+<FONT color="green">1031</FONT>         * &lt;p&gt;<a name="line.1031"></a>
+<FONT color="green">1032</FONT>         * @return The reply code received from the server.<a name="line.1032"></a>
+<FONT color="green">1033</FONT>         * @exception FTPConnectionClosedException<a name="line.1033"></a>
+<FONT color="green">1034</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1034"></a>
+<FONT color="green">1035</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1035"></a>
+<FONT color="green">1036</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1036"></a>
+<FONT color="green">1037</FONT>         *      as an IOException or independently as itself.<a name="line.1037"></a>
+<FONT color="green">1038</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1038"></a>
+<FONT color="green">1039</FONT>         *      command or receiving the server reply.<a name="line.1039"></a>
+<FONT color="green">1040</FONT>         ***/<a name="line.1040"></a>
+<FONT color="green">1041</FONT>        public int stou() throws IOException<a name="line.1041"></a>
+<FONT color="green">1042</FONT>        {<a name="line.1042"></a>
+<FONT color="green">1043</FONT>            return sendCommand(FTPCommand.STOU);<a name="line.1043"></a>
+<FONT color="green">1044</FONT>        }<a name="line.1044"></a>
+<FONT color="green">1045</FONT>    <a name="line.1045"></a>
+<FONT color="green">1046</FONT>        /***<a name="line.1046"></a>
+<FONT color="green">1047</FONT>         * A convenience method to send the FTP STOU command to the server,<a name="line.1047"></a>
+<FONT color="green">1048</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1048"></a>
+<FONT color="green">1049</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1049"></a>
+<FONT color="green">1050</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1050"></a>
+<FONT color="green">1051</FONT>         * , which will handle all low level details for you.<a name="line.1051"></a>
+<FONT color="green">1052</FONT>         * @param pathname  The base pathname to use for the file when stored at<a name="line.1052"></a>
+<FONT color="green">1053</FONT>         *                  the remote end of the transfer.  Some FTP servers<a name="line.1053"></a>
+<FONT color="green">1054</FONT>         *                  require this.<a name="line.1054"></a>
+<FONT color="green">1055</FONT>         * @return The reply code received from the server.<a name="line.1055"></a>
+<FONT color="green">1056</FONT>         * @exception FTPConnectionClosedException<a name="line.1056"></a>
+<FONT color="green">1057</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1057"></a>
+<FONT color="green">1058</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1058"></a>
+<FONT color="green">1059</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1059"></a>
+<FONT color="green">1060</FONT>         *      as an IOException or independently as itself.<a name="line.1060"></a>
+<FONT color="green">1061</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1061"></a>
+<FONT color="green">1062</FONT>         *      command or receiving the server reply.<a name="line.1062"></a>
+<FONT color="green">1063</FONT>         */<a name="line.1063"></a>
+<FONT color="green">1064</FONT>        public int stou(String pathname) throws IOException<a name="line.1064"></a>
+<FONT color="green">1065</FONT>        {<a name="line.1065"></a>
+<FONT color="green">1066</FONT>            return sendCommand(FTPCommand.STOU, pathname);<a name="line.1066"></a>
+<FONT color="green">1067</FONT>        }<a name="line.1067"></a>
+<FONT color="green">1068</FONT>    <a name="line.1068"></a>
+<FONT color="green">1069</FONT>        /***<a name="line.1069"></a>
+<FONT color="green">1070</FONT>         * A convenience method to send the FTP APPE command to the server,<a name="line.1070"></a>
+<FONT color="green">1071</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1071"></a>
+<FONT color="green">1072</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1072"></a>
+<FONT color="green">1073</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1073"></a>
+<FONT color="green">1074</FONT>         * , which will handle all low level details for you.<a name="line.1074"></a>
+<FONT color="green">1075</FONT>         * &lt;p&gt;<a name="line.1075"></a>
+<FONT color="green">1076</FONT>         * @param pathname  The pathname to use for the file when stored at<a name="line.1076"></a>
+<FONT color="green">1077</FONT>         *                  the remote end of the transfer.<a name="line.1077"></a>
+<FONT color="green">1078</FONT>         * @return The reply code received from the server.<a name="line.1078"></a>
+<FONT color="green">1079</FONT>         * @exception FTPConnectionClosedException<a name="line.1079"></a>
+<FONT color="green">1080</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1080"></a>
+<FONT color="green">1081</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1081"></a>
+<FONT color="green">1082</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1082"></a>
+<FONT color="green">1083</FONT>         *      as an IOException or independently as itself.<a name="line.1083"></a>
+<FONT color="green">1084</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1084"></a>
+<FONT color="green">1085</FONT>         *      command or receiving the server reply.<a name="line.1085"></a>
+<FONT color="green">1086</FONT>         ***/<a name="line.1086"></a>
+<FONT color="green">1087</FONT>        public int appe(String pathname) throws IOException<a name="line.1087"></a>
+<FONT color="green">1088</FONT>        {<a name="line.1088"></a>
+<FONT color="green">1089</FONT>            return sendCommand(FTPCommand.APPE, pathname);<a name="line.1089"></a>
+<FONT color="green">1090</FONT>        }<a name="line.1090"></a>
+<FONT color="green">1091</FONT>    <a name="line.1091"></a>
+<FONT color="green">1092</FONT>        /***<a name="line.1092"></a>
+<FONT color="green">1093</FONT>         * A convenience method to send the FTP ALLO command to the server,<a name="line.1093"></a>
+<FONT color="green">1094</FONT>         * receive the reply, and return the reply code.<a name="line.1094"></a>
+<FONT color="green">1095</FONT>         * &lt;p&gt;<a name="line.1095"></a>
+<FONT color="green">1096</FONT>         * @param bytes The number of bytes to allocate.<a name="line.1096"></a>
+<FONT color="green">1097</FONT>         * @return The reply code received from the server.<a name="line.1097"></a>
+<FONT color="green">1098</FONT>         * @exception FTPConnectionClosedException<a name="line.1098"></a>
+<FONT color="green">1099</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1099"></a>
+<FONT color="green">1100</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1100"></a>
+<FONT color="green">1101</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1101"></a>
+<FONT color="green">1102</FONT>         *      as an IOException or independently as itself.<a name="line.1102"></a>
+<FONT color="green">1103</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1103"></a>
+<FONT color="green">1104</FONT>         *      command or receiving the server reply.<a name="line.1104"></a>
+<FONT color="green">1105</FONT>         ***/<a name="line.1105"></a>
+<FONT color="green">1106</FONT>        public int allo(int bytes) throws IOException<a name="line.1106"></a>
+<FONT color="green">1107</FONT>        {<a name="line.1107"></a>
+<FONT color="green">1108</FONT>            return sendCommand(FTPCommand.ALLO, Integer.toString(bytes));<a name="line.1108"></a>
+<FONT color="green">1109</FONT>        }<a name="line.1109"></a>
+<FONT color="green">1110</FONT>    <a name="line.1110"></a>
+<FONT color="green">1111</FONT>        /***<a name="line.1111"></a>
+<FONT color="green">1112</FONT>         * A convenience method to send the FTP ALLO command to the server,<a name="line.1112"></a>
+<FONT color="green">1113</FONT>         * receive the reply, and return the reply code.<a name="line.1113"></a>
+<FONT color="green">1114</FONT>         * &lt;p&gt;<a name="line.1114"></a>
+<FONT color="green">1115</FONT>         * @param bytes The number of bytes to allocate.<a name="line.1115"></a>
+<FONT color="green">1116</FONT>         * @param recordSize  The size of a record.<a name="line.1116"></a>
+<FONT color="green">1117</FONT>         * @return The reply code received from the server.<a name="line.1117"></a>
+<FONT color="green">1118</FONT>         * @exception FTPConnectionClosedException<a name="line.1118"></a>
+<FONT color="green">1119</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1119"></a>
+<FONT color="green">1120</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1120"></a>
+<FONT color="green">1121</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1121"></a>
+<FONT color="green">1122</FONT>         *      as an IOException or independently as itself.<a name="line.1122"></a>
+<FONT color="green">1123</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1123"></a>
+<FONT color="green">1124</FONT>         *      command or receiving the server reply.<a name="line.1124"></a>
+<FONT color="green">1125</FONT>         ***/<a name="line.1125"></a>
+<FONT color="green">1126</FONT>        public int allo(int bytes, int recordSize) throws IOException<a name="line.1126"></a>
+<FONT color="green">1127</FONT>        {<a name="line.1127"></a>
+<FONT color="green">1128</FONT>            return sendCommand(FTPCommand.ALLO, Integer.toString(bytes) + " R " +<a name="line.1128"></a>
+<FONT color="green">1129</FONT>                               Integer.toString(recordSize));<a name="line.1129"></a>
+<FONT color="green">1130</FONT>        }<a name="line.1130"></a>
+<FONT color="green">1131</FONT>    <a name="line.1131"></a>
+<FONT color="green">1132</FONT>        /***<a name="line.1132"></a>
+<FONT color="green">1133</FONT>         * A convenience method to send the FTP REST command to the server,<a name="line.1133"></a>
+<FONT color="green">1134</FONT>         * receive the reply, and return the reply code.<a name="line.1134"></a>
+<FONT color="green">1135</FONT>         * &lt;p&gt;<a name="line.1135"></a>
+<FONT color="green">1136</FONT>         * @param marker The marker at which to restart a transfer.<a name="line.1136"></a>
+<FONT color="green">1137</FONT>         * @return The reply code received from the server.<a name="line.1137"></a>
+<FONT color="green">1138</FONT>         * @exception FTPConnectionClosedException<a name="line.1138"></a>
+<FONT color="green">1139</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1139"></a>
+<FONT color="green">1140</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1140"></a>
+<FONT color="green">1141</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1141"></a>
+<FONT color="green">1142</FONT>         *      as an IOException or independently as itself.<a name="line.1142"></a>
+<FONT color="green">1143</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1143"></a>
+<FONT color="green">1144</FONT>         *      command or receiving the server reply.<a name="line.1144"></a>
+<FONT color="green">1145</FONT>         ***/<a name="line.1145"></a>
+<FONT color="green">1146</FONT>        public int rest(String marker) throws IOException<a name="line.1146"></a>
+<FONT color="green">1147</FONT>        {<a name="line.1147"></a>
+<FONT color="green">1148</FONT>            return sendCommand(FTPCommand.REST, marker);<a name="line.1148"></a>
+<FONT color="green">1149</FONT>        }<a name="line.1149"></a>
+<FONT color="green">1150</FONT>        <a name="line.1150"></a>
+<FONT color="green">1151</FONT>        <a name="line.1151"></a>
+<FONT color="green">1152</FONT>        /**<a name="line.1152"></a>
+<FONT color="green">1153</FONT>         * @since 2.0<a name="line.1153"></a>
+<FONT color="green">1154</FONT>         **/<a name="line.1154"></a>
+<FONT color="green">1155</FONT>        public int mdtm(String file) throws IOException <a name="line.1155"></a>
+<FONT color="green">1156</FONT>        {<a name="line.1156"></a>
+<FONT color="green">1157</FONT>            return sendCommand(FTPCommand.MDTM, file);<a name="line.1157"></a>
+<FONT color="green">1158</FONT>        }<a name="line.1158"></a>
+<FONT color="green">1159</FONT>    <a name="line.1159"></a>
+<FONT color="green">1160</FONT>        /***<a name="line.1160"></a>
+<FONT color="green">1161</FONT>         * A convenience method to send the FTP RNFR command to the server,<a name="line.1161"></a>
+<FONT color="green">1162</FONT>         * receive the reply, and return the reply code.<a name="line.1162"></a>
+<FONT color="green">1163</FONT>         * &lt;p&gt;<a name="line.1163"></a>
+<FONT color="green">1164</FONT>         * @param pathname The pathname to rename from.<a name="line.1164"></a>
+<FONT color="green">1165</FONT>         * @return The reply code received from the server.<a name="line.1165"></a>
+<FONT color="green">1166</FONT>         * @exception FTPConnectionClosedException<a name="line.1166"></a>
+<FONT color="green">1167</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1167"></a>
+<FONT color="green">1168</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1168"></a>
+<FONT color="green">1169</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1169"></a>
+<FONT color="green">1170</FONT>         *      as an IOException or independently as itself.<a name="line.1170"></a>
+<FONT color="green">1171</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1171"></a>
+<FONT color="green">1172</FONT>         *      command or receiving the server reply.<a name="line.1172"></a>
+<FONT color="green">1173</FONT>         ***/<a name="line.1173"></a>
+<FONT color="green">1174</FONT>        public int rnfr(String pathname) throws IOException<a name="line.1174"></a>
+<FONT color="green">1175</FONT>        {<a name="line.1175"></a>
+<FONT color="green">1176</FONT>            return sendCommand(FTPCommand.RNFR, pathname);<a name="line.1176"></a>
+<FONT color="green">1177</FONT>        }<a name="line.1177"></a>
+<FONT color="green">1178</FONT>    <a name="line.1178"></a>
+<FONT color="green">1179</FONT>        /***<a name="line.1179"></a>
+<FONT color="green">1180</FONT>         * A convenience method to send the FTP RNTO command to the server,<a name="line.1180"></a>
+<FONT color="green">1181</FONT>         * receive the reply, and return the reply code.<a name="line.1181"></a>
+<FONT color="green">1182</FONT>         * &lt;p&gt;<a name="line.1182"></a>
+<FONT color="green">1183</FONT>         * @param pathname The pathname to rename to<a name="line.1183"></a>
+<FONT color="green">1184</FONT>         * @return The reply code received from the server.<a name="line.1184"></a>
+<FONT color="green">1185</FONT>         * @exception FTPConnectionClosedException<a name="line.1185"></a>
+<FONT color="green">1186</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1186"></a>
+<FONT color="green">1187</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1187"></a>
+<FONT color="green">1188</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1188"></a>
+<FONT color="green">1189</FONT>         *      as an IOException or independently as itself.<a name="line.1189"></a>
+<FONT color="green">1190</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1190"></a>
+<FONT color="green">1191</FONT>         *      command or receiving the server reply.<a name="line.1191"></a>
+<FONT color="green">1192</FONT>         ***/<a name="line.1192"></a>
+<FONT color="green">1193</FONT>        public int rnto(String pathname) throws IOException<a name="line.1193"></a>
+<FONT color="green">1194</FONT>        {<a name="line.1194"></a>
+<FONT color="green">1195</FONT>            return sendCommand(FTPCommand.RNTO, pathname);<a name="line.1195"></a>
+<FONT color="green">1196</FONT>        }<a name="line.1196"></a>
+<FONT color="green">1197</FONT>    <a name="line.1197"></a>
+<FONT color="green">1198</FONT>        /***<a name="line.1198"></a>
+<FONT color="green">1199</FONT>         * A convenience method to send the FTP DELE command to the server,<a name="line.1199"></a>
+<FONT color="green">1200</FONT>         * receive the reply, and return the reply code.<a name="line.1200"></a>
+<FONT color="green">1201</FONT>         * &lt;p&gt;<a name="line.1201"></a>
+<FONT color="green">1202</FONT>         * @param pathname The pathname to delete.<a name="line.1202"></a>
+<FONT color="green">1203</FONT>         * @return The reply code received from the server.<a name="line.1203"></a>
+<FONT color="green">1204</FONT>         * @exception FTPConnectionClosedException<a name="line.1204"></a>
+<FONT color="green">1205</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1205"></a>
+<FONT color="green">1206</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1206"></a>
+<FONT color="green">1207</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1207"></a>
+<FONT color="green">1208</FONT>         *      as an IOException or independently as itself.<a name="line.1208"></a>
+<FONT color="green">1209</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1209"></a>
+<FONT color="green">1210</FONT>         *      command or receiving the server reply.<a name="line.1210"></a>
+<FONT color="green">1211</FONT>         ***/<a name="line.1211"></a>
+<FONT color="green">1212</FONT>        public int dele(String pathname) throws IOException<a name="line.1212"></a>
+<FONT color="green">1213</FONT>        {<a name="line.1213"></a>
+<FONT color="green">1214</FONT>            return sendCommand(FTPCommand.DELE, pathname);<a name="line.1214"></a>
+<FONT color="green">1215</FONT>        }<a name="line.1215"></a>
+<FONT color="green">1216</FONT>    <a name="line.1216"></a>
+<FONT color="green">1217</FONT>        /***<a name="line.1217"></a>
+<FONT color="green">1218</FONT>         * A convenience method to send the FTP RMD command to the server,<a name="line.1218"></a>
+<FONT color="green">1219</FONT>         * receive the reply, and return the reply code.<a name="line.1219"></a>
+<FONT color="green">1220</FONT>         * &lt;p&gt;<a name="line.1220"></a>
+<FONT color="green">1221</FONT>         * @param pathname The pathname of the directory to remove.<a name="line.1221"></a>
+<FONT color="green">1222</FONT>         * @return The reply code received from the server.<a name="line.1222"></a>
+<FONT color="green">1223</FONT>         * @exception FTPConnectionClosedException<a name="line.1223"></a>
+<FONT color="green">1224</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1224"></a>
+<FONT color="green">1225</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1225"></a>
+<FONT color="green">1226</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1226"></a>
+<FONT color="green">1227</FONT>         *      as an IOException or independently as itself.<a name="line.1227"></a>
+<FONT color="green">1228</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1228"></a>
+<FONT color="green">1229</FONT>         *      command or receiving the server reply.<a name="line.1229"></a>
+<FONT color="green">1230</FONT>         ***/<a name="line.1230"></a>
+<FONT color="green">1231</FONT>        public int rmd(String pathname) throws IOException<a name="line.1231"></a>
+<FONT color="green">1232</FONT>        {<a name="line.1232"></a>
+<FONT color="green">1233</FONT>            return sendCommand(FTPCommand.RMD, pathname);<a name="line.1233"></a>
+<FONT color="green">1234</FONT>        }<a name="line.1234"></a>
+<FONT color="green">1235</FONT>    <a name="line.1235"></a>
+<FONT color="green">1236</FONT>        /***<a name="line.1236"></a>
+<FONT color="green">1237</FONT>         * A convenience method to send the FTP MKD command to the server,<a name="line.1237"></a>
+<FONT color="green">1238</FONT>         * receive the reply, and return the reply code.<a name="line.1238"></a>
+<FONT color="green">1239</FONT>         * &lt;p&gt;<a name="line.1239"></a>
+<FONT color="green">1240</FONT>         * @param pathname The pathname of the new directory to create.<a name="line.1240"></a>
+<FONT color="green">1241</FONT>         * @return The reply code received from the server.<a name="line.1241"></a>
+<FONT color="green">1242</FONT>         * @exception FTPConnectionClosedException<a name="line.1242"></a>
+<FONT color="green">1243</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1243"></a>
+<FONT color="green">1244</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1244"></a>
+<FONT color="green">1245</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1245"></a>
+<FONT color="green">1246</FONT>         *      as an IOException or independently as itself.<a name="line.1246"></a>
+<FONT color="green">1247</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1247"></a>
+<FONT color="green">1248</FONT>         *      command or receiving the server reply.<a name="line.1248"></a>
+<FONT color="green">1249</FONT>         ***/<a name="line.1249"></a>
+<FONT color="green">1250</FONT>        public int mkd(String pathname) throws IOException<a name="line.1250"></a>
+<FONT color="green">1251</FONT>        {<a name="line.1251"></a>
+<FONT color="green">1252</FONT>            return sendCommand(FTPCommand.MKD, pathname);<a name="line.1252"></a>
+<FONT color="green">1253</FONT>        }<a name="line.1253"></a>
+<FONT color="green">1254</FONT>    <a name="line.1254"></a>
+<FONT color="green">1255</FONT>        /***<a name="line.1255"></a>
+<FONT color="green">1256</FONT>         * A convenience method to send the FTP PWD command to the server,<a name="line.1256"></a>
+<FONT color="green">1257</FONT>         * receive the reply, and return the reply code.<a name="line.1257"></a>
+<FONT color="green">1258</FONT>         * &lt;p&gt;<a name="line.1258"></a>
+<FONT color="green">1259</FONT>         * @return The reply code received from the server.<a name="line.1259"></a>
+<FONT color="green">1260</FONT>         * @exception FTPConnectionClosedException<a name="line.1260"></a>
+<FONT color="green">1261</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1261"></a>
+<FONT color="green">1262</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1262"></a>
+<FONT color="green">1263</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1263"></a>
+<FONT color="green">1264</FONT>         *      as an IOException or independently as itself.<a name="line.1264"></a>
+<FONT color="green">1265</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1265"></a>
+<FONT color="green">1266</FONT>         *      command or receiving the server reply.<a name="line.1266"></a>
+<FONT color="green">1267</FONT>         ***/<a name="line.1267"></a>
+<FONT color="green">1268</FONT>        public int pwd() throws IOException<a name="line.1268"></a>
+<FONT color="green">1269</FONT>        {<a name="line.1269"></a>
+<FONT color="green">1270</FONT>            return sendCommand(FTPCommand.PWD);<a name="line.1270"></a>
+<FONT color="green">1271</FONT>        }<a name="line.1271"></a>
+<FONT color="green">1272</FONT>    <a name="line.1272"></a>
+<FONT color="green">1273</FONT>        /***<a name="line.1273"></a>
+<FONT color="green">1274</FONT>         * A convenience method to send the FTP LIST command to the server,<a name="line.1274"></a>
+<FONT color="green">1275</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1275"></a>
+<FONT color="green">1276</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1276"></a>
+<FONT color="green">1277</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1277"></a>
+<FONT color="green">1278</FONT>         * , which will handle all low level details for you.<a name="line.1278"></a>
+<FONT color="green">1279</FONT>         * &lt;p&gt;<a name="line.1279"></a>
+<FONT color="green">1280</FONT>         * @return The reply code received from the server.<a name="line.1280"></a>
+<FONT color="green">1281</FONT>         * @exception FTPConnectionClosedException<a name="line.1281"></a>
+<FONT color="green">1282</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1282"></a>
+<FONT color="green">1283</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1283"></a>
+<FONT color="green">1284</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1284"></a>
+<FONT color="green">1285</FONT>         *      as an IOException or independently as itself.<a name="line.1285"></a>
+<FONT color="green">1286</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1286"></a>
+<FONT color="green">1287</FONT>         *      command or receiving the server reply.<a name="line.1287"></a>
+<FONT color="green">1288</FONT>         ***/<a name="line.1288"></a>
+<FONT color="green">1289</FONT>        public int list() throws IOException<a name="line.1289"></a>
+<FONT color="green">1290</FONT>        {<a name="line.1290"></a>
+<FONT color="green">1291</FONT>            return sendCommand(FTPCommand.LIST);<a name="line.1291"></a>
+<FONT color="green">1292</FONT>        }<a name="line.1292"></a>
+<FONT color="green">1293</FONT>    <a name="line.1293"></a>
+<FONT color="green">1294</FONT>        /***<a name="line.1294"></a>
+<FONT color="green">1295</FONT>         * A convenience method to send the FTP LIST command to the server,<a name="line.1295"></a>
+<FONT color="green">1296</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1296"></a>
+<FONT color="green">1297</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1297"></a>
+<FONT color="green">1298</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1298"></a>
+<FONT color="green">1299</FONT>         * , which will handle all low level details for you.<a name="line.1299"></a>
+<FONT color="green">1300</FONT>         * &lt;p&gt;<a name="line.1300"></a>
+<FONT color="green">1301</FONT>         * @param pathname  The pathname to list.<a name="line.1301"></a>
+<FONT color="green">1302</FONT>         * @return The reply code received from the server.<a name="line.1302"></a>
+<FONT color="green">1303</FONT>         * @exception FTPConnectionClosedException<a name="line.1303"></a>
+<FONT color="green">1304</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1304"></a>
+<FONT color="green">1305</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1305"></a>
+<FONT color="green">1306</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1306"></a>
+<FONT color="green">1307</FONT>         *      as an IOException or independently as itself.<a name="line.1307"></a>
+<FONT color="green">1308</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1308"></a>
+<FONT color="green">1309</FONT>         *      command or receiving the server reply.<a name="line.1309"></a>
+<FONT color="green">1310</FONT>         ***/<a name="line.1310"></a>
+<FONT color="green">1311</FONT>        public int list(String pathname) throws IOException<a name="line.1311"></a>
+<FONT color="green">1312</FONT>        {<a name="line.1312"></a>
+<FONT color="green">1313</FONT>            return sendCommand(FTPCommand.LIST, pathname);<a name="line.1313"></a>
+<FONT color="green">1314</FONT>        }<a name="line.1314"></a>
+<FONT color="green">1315</FONT>    <a name="line.1315"></a>
+<FONT color="green">1316</FONT>        /***<a name="line.1316"></a>
+<FONT color="green">1317</FONT>         * A convenience method to send the FTP NLST command to the server,<a name="line.1317"></a>
+<FONT color="green">1318</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1318"></a>
+<FONT color="green">1319</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1319"></a>
+<FONT color="green">1320</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1320"></a>
+<FONT color="green">1321</FONT>         * , which will handle all low level details for you.<a name="line.1321"></a>
+<FONT color="green">1322</FONT>         * &lt;p&gt;<a name="line.1322"></a>
+<FONT color="green">1323</FONT>         * @return The reply code received from the server.<a name="line.1323"></a>
+<FONT color="green">1324</FONT>         * @exception FTPConnectionClosedException<a name="line.1324"></a>
+<FONT color="green">1325</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1325"></a>
+<FONT color="green">1326</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1326"></a>
+<FONT color="green">1327</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1327"></a>
+<FONT color="green">1328</FONT>         *      as an IOException or independently as itself.<a name="line.1328"></a>
+<FONT color="green">1329</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1329"></a>
+<FONT color="green">1330</FONT>         *      command or receiving the server reply.<a name="line.1330"></a>
+<FONT color="green">1331</FONT>         ***/<a name="line.1331"></a>
+<FONT color="green">1332</FONT>        public int nlst() throws IOException<a name="line.1332"></a>
+<FONT color="green">1333</FONT>        {<a name="line.1333"></a>
+<FONT color="green">1334</FONT>            return sendCommand(FTPCommand.NLST);<a name="line.1334"></a>
+<FONT color="green">1335</FONT>        }<a name="line.1335"></a>
+<FONT color="green">1336</FONT>    <a name="line.1336"></a>
+<FONT color="green">1337</FONT>        /***<a name="line.1337"></a>
+<FONT color="green">1338</FONT>         * A convenience method to send the FTP NLST command to the server,<a name="line.1338"></a>
+<FONT color="green">1339</FONT>         * receive the reply, and return the reply code.  Remember, it is up<a name="line.1339"></a>
+<FONT color="green">1340</FONT>         * to you to manage the data connection.  If you don't need this low<a name="line.1340"></a>
+<FONT color="green">1341</FONT>         * level of access, use {@link org.apache.commons.net.ftp.FTPClient}<a name="line.1341"></a>
+<FONT color="green">1342</FONT>         * , which will handle all low level details for you.<a name="line.1342"></a>
+<FONT color="green">1343</FONT>         * &lt;p&gt;<a name="line.1343"></a>
+<FONT color="green">1344</FONT>         * @param pathname  The pathname to list.<a name="line.1344"></a>
+<FONT color="green">1345</FONT>         * @return The reply code received from the server.<a name="line.1345"></a>
+<FONT color="green">1346</FONT>         * @exception FTPConnectionClosedException<a name="line.1346"></a>
+<FONT color="green">1347</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1347"></a>
+<FONT color="green">1348</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1348"></a>
+<FONT color="green">1349</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1349"></a>
+<FONT color="green">1350</FONT>         *      as an IOException or independently as itself.<a name="line.1350"></a>
+<FONT color="green">1351</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1351"></a>
+<FONT color="green">1352</FONT>         *      command or receiving the server reply.<a name="line.1352"></a>
+<FONT color="green">1353</FONT>         ***/<a name="line.1353"></a>
+<FONT color="green">1354</FONT>        public int nlst(String pathname) throws IOException<a name="line.1354"></a>
+<FONT color="green">1355</FONT>        {<a name="line.1355"></a>
+<FONT color="green">1356</FONT>            return sendCommand(FTPCommand.NLST, pathname);<a name="line.1356"></a>
+<FONT color="green">1357</FONT>        }<a name="line.1357"></a>
+<FONT color="green">1358</FONT>    <a name="line.1358"></a>
+<FONT color="green">1359</FONT>        /***<a name="line.1359"></a>
+<FONT color="green">1360</FONT>         * A convenience method to send the FTP SITE command to the server,<a name="line.1360"></a>
+<FONT color="green">1361</FONT>         * receive the reply, and return the reply code.<a name="line.1361"></a>
+<FONT color="green">1362</FONT>         * &lt;p&gt;<a name="line.1362"></a>
+<FONT color="green">1363</FONT>         * @param parameters  The site parameters to send.<a name="line.1363"></a>
+<FONT color="green">1364</FONT>         * @return The reply code received from the server.<a name="line.1364"></a>
+<FONT color="green">1365</FONT>         * @exception FTPConnectionClosedException<a name="line.1365"></a>
+<FONT color="green">1366</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1366"></a>
+<FONT color="green">1367</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1367"></a>
+<FONT color="green">1368</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1368"></a>
+<FONT color="green">1369</FONT>         *      as an IOException or independently as itself.<a name="line.1369"></a>
+<FONT color="green">1370</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1370"></a>
+<FONT color="green">1371</FONT>         *      command or receiving the server reply.<a name="line.1371"></a>
+<FONT color="green">1372</FONT>         ***/<a name="line.1372"></a>
+<FONT color="green">1373</FONT>        public int site(String parameters) throws IOException<a name="line.1373"></a>
+<FONT color="green">1374</FONT>        {<a name="line.1374"></a>
+<FONT color="green">1375</FONT>            return sendCommand(FTPCommand.SITE, parameters);<a name="line.1375"></a>
+<FONT color="green">1376</FONT>        }<a name="line.1376"></a>
+<FONT color="green">1377</FONT>    <a name="line.1377"></a>
+<FONT color="green">1378</FONT>        /***<a name="line.1378"></a>
+<FONT color="green">1379</FONT>         * A convenience method to send the FTP SYST command to the server,<a name="line.1379"></a>
+<FONT color="green">1380</FONT>         * receive the reply, and return the reply code.<a name="line.1380"></a>
+<FONT color="green">1381</FONT>         * &lt;p&gt;<a name="line.1381"></a>
+<FONT color="green">1382</FONT>         * @return The reply code received from the server.<a name="line.1382"></a>
+<FONT color="green">1383</FONT>         * @exception FTPConnectionClosedException<a name="line.1383"></a>
+<FONT color="green">1384</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1384"></a>
+<FONT color="green">1385</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1385"></a>
+<FONT color="green">1386</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1386"></a>
+<FONT color="green">1387</FONT>         *      as an IOException or independently as itself.<a name="line.1387"></a>
+<FONT color="green">1388</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1388"></a>
+<FONT color="green">1389</FONT>         *      command or receiving the server reply.<a name="line.1389"></a>
+<FONT color="green">1390</FONT>         ***/<a name="line.1390"></a>
+<FONT color="green">1391</FONT>        public int syst() throws IOException<a name="line.1391"></a>
+<FONT color="green">1392</FONT>        {<a name="line.1392"></a>
+<FONT color="green">1393</FONT>            return sendCommand(FTPCommand.SYST);<a name="line.1393"></a>
+<FONT color="green">1394</FONT>        }<a name="line.1394"></a>
+<FONT color="green">1395</FONT>    <a name="line.1395"></a>
+<FONT color="green">1396</FONT>        /***<a name="line.1396"></a>
+<FONT color="green">1397</FONT>         * A convenience method to send the FTP STAT command to the server,<a name="line.1397"></a>
+<FONT color="green">1398</FONT>         * receive the reply, and return the reply code.<a name="line.1398"></a>
+<FONT color="green">1399</FONT>         * &lt;p&gt;<a name="line.1399"></a>
+<FONT color="green">1400</FONT>         * @return The reply code received from the server.<a name="line.1400"></a>
+<FONT color="green">1401</FONT>         * @exception FTPConnectionClosedException<a name="line.1401"></a>
+<FONT color="green">1402</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1402"></a>
+<FONT color="green">1403</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1403"></a>
+<FONT color="green">1404</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1404"></a>
+<FONT color="green">1405</FONT>         *      as an IOException or independently as itself.<a name="line.1405"></a>
+<FONT color="green">1406</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1406"></a>
+<FONT color="green">1407</FONT>         *      command or receiving the server reply.<a name="line.1407"></a>
+<FONT color="green">1408</FONT>         ***/<a name="line.1408"></a>
+<FONT color="green">1409</FONT>        public int stat() throws IOException<a name="line.1409"></a>
+<FONT color="green">1410</FONT>        {<a name="line.1410"></a>
+<FONT color="green">1411</FONT>            return sendCommand(FTPCommand.STAT);<a name="line.1411"></a>
+<FONT color="green">1412</FONT>        }<a name="line.1412"></a>
+<FONT color="green">1413</FONT>    <a name="line.1413"></a>
+<FONT color="green">1414</FONT>        /***<a name="line.1414"></a>
+<FONT color="green">1415</FONT>         * A convenience method to send the FTP STAT command to the server,<a name="line.1415"></a>
+<FONT color="green">1416</FONT>         * receive the reply, and return the reply code.<a name="line.1416"></a>
+<FONT color="green">1417</FONT>         * &lt;p&gt;<a name="line.1417"></a>
+<FONT color="green">1418</FONT>         * @param pathname  A pathname to list.<a name="line.1418"></a>
+<FONT color="green">1419</FONT>         * @return The reply code received from the server.<a name="line.1419"></a>
+<FONT color="green">1420</FONT>         * @exception FTPConnectionClosedException<a name="line.1420"></a>
+<FONT color="green">1421</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1421"></a>
+<FONT color="green">1422</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1422"></a>
+<FONT color="green">1423</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1423"></a>
+<FONT color="green">1424</FONT>         *      as an IOException or independently as itself.<a name="line.1424"></a>
+<FONT color="green">1425</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1425"></a>
+<FONT color="green">1426</FONT>         *      command or receiving the server reply.<a name="line.1426"></a>
+<FONT color="green">1427</FONT>         ***/<a name="line.1427"></a>
+<FONT color="green">1428</FONT>        public int stat(String pathname) throws IOException<a name="line.1428"></a>
+<FONT color="green">1429</FONT>        {<a name="line.1429"></a>
+<FONT color="green">1430</FONT>            return sendCommand(FTPCommand.STAT, pathname);<a name="line.1430"></a>
+<FONT color="green">1431</FONT>        }<a name="line.1431"></a>
+<FONT color="green">1432</FONT>    <a name="line.1432"></a>
+<FONT color="green">1433</FONT>        /***<a name="line.1433"></a>
+<FONT color="green">1434</FONT>         * A convenience method to send the FTP HELP command to the server,<a name="line.1434"></a>
+<FONT color="green">1435</FONT>         * receive the reply, and return the reply code.<a name="line.1435"></a>
+<FONT color="green">1436</FONT>         * &lt;p&gt;<a name="line.1436"></a>
+<FONT color="green">1437</FONT>         * @return The reply code received from the server.<a name="line.1437"></a>
+<FONT color="green">1438</FONT>         * @exception FTPConnectionClosedException<a name="line.1438"></a>
+<FONT color="green">1439</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1439"></a>
+<FONT color="green">1440</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1440"></a>
+<FONT color="green">1441</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1441"></a>
+<FONT color="green">1442</FONT>         *      as an IOException or independently as itself.<a name="line.1442"></a>
+<FONT color="green">1443</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1443"></a>
+<FONT color="green">1444</FONT>         *      command or receiving the server reply.<a name="line.1444"></a>
+<FONT color="green">1445</FONT>         ***/<a name="line.1445"></a>
+<FONT color="green">1446</FONT>        public int help() throws IOException<a name="line.1446"></a>
+<FONT color="green">1447</FONT>        {<a name="line.1447"></a>
+<FONT color="green">1448</FONT>            return sendCommand(FTPCommand.HELP);<a name="line.1448"></a>
+<FONT color="green">1449</FONT>        }<a name="line.1449"></a>
+<FONT color="green">1450</FONT>    <a name="line.1450"></a>
+<FONT color="green">1451</FONT>        /***<a name="line.1451"></a>
+<FONT color="green">1452</FONT>         * A convenience method to send the FTP HELP command to the server,<a name="line.1452"></a>
+<FONT color="green">1453</FONT>         * receive the reply, and return the reply code.<a name="line.1453"></a>
+<FONT color="green">1454</FONT>         * &lt;p&gt;<a name="line.1454"></a>
+<FONT color="green">1455</FONT>         * @param command  The command name on which to request help.<a name="line.1455"></a>
+<FONT color="green">1456</FONT>         * @return The reply code received from the server.<a name="line.1456"></a>
+<FONT color="green">1457</FONT>         * @exception FTPConnectionClosedException<a name="line.1457"></a>
+<FONT color="green">1458</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1458"></a>
+<FONT color="green">1459</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1459"></a>
+<FONT color="green">1460</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1460"></a>
+<FONT color="green">1461</FONT>         *      as an IOException or independently as itself.<a name="line.1461"></a>
+<FONT color="green">1462</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1462"></a>
+<FONT color="green">1463</FONT>         *      command or receiving the server reply.<a name="line.1463"></a>
+<FONT color="green">1464</FONT>         ***/<a name="line.1464"></a>
+<FONT color="green">1465</FONT>        public int help(String command) throws IOException<a name="line.1465"></a>
+<FONT color="green">1466</FONT>        {<a name="line.1466"></a>
+<FONT color="green">1467</FONT>            return sendCommand(FTPCommand.HELP, command);<a name="line.1467"></a>
+<FONT color="green">1468</FONT>        }<a name="line.1468"></a>
+<FONT color="green">1469</FONT>    <a name="line.1469"></a>
+<FONT color="green">1470</FONT>        /***<a name="line.1470"></a>
+<FONT color="green">1471</FONT>         * A convenience method to send the FTP NOOP command to the server,<a name="line.1471"></a>
+<FONT color="green">1472</FONT>         * receive the reply, and return the reply code.<a name="line.1472"></a>
+<FONT color="green">1473</FONT>         * &lt;p&gt;<a name="line.1473"></a>
+<FONT color="green">1474</FONT>         * @return The reply code received from the server.<a name="line.1474"></a>
+<FONT color="green">1475</FONT>         * @exception FTPConnectionClosedException<a name="line.1475"></a>
+<FONT color="green">1476</FONT>         *      If the FTP server prematurely closes the connection as a result<a name="line.1476"></a>
+<FONT color="green">1477</FONT>         *      of the client being idle or some other reason causing the server<a name="line.1477"></a>
+<FONT color="green">1478</FONT>         *      to send FTP reply code 421.  This exception may be caught either<a name="line.1478"></a>
+<FONT color="green">1479</FONT>         *      as an IOException or independently as itself.<a name="line.1479"></a>
+<FONT color="green">1480</FONT>         * @exception IOException  If an I/O error occurs while either sending the<a name="line.1480"></a>
+<FONT color="green">1481</FONT>         *      command or receiving the server reply.<a name="line.1481"></a>
+<FONT color="green">1482</FONT>         ***/<a name="line.1482"></a>
+<FONT color="green">1483</FONT>        public int noop() throws IOException<a name="line.1483"></a>
+<FONT color="green">1484</FONT>        {<a name="line.1484"></a>
+<FONT color="green">1485</FONT>            return sendCommand(FTPCommand.NOOP);<a name="line.1485"></a>
+<FONT color="green">1486</FONT>        }<a name="line.1486"></a>
+<FONT color="green">1487</FONT>    <a name="line.1487"></a>
+<FONT color="green">1488</FONT>        /**<a name="line.1488"></a>
+<FONT color="green">1489</FONT>         * Return whether strict multiline parsing is enabled, as per RFX 959, section 4.2.<a name="line.1489"></a>
+<FONT color="green">1490</FONT>         * @return True if strict, false if lenient<a name="line.1490"></a>
+<FONT color="green">1491</FONT>         * @since 2.0<a name="line.1491"></a>
+<FONT color="green">1492</FONT>         */<a name="line.1492"></a>
+<FONT color="green">1493</FONT>        public boolean isStrictMultilineParsing() {<a name="line.1493"></a>
+<FONT color="green">1494</FONT>            return strictMultilineParsing;<a name="line.1494"></a>
+<FONT color="green">1495</FONT>        }<a name="line.1495"></a>
+<FONT color="green">1496</FONT>    <a name="line.1496"></a>
+<FONT color="green">1497</FONT>        /**<a name="line.1497"></a>
+<FONT color="green">1498</FONT>         * Set strict multiline parsing.<a name="line.1498"></a>
+<FONT color="green">1499</FONT>         * @param strictMultilineParsing<a name="line.1499"></a>
+<FONT color="green">1500</FONT>         * @since 2.0<a name="line.1500"></a>
+<FONT color="green">1501</FONT>         */<a name="line.1501"></a>
+<FONT color="green">1502</FONT>        public void setStrictMultilineParsing(boolean strictMultilineParsing) {<a name="line.1502"></a>
+<FONT color="green">1503</FONT>            this.strictMultilineParsing = strictMultilineParsing;<a name="line.1503"></a>
+<FONT color="green">1504</FONT>        }<a name="line.1504"></a>
+<FONT color="green">1505</FONT>    }<a name="line.1505"></a>
+<FONT color="green">1506</FONT>    <a name="line.1506"></a>
+<FONT color="green">1507</FONT>    /* Emacs configuration<a name="line.1507"></a>
+<FONT color="green">1508</FONT>     * Local variables:        **<a name="line.1508"></a>
+<FONT color="green">1509</FONT>     * mode:             java  **<a name="line.1509"></a>
+<FONT color="green">1510</FONT>     * c-basic-offset:   4     **<a name="line.1510"></a>
+<FONT color="green">1511</FONT>     * indent-tabs-mode: nil   **<a name="line.1511"></a>
+<FONT color="green">1512</FONT>     * End:                    **<a name="line.1512"></a>
+<FONT color="green">1513</FONT>     */<a name="line.1513"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

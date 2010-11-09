@@ -1,0 +1,11 @@
+org.apache.james.mime4j
+org.apache.james.mime4j.codec
+org.apache.james.mime4j.descriptor
+org.apache.james.mime4j.field
+org.apache.james.mime4j.field.address
+org.apache.james.mime4j.field.datetime
+org.apache.james.mime4j.io
+org.apache.james.mime4j.message
+org.apache.james.mime4j.parser
+org.apache.james.mime4j.storage
+org.apache.james.mime4j.util

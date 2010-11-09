@@ -1,0 +1,4 @@
+bin/
+*.class
+gen/
+*.swp

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, MainActivity!</string>
+    <string name="app_name">RoboticEye</string>
+    <string name="camera_failed">The camera failed to start recording. Sorry.</string>
+    <string name="sdcard_failed">The SD card access failed, so we can not record videos. Sorry.</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Ok</string>
+    <string name="notrecording">You are not recording video.</string>
+    <string name="haventrecorded">You have not recorded any video yet.</string>
+    <string name="stop_recording_to_send">You are still recording video. Please stop recording first, then send.</string>
+    <string name="cant_find_upload_host">We can not connect to the video hosting service. Sorry</string>
+    <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry</string>
+    <string name="about_this">Robotic Eye version 0.1\nVideo capture and publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+
+	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to discard the captured video and record a new one?</string>
+</resources>

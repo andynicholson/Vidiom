@@ -1,0 +1,275 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /*<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<FONT color="green">003</FONT>     * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<FONT color="green">004</FONT>     * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<FONT color="green">006</FONT>     * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<FONT color="green">007</FONT>     * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<FONT color="green">010</FONT>     *<a name="line.10"></a>
+<FONT color="green">011</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<FONT color="green">012</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<FONT color="green">013</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<FONT color="green">014</FONT>     * See the License for the specific language governing permissions and<a name="line.14"></a>
+<FONT color="green">015</FONT>     * limitations under the License.<a name="line.15"></a>
+<FONT color="green">016</FONT>     */<a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.commons.net.nntp;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    /***<a name="line.20"></a>
+<FONT color="green">021</FONT>     * NNTPReply stores a set of constants for NNTP reply codes.  To interpret<a name="line.21"></a>
+<FONT color="green">022</FONT>     * the meaning of the codes, familiarity with RFC 977 is assumed.<a name="line.22"></a>
+<FONT color="green">023</FONT>     * The mnemonic constant names are transcriptions from the code descriptions<a name="line.23"></a>
+<FONT color="green">024</FONT>     * of RFC 977.  For those who think in terms of the actual reply code values,<a name="line.24"></a>
+<FONT color="green">025</FONT>     * a set of CODE_NUM constants are provided where NUM is the numerical value<a name="line.25"></a>
+<FONT color="green">026</FONT>     * of the code.<a name="line.26"></a>
+<FONT color="green">027</FONT>     * &lt;p&gt;<a name="line.27"></a>
+<FONT color="green">028</FONT>     * &lt;p&gt;<a name="line.28"></a>
+<FONT color="green">029</FONT>     * @author Daniel F. Savarese<a name="line.29"></a>
+<FONT color="green">030</FONT>     ***/<a name="line.30"></a>
+<FONT color="green">031</FONT>    <a name="line.31"></a>
+<FONT color="green">032</FONT>    public final class NNTPReply<a name="line.32"></a>
+<FONT color="green">033</FONT>    {<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>        public static final int CODE_100 = 100;<a name="line.35"></a>
+<FONT color="green">036</FONT>        public static final int CODE_199 = 199;<a name="line.36"></a>
+<FONT color="green">037</FONT>        public static final int CODE_200 = 200;<a name="line.37"></a>
+<FONT color="green">038</FONT>        public static final int CODE_201 = 201;<a name="line.38"></a>
+<FONT color="green">039</FONT>        public static final int CODE_202 = 202;<a name="line.39"></a>
+<FONT color="green">040</FONT>        public static final int CODE_205 = 205;<a name="line.40"></a>
+<FONT color="green">041</FONT>        public static final int CODE_211 = 211;<a name="line.41"></a>
+<FONT color="green">042</FONT>        public static final int CODE_215 = 215;<a name="line.42"></a>
+<FONT color="green">043</FONT>        public static final int CODE_220 = 220;<a name="line.43"></a>
+<FONT color="green">044</FONT>        public static final int CODE_221 = 221;<a name="line.44"></a>
+<FONT color="green">045</FONT>        public static final int CODE_222 = 222;<a name="line.45"></a>
+<FONT color="green">046</FONT>        public static final int CODE_223 = 223;<a name="line.46"></a>
+<FONT color="green">047</FONT>        public static final int CODE_230 = 230;<a name="line.47"></a>
+<FONT color="green">048</FONT>        public static final int CODE_231 = 231;<a name="line.48"></a>
+<FONT color="green">049</FONT>        public static final int CODE_235 = 235;<a name="line.49"></a>
+<FONT color="green">050</FONT>        public static final int CODE_240 = 240;<a name="line.50"></a>
+<FONT color="green">051</FONT>        public static final int CODE_281 = 281;<a name="line.51"></a>
+<FONT color="green">052</FONT>        public static final int CODE_335 = 335;<a name="line.52"></a>
+<FONT color="green">053</FONT>        public static final int CODE_340 = 340;<a name="line.53"></a>
+<FONT color="green">054</FONT>        public static final int CODE_381 = 381;<a name="line.54"></a>
+<FONT color="green">055</FONT>        public static final int CODE_400 = 400;<a name="line.55"></a>
+<FONT color="green">056</FONT>        public static final int CODE_408 = 408;<a name="line.56"></a>
+<FONT color="green">057</FONT>        public static final int CODE_411 = 411;<a name="line.57"></a>
+<FONT color="green">058</FONT>        public static final int CODE_412 = 412;<a name="line.58"></a>
+<FONT color="green">059</FONT>        public static final int CODE_420 = 420;<a name="line.59"></a>
+<FONT color="green">060</FONT>        public static final int CODE_421 = 421;<a name="line.60"></a>
+<FONT color="green">061</FONT>        public static final int CODE_422 = 422;<a name="line.61"></a>
+<FONT color="green">062</FONT>        public static final int CODE_423 = 423;<a name="line.62"></a>
+<FONT color="green">063</FONT>        public static final int CODE_430 = 430;<a name="line.63"></a>
+<FONT color="green">064</FONT>        public static final int CODE_435 = 435;<a name="line.64"></a>
+<FONT color="green">065</FONT>        public static final int CODE_436 = 436;<a name="line.65"></a>
+<FONT color="green">066</FONT>        public static final int CODE_437 = 437;<a name="line.66"></a>
+<FONT color="green">067</FONT>        public static final int CODE_440 = 440;<a name="line.67"></a>
+<FONT color="green">068</FONT>        public static final int CODE_441 = 441;<a name="line.68"></a>
+<FONT color="green">069</FONT>        public static final int CODE_482 = 482;<a name="line.69"></a>
+<FONT color="green">070</FONT>        public static final int CODE_500 = 500;<a name="line.70"></a>
+<FONT color="green">071</FONT>        public static final int CODE_501 = 501;<a name="line.71"></a>
+<FONT color="green">072</FONT>        public static final int CODE_502 = 502;<a name="line.72"></a>
+<FONT color="green">073</FONT>        public static final int CODE_503 = 503;<a name="line.73"></a>
+<FONT color="green">074</FONT>    <a name="line.74"></a>
+<FONT color="green">075</FONT>        public static final int HELP_TEXT_FOLLOWS                = CODE_100;<a name="line.75"></a>
+<FONT color="green">076</FONT>        public static final int DEBUG_OUTPUT                     = CODE_199;<a name="line.76"></a>
+<FONT color="green">077</FONT>        public static final int SERVER_READY_POSTING_ALLOWED     = CODE_200;<a name="line.77"></a>
+<FONT color="green">078</FONT>        public static final int SERVER_READY_POSTING_NOT_ALLOWED = CODE_201;<a name="line.78"></a>
+<FONT color="green">079</FONT>        public static final int SLAVE_STATUS_NOTED               = CODE_202;<a name="line.79"></a>
+<FONT color="green">080</FONT>        public static final int CLOSING_CONNECTION               = CODE_205;<a name="line.80"></a>
+<FONT color="green">081</FONT>        public static final int GROUP_SELECTED                   = CODE_211;<a name="line.81"></a>
+<FONT color="green">082</FONT>        public static final int ARTICLE_RETRIEVED_HEAD_AND_BODY_FOLLOW = CODE_220;<a name="line.82"></a>
+<FONT color="green">083</FONT>        public static final int ARTICLE_RETRIEVED_HEAD_FOLLOWS = CODE_221;<a name="line.83"></a>
+<FONT color="green">084</FONT>        public static final int ARTICLE_RETRIEVED_BODY_FOLLOWS = CODE_222;<a name="line.84"></a>
+<FONT color="green">085</FONT>        public static final int<a name="line.85"></a>
+<FONT color="green">086</FONT>          ARTICLE_RETRIEVED_REQUEST_TEXT_SEPARATELY = CODE_223;<a name="line.86"></a>
+<FONT color="green">087</FONT>        public static final int ARTICLE_LIST_BY_MESSAGE_ID_FOLLOWS = CODE_230;<a name="line.87"></a>
+<FONT color="green">088</FONT>        public static final int NEW_NEWSGROUP_LIST_FOLLOWS         = CODE_231;<a name="line.88"></a>
+<FONT color="green">089</FONT>        public static final int ARTICLE_TRANSFERRED_OK             = CODE_235;<a name="line.89"></a>
+<FONT color="green">090</FONT>        public static final int ARTICLE_POSTED_OK                  = CODE_240;<a name="line.90"></a>
+<FONT color="green">091</FONT>        public static final int AUTHENTICATION_ACCEPTED            = CODE_281;<a name="line.91"></a>
+<FONT color="green">092</FONT>        public static final int SEND_ARTICLE_TO_TRANSFER           = CODE_335;<a name="line.92"></a>
+<FONT color="green">093</FONT>        public static final int SEND_ARTICLE_TO_POST               = CODE_340;<a name="line.93"></a>
+<FONT color="green">094</FONT>        public static final int MORE_AUTH_INFO_REQUIRED            = CODE_381;<a name="line.94"></a>
+<FONT color="green">095</FONT>        public static final int SERVICE_DISCONTINUED               = CODE_400;<a name="line.95"></a>
+<FONT color="green">096</FONT>        public static final int NO_SUCH_NEWSGROUP                  = CODE_411;<a name="line.96"></a>
+<FONT color="green">097</FONT>        public static final int AUTHENTICATION_REQUIRED            = CODE_408;<a name="line.97"></a>
+<FONT color="green">098</FONT>        public static final int NO_NEWSGROUP_SELECTED              = CODE_412;<a name="line.98"></a>
+<FONT color="green">099</FONT>        public static final int NO_CURRENT_ARTICLE_SELECTED        = CODE_420;<a name="line.99"></a>
+<FONT color="green">100</FONT>        public static final int NO_NEXT_ARTICLE                    = CODE_421;<a name="line.100"></a>
+<FONT color="green">101</FONT>        public static final int NO_PREVIOUS_ARTICLE                = CODE_422;<a name="line.101"></a>
+<FONT color="green">102</FONT>        public static final int NO_SUCH_ARTICLE_NUMBER             = CODE_423;<a name="line.102"></a>
+<FONT color="green">103</FONT>        public static final int NO_SUCH_ARTICLE_FOUND              = CODE_430;<a name="line.103"></a>
+<FONT color="green">104</FONT>        public static final int ARTICLE_NOT_WANTED                 = CODE_435;<a name="line.104"></a>
+<FONT color="green">105</FONT>        public static final int TRANSFER_FAILED                    = CODE_436;<a name="line.105"></a>
+<FONT color="green">106</FONT>        public static final int ARTICLE_REJECTED                   = CODE_437;<a name="line.106"></a>
+<FONT color="green">107</FONT>        public static final int POSTING_NOT_ALLOWED                = CODE_440;<a name="line.107"></a>
+<FONT color="green">108</FONT>        public static final int POSTING_FAILED                     = CODE_441;<a name="line.108"></a>
+<FONT color="green">109</FONT>        public static final int AUTHENTICATION_REJECTED            = CODE_482;<a name="line.109"></a>
+<FONT color="green">110</FONT>        public static final int COMMAND_NOT_RECOGNIZED             = CODE_500;<a name="line.110"></a>
+<FONT color="green">111</FONT>        public static final int COMMAND_SYNTAX_ERROR               = CODE_501;<a name="line.111"></a>
+<FONT color="green">112</FONT>        public static final int PERMISSION_DENIED                  = CODE_502;<a name="line.112"></a>
+<FONT color="green">113</FONT>        public static final int PROGRAM_FAULT                      = CODE_503;<a name="line.113"></a>
+<FONT color="green">114</FONT>    <a name="line.114"></a>
+<FONT color="green">115</FONT>        // Cannot be instantiated<a name="line.115"></a>
+<FONT color="green">116</FONT>    <a name="line.116"></a>
+<FONT color="green">117</FONT>        private NNTPReply()<a name="line.117"></a>
+<FONT color="green">118</FONT>        {}<a name="line.118"></a>
+<FONT color="green">119</FONT>    <a name="line.119"></a>
+<FONT color="green">120</FONT>        /***<a name="line.120"></a>
+<FONT color="green">121</FONT>         * Determine if a reply code is an informational response.  All<a name="line.121"></a>
+<FONT color="green">122</FONT>         * codes beginning with a 1 are positive informational responses.<a name="line.122"></a>
+<FONT color="green">123</FONT>         * Informational responses are used to provide human readable<a name="line.123"></a>
+<FONT color="green">124</FONT>         * information such as help text.<a name="line.124"></a>
+<FONT color="green">125</FONT>         * &lt;p&gt;<a name="line.125"></a>
+<FONT color="green">126</FONT>         * @param reply  The reply code to test.<a name="line.126"></a>
+<FONT color="green">127</FONT>         * @return True if a reply code is an informational response, false<a name="line.127"></a>
+<FONT color="green">128</FONT>         *         if not.<a name="line.128"></a>
+<FONT color="green">129</FONT>         ***/<a name="line.129"></a>
+<FONT color="green">130</FONT>        public static boolean isInformational(int reply)<a name="line.130"></a>
+<FONT color="green">131</FONT>        {<a name="line.131"></a>
+<FONT color="green">132</FONT>            return (reply &gt;= 100 &amp;&amp; reply &lt; 200);<a name="line.132"></a>
+<FONT color="green">133</FONT>        }<a name="line.133"></a>
+<FONT color="green">134</FONT>    <a name="line.134"></a>
+<FONT color="green">135</FONT>        /***<a name="line.135"></a>
+<FONT color="green">136</FONT>         * Determine if a reply code is a positive completion response.  All<a name="line.136"></a>
+<FONT color="green">137</FONT>         * codes beginning with a 2 are positive completion responses.<a name="line.137"></a>
+<FONT color="green">138</FONT>         * The NNTP server will send a positive completion response on the final<a name="line.138"></a>
+<FONT color="green">139</FONT>         * successful completion of a command.<a name="line.139"></a>
+<FONT color="green">140</FONT>         * &lt;p&gt;<a name="line.140"></a>
+<FONT color="green">141</FONT>         * @param reply  The reply code to test.<a name="line.141"></a>
+<FONT color="green">142</FONT>         * @return True if a reply code is a postive completion response, false<a name="line.142"></a>
+<FONT color="green">143</FONT>         *         if not.<a name="line.143"></a>
+<FONT color="green">144</FONT>         ***/<a name="line.144"></a>
+<FONT color="green">145</FONT>        public static boolean isPositiveCompletion(int reply)<a name="line.145"></a>
+<FONT color="green">146</FONT>        {<a name="line.146"></a>
+<FONT color="green">147</FONT>            return (reply &gt;= 200 &amp;&amp; reply &lt; 300);<a name="line.147"></a>
+<FONT color="green">148</FONT>        }<a name="line.148"></a>
+<FONT color="green">149</FONT>    <a name="line.149"></a>
+<FONT color="green">150</FONT>        /***<a name="line.150"></a>
+<FONT color="green">151</FONT>         * Determine if a reply code is a positive intermediate response.  All<a name="line.151"></a>
+<FONT color="green">152</FONT>         * codes beginning with a 3 are positive intermediate responses.<a name="line.152"></a>
+<FONT color="green">153</FONT>         * The NNTP server will send a positive intermediate response on the<a name="line.153"></a>
+<FONT color="green">154</FONT>         * successful completion of one part of a multi-part command or<a name="line.154"></a>
+<FONT color="green">155</FONT>         * sequence of commands.  For example, after a successful POST command,<a name="line.155"></a>
+<FONT color="green">156</FONT>         * a positive intermediate response will be sent to indicate that the<a name="line.156"></a>
+<FONT color="green">157</FONT>         * server is ready to receive the article to be posted.<a name="line.157"></a>
+<FONT color="green">158</FONT>         * &lt;p&gt;<a name="line.158"></a>
+<FONT color="green">159</FONT>         * @param reply  The reply code to test.<a name="line.159"></a>
+<FONT color="green">160</FONT>         * @return True if a reply code is a postive intermediate response, false<a name="line.160"></a>
+<FONT color="green">161</FONT>         *         if not.<a name="line.161"></a>
+<FONT color="green">162</FONT>         ***/<a name="line.162"></a>
+<FONT color="green">163</FONT>        public static boolean isPositiveIntermediate(int reply)<a name="line.163"></a>
+<FONT color="green">164</FONT>        {<a name="line.164"></a>
+<FONT color="green">165</FONT>            return (reply &gt;= 300 &amp;&amp; reply &lt; 400);<a name="line.165"></a>
+<FONT color="green">166</FONT>        }<a name="line.166"></a>
+<FONT color="green">167</FONT>    <a name="line.167"></a>
+<FONT color="green">168</FONT>        /***<a name="line.168"></a>
+<FONT color="green">169</FONT>         * Determine if a reply code is a negative transient response.  All<a name="line.169"></a>
+<FONT color="green">170</FONT>         * codes beginning with a 4 are negative transient responses.<a name="line.170"></a>
+<FONT color="green">171</FONT>         * The NNTP server will send a negative transient response on the<a name="line.171"></a>
+<FONT color="green">172</FONT>         * failure of a correctly formatted command that could not be performed<a name="line.172"></a>
+<FONT color="green">173</FONT>         * for some reason.  For example, retrieving an article that does not<a name="line.173"></a>
+<FONT color="green">174</FONT>         * exist will result in a negative transient response.<a name="line.174"></a>
+<FONT color="green">175</FONT>         * &lt;p&gt;<a name="line.175"></a>
+<FONT color="green">176</FONT>         * @param reply  The reply code to test.<a name="line.176"></a>
+<FONT color="green">177</FONT>         * @return True if a reply code is a negative transient response, false<a name="line.177"></a>
+<FONT color="green">178</FONT>         *         if not.<a name="line.178"></a>
+<FONT color="green">179</FONT>         ***/<a name="line.179"></a>
+<FONT color="green">180</FONT>        public static boolean isNegativeTransient(int reply)<a name="line.180"></a>
+<FONT color="green">181</FONT>        {<a name="line.181"></a>
+<FONT color="green">182</FONT>            return (reply &gt;= 400 &amp;&amp; reply &lt; 500);<a name="line.182"></a>
+<FONT color="green">183</FONT>        }<a name="line.183"></a>
+<FONT color="green">184</FONT>    <a name="line.184"></a>
+<FONT color="green">185</FONT>        /***<a name="line.185"></a>
+<FONT color="green">186</FONT>         * Determine if a reply code is a negative permanent response.  All<a name="line.186"></a>
+<FONT color="green">187</FONT>         * codes beginning with a 5 are negative permanent responses.<a name="line.187"></a>
+<FONT color="green">188</FONT>         * The NNTP server will send a negative permanent response when<a name="line.188"></a>
+<FONT color="green">189</FONT>         * it does not implement a command, a command is incorrectly formatted,<a name="line.189"></a>
+<FONT color="green">190</FONT>         * or a serious program error occurs.<a name="line.190"></a>
+<FONT color="green">191</FONT>         * &lt;p&gt;<a name="line.191"></a>
+<FONT color="green">192</FONT>         * @param reply  The reply code to test.<a name="line.192"></a>
+<FONT color="green">193</FONT>         * @return True if a reply code is a negative permanent response, false<a name="line.193"></a>
+<FONT color="green">194</FONT>         *         if not.<a name="line.194"></a>
+<FONT color="green">195</FONT>         ***/<a name="line.195"></a>
+<FONT color="green">196</FONT>        public static boolean isNegativePermanent(int reply)<a name="line.196"></a>
+<FONT color="green">197</FONT>        {<a name="line.197"></a>
+<FONT color="green">198</FONT>            return (reply &gt;= 500 &amp;&amp; reply &lt; 600);<a name="line.198"></a>
+<FONT color="green">199</FONT>        }<a name="line.199"></a>
+<FONT color="green">200</FONT>    <a name="line.200"></a>
+<FONT color="green">201</FONT>    }<a name="line.201"></a>
+<FONT color="green">202</FONT>    <a name="line.202"></a>
+<FONT color="green">203</FONT>    /* Emacs configuration<a name="line.203"></a>
+<FONT color="green">204</FONT>     * Local variables:        **<a name="line.204"></a>
+<FONT color="green">205</FONT>     * mode:             java  **<a name="line.205"></a>
+<FONT color="green">206</FONT>     * c-basic-offset:   4     **<a name="line.206"></a>
+<FONT color="green">207</FONT>     * indent-tabs-mode: nil   **<a name="line.207"></a>
+<FONT color="green">208</FONT>     * End:                    **<a name="line.208"></a>
+<FONT color="green">209</FONT>     */<a name="line.209"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

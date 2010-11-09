@@ -1,0 +1,24 @@
+-classpath 'c:/sandbox/commons-net-2.0/target/classes'
+ -encoding
+'iso-8859-1'
+-protected
+-source
+'1.5'
+-sourcepath
+'c:/sandbox/commons-net-2.0/src/main/java'
+-author
+-bottom
+'Copyright &#169; 1997-2008 <a href="http://www.apache.org/">The Apache Software Foundation</a>. All Rights Reserved.'
+-charset
+'ISO-8859-1'
+-d
+'c:/sandbox/commons-net-2.0/target/site/apidocs'
+-doctitle
+'Commons Net 2.0 API'
+-link
+'http://java.sun.com/javase/6/docs/api'
+-linksource
+-use
+-version
+-windowtitle
+'Commons Net 2.0 API'
