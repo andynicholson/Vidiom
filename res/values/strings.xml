@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="maxFilesizePreferenceDefault">1024</string>
+    <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes (KB)</string>
+    <string name="maxFilesizePreferenceTitle">Video filesize</string>
+    <string name="maxDurationPreferenceDefault">40</string>
+    <string name="maxDurationPreferenceSummary">Maximum duration for a recorded video in seconds</string>
+    <string name="maxDurationPreferenceTitle">Recording Duration</string>
+    <string name="defaultFTPpasswordPreferenceTitle">FTP host password</string>
+    <string name="defaultFTPusernamePreferenceTitle">FTP host username</string>
+    <string name="defaultFTPhostPreferenceSummary">The domain name of the FTP host</string>
+    <string name="defaultFTPhostPreferenceTitle">FTP hostname</string>
+    <string name="filenameConventionDefaultPreference">date</string>
+    <string name="filenameConventionPreferenceSummary">Choose the style of recorded video filenames</string>
+    <string name="filenameConventionPreferenceTitle">Video filename style</string>
+    <string name="filenameConventionPreferenceDialogTitle">Video filename style</string>
+    <string name="videobinPreferenceSummary">Automatically publish video to videobin.org?</string>
+    <string name="videobinPreferenceTitle">Videobin.org</string>
+    <string name="ftpPreferenceSummary">Automatically send video via FTP to server?</string>
+    <string name="ftpPreferenceTitle">FTP video</string>
+    <string name="autoEmailPreferenceSummary">Automatically launch email application with recorded video as attachment?</string>
+    <string name="autoEmailPreferenceTitle">Email video</string>
+    <string name="emailPreferenceSummary">Enter your email to receive your videos as attachments</string>
+    <string name="emailTitle">Email Address</string>
+   
     <string name="hello">Hello World, MainActivity!</string>
     <string name="app_name">RoboticEye</string>
     <string name="camera_failed">The camera failed to start recording. Sorry.</string>
@@ -12,6 +35,19 @@
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Sorry</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry</string>
     <string name="about_this">Robotic Eye version 0.1\nVideo capture and publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
-
+	<string name="prefTitle">Preferences</string>
 	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to discard the captured video and record a new one?</string>
+
+	<string name="uploadprogresstext">Uploading in progress</string>
+
+	<string-array name="filenameConventionTypes">
+		<item>by date</item>
+		<item>by sequential number</item>
+	</string-array>
+
+	<string-array name="filenameConventionTypeIds">
+		<item>date</item>
+		<item>number</item>
+	</string-array>
+
 </resources>

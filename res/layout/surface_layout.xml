@@ -24,4 +24,10 @@
 		android:layout_centerInParent="true"
 		android:layout_weight="1">
 	</SurfaceView>
+	<LinearLayout android:id="@+id/uploadprogress" android:layout_width="wrap_content"
+		android:layout_height="wrap_content">
+		<ProgressBar android:id="@+id/ProgressBar01" android:layout_width="wrap_content" android:layout_height="wrap_content"></ProgressBar>
+		<TextView android:text="@string/uploadprogresstext"  android:layout_width="wrap_content"
+		android:layout_height="wrap_content"></TextView>
+	</LinearLayout>
 </RelativeLayout>

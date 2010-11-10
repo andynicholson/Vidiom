@@ -26,7 +26,18 @@
             </intent-filter>
         </activity>
 
+    <activity android:name=".PreferencesActivity"
+          android:label="@string/prefTitle">
+    <intent-filter>
+         <action android:name="au.com.infiniterecursion.intent.action.Preferences" />
+        <category android:name="android.intent.category.PREFERENCE" />
+    </intent-filter>
+	</activity>
+    
     </application>
+    
+
+    
     <uses-sdk android:minSdkVersion="7" />
 	
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
