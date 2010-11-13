@@ -382,17 +382,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
-	private void launchEmailIntentWithCurrentVideo() {
-		Log.d(TAG,"launchEmailIntentWithCurrentVideo starting");
-		
-		Intent i = new Intent(Intent.ACTION_SEND);
-		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.setType("video/mp4");
-		i.putExtra(Intent.EXTRA_STREAM,
-				Uri.parse("file://" + latestTempVideoFile));
-		startActivity(i);
-	}
-
 	private void menuResponseForPublishItem() {
 		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
 		
@@ -460,8 +449,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 							}).show();
 		}
 	}
-
-	
 
 	private void menuResponseForRecordItem() {
 		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
@@ -829,6 +816,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		uploadedSuccessfully = true;
 	}
 
+	private void launchEmailIntentWithCurrentVideo() {
+		Log.d(TAG,"launchEmailIntentWithCurrentVideo starting");
+		
+		Intent i = new Intent(Intent.ACTION_SEND);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setType("video/mp4");
+		i.putExtra(Intent.EXTRA_STREAM,
+				Uri.parse("file://" + latestTempVideoFile));
+		startActivity(i);
+	}
+	
+	/*
+	 * Camera methods
+	 * 
+	 *
+	 */
+	
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		//
