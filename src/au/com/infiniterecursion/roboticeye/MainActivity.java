@@ -14,6 +14,9 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -35,6 +38,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -86,15 +90,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	// Objects for recording
 	private MediaRecorder mediaRecorder;
-	// 40 seconds max video
-	private final int maxDurationInMs = 40 * 1000;
-	// 1MB limit
-	private final long maxFileSizeInBytes = 1000000;
+	// eg 40 seconds max video
+	private int maxDurationInMs = 0;
+	//eg 1MB limit
+	private long maxFileSizeInBytes = 0;
 	private final int videoFramesPerSecond = 25;
 
 	//App state
 	private boolean recordingInMotion;
-	private String latestTempVideoFile;
+	//Filenames (abs, relative) for latest recorded video file.
+	private String latestVideoFile_absolutepath;
+	private String latestVideoFile_filename;
 	private boolean canSendVideoFile;
 	private boolean uploadedSuccessfully;
 
@@ -108,8 +114,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private boolean fTPPreference;
 	private boolean videobinPreference;
 	private String emailPreference;
-
+	private String filenameConventionPrefence;
+	private String maxDurationPreference;
+	private String maxFilesizePreference;
+	
+	//Message queue
 	private Handler handler;
+
+	
+
+	
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -128,17 +142,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		recordingInMotion = false;
 		canSendVideoFile = false;
-		latestTempVideoFile = "";
+		latestVideoFile_absolutepath = "";
+		latestVideoFile_filename = "";
 		uploadedSuccessfully = false;
-
-		// check our folder exists, and if not make it
-
-		checkInstallDirandCreateIfMissing();
-
-		loadPreferences();
 		
 		handler = new Handler();
+		
 		findViewById(R.id.uploadprogress).setVisibility(View.INVISIBLE);
+		
+		// check our folder exists, and if not make it
+		checkInstallDirandCreateIfMissing();
 	}
 	
 	@Override
@@ -158,7 +171,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 		emailPreference = prefs.getString("emailPreference",null);
 	
-		Log.d(TAG," preferences are " + autoEmailPreference+":"+fTPPreference+":"+videobinPreference+":"+emailPreference);
+		// Filename style, duration, max filesize
+		Resources res = getResources();
+
+		filenameConventionPrefence = prefs.getString("filenameConventionPrefence",res.getString(R.string.filenameConventionDefaultPreference));
+		maxDurationPreference = prefs.getString("maxDurationPreference",res.getString(R.string.maxDurationPreferenceDefault));
+		maxFilesizePreference = prefs.getString("maxFilesizePreference",res.getString(R.string.maxFilesizePreferenceDefault));
+				
+		Log.d(TAG,"behaviour preferences are " + autoEmailPreference+":"+fTPPreference+":"+videobinPreference+":"+emailPreference);
+		
+		Log.d(TAG,"video recording preferences are " + filenameConventionPrefence+":"+maxDurationPreference+":"+maxFilesizePreference);
 	}
 
 	private void checkInstallDirandCreateIfMissing() {
@@ -516,7 +538,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				    		MultipartEntity entity = new MultipartEntity(
 				    				HttpMultipartMode.BROWSER_COMPATIBLE);
 
-				    		File file = new File(latestTempVideoFile);
+				    		File file = new File(latestVideoFile_absolutepath);
 				    		entity.addPart("videoFile", new FileBody(file));
 
 				    		try {
@@ -555,11 +577,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 				    		Log.d(TAG, " got back " + response);
 
-				    		// XXX
-				    		// auto-email this to user? if yes, do it
+				    		// XXX should this be another auto-email this to user preference ?
+				    		// stuck on YES here, if email is defined.
 
 				    		if (emailPreference != null) {
-				    		 EmailSender sender = new EmailSender("intothemist","#!$tesla."); // SUBSTITUTE HERE                    
+				    		
+				    			//XXX convert EmailSender to use IR controlled system.
+				    			
+				    			EmailSender sender = new EmailSender("intothemist","#!$tesla."); // SUBSTITUTE HERE                    
 				    		                 try {  
 				    		                     sender.sendMail(  
 				    		                             "Robotic Eye automatic email.",   //subject.getText().toString(),   
@@ -613,8 +638,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		String ftpUsername = prefs.getString("defaultFTPusernamePreference",null);
 		String ftpPassword = prefs.getString("defaultFTPpasswordPreference",null);
 		
-		//XXX use name of local file.
-		String ftpRemoteFtpFilename = "test2.mp4";
+		// use name of local file.
+		String ftpRemoteFtpFilename = latestVideoFile_filename;
 
 		// FTP
 		FTPClient ftpClient = new FTPClient();
@@ -729,7 +754,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// Construct the input strteam to send to Ftp server, from the local
 		// video file on the sd card
 		BufferedInputStream buffIn = null;
-		File file = new File(latestTempVideoFile);
+		File file = new File(latestVideoFile_absolutepath);
 
 		try {
 			buffIn = new BufferedInputStream(new FileInputStream(file));
@@ -823,7 +848,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		i.setType("video/mp4");
 		i.putExtra(Intent.EXTRA_STREAM,
-				Uri.parse("file://" + latestTempVideoFile));
+				Uri.parse("file://" + latestVideoFile_absolutepath));
 		startActivity(i);
 	}
 	
@@ -915,7 +940,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	public boolean startRecording() {
-		try {
+		
 			canSendVideoFile = false;
 
 			camera.unlock();
@@ -930,18 +955,50 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 			mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
 
+			Log.d(TAG, " startRecording - preferences are " + maxDurationPreference + ":" + filenameConventionPrefence+":"+maxFilesizePreference);
+			
+			Integer user_duration = Integer.parseInt(maxDurationPreference);
+			//preferences for user in seconds.
+			maxDurationInMs = user_duration * 1000;
 			mediaRecorder.setMaxDuration(maxDurationInMs);
 
-			// Tempfile name
-			String cacheFileName = "RoboticEyeTest2.mp4";
-			File tempFile = new File(folder.getAbsolutePath(), cacheFileName);
-
+			// Video file name selection process
+			String new_videofile_name = "RoboticEye-";
+			String file_ext_name = ".mp4";
+			
+			Resources res = getResources();
+			if (filenameConventionPrefence.compareTo(res.getString(R.string.filenameConventionDefaultPreference)) == 0) {
+				//The default is by date
+				SimpleDateFormat postFormater = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); 
+				Calendar cal = Calendar.getInstance();
+				Date now = cal.getTime();
+				String newDateStr = postFormater.format(now); 
+				
+				new_videofile_name += newDateStr + file_ext_name;
+				
+				
+					
+			} else {
+				//Sequentially 
+				
+				//XXX look into database for this number
+				String next_number = "001";
+				
+				new_videofile_name += next_number + file_ext_name;
+				
+			}
+			//save JUST the latest filename 
+			latestVideoFile_filename = new_videofile_name;
+			
+			File tempFile = new File(folder.getAbsolutePath(), new_videofile_name);
 			mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
 
 			Log.d(TAG, "Starting recording into " + tempFile.getAbsolutePath());
 
-			latestTempVideoFile = tempFile.getAbsolutePath();
-
+			//Save the entire path to latest recorded video.
+			latestVideoFile_absolutepath = tempFile.getAbsolutePath();
+			
+			
 			mediaRecorder.setVideoFrameRate(videoFramesPerSecond);
 
 			// mediaRecorder.setVideoSize(surfaceView.getWidth(),
@@ -951,8 +1008,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
 
+			Integer user_filesize = Integer.parseInt(maxFilesizePreference);
+			//preferences for user in KB.
+			maxFileSizeInBytes = user_filesize * 1024;
 			mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
-
+	
+		try {
+			
 			mediaRecorder.prepare();
 			mediaRecorder.start();
 
