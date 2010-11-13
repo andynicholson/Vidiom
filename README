@@ -1,6 +1,12 @@
-RobotEye 0.1
+RobotEye 0.2
 
-Nov 2010
+13th Nov 2010
 
 Andy Nicholson
 Copyright Infinite Recursion Pty Ltd
+
+RELEASE LOG
+
+v0.1 Initial version. Prototype functionality, videobin.org /FTP /Email publishing working
+
+v0.2 Preferences, and initial database of videos, and posts.

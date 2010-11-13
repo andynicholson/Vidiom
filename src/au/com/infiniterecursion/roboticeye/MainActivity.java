@@ -75,6 +75,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private static final int MENU_ITEM_4 = MENU_ITEM_3 + 1;
 	private static final int MENU_ITEM_5 = MENU_ITEM_4 + 1;
 	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
+	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
 	
 	//Camera objects
 	//
@@ -200,17 +201,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
+	/*
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		Log.i(TAG, "OnCreateOptionsMenu called");
 
 		// Conditionally on menu items.
-		menu.add(0, MENU_ITEM_1, 0, "Record");
+		menu.add(0, MENU_ITEM_1, 0, R.string.menu_start_recording);
 
 		addConstantMenuItems(menu);
 		return true;
 	}
+	*/
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
@@ -218,34 +221,46 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		Log.i(TAG, "OnPrepareOptionsMenu called");
 
-		menu.clear();
-
-		// Conditionally on menu items.
-		if (recordingInMotion) {
-			menu.removeItem(MENU_ITEM_1);
-			menu.add(0, MENU_ITEM_2, 0, "Stop");
-		} else {
-			menu.add(0, MENU_ITEM_1, 0, "Record");
-			menu.removeItem(MENU_ITEM_2);
-		}
-
-		if (canSendVideoFile) {
-			menu.add(0, MENU_ITEM_3, 0, "Publish to videobin.org");
-			menu.add(0, MENU_ITEM_4, 0, "Send via Email");
-		} else {
-			menu.removeItem(MENU_ITEM_3);
-			menu.removeItem(MENU_ITEM_4);
-		}
+		createConditionalMenu(menu);
 
 		addConstantMenuItems(menu);
 
 		return true;
 	}
 
+	private void createConditionalMenu(Menu menu) {
+		menu.clear();
+
+		// Conditionally on menu items.
+		if (recordingInMotion) {
+			menu.removeItem(MENU_ITEM_1);
+			MenuItem menu_stop = menu.add(0, MENU_ITEM_2, 0,R.string.menu_stop_recording);
+			menu_stop.setIcon(R.drawable.stop48);
+		} else {
+			MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0, R.string.menu_start_recording);
+			menu_start.setIcon(R.drawable.sun48);
+			menu.removeItem(MENU_ITEM_2);
+		}
+
+		if (canSendVideoFile) {
+			MenuItem menu_publish = menu.add(0, MENU_ITEM_3, 0,R.string.menu_publish_to_videobin);
+			menu_publish.setIcon(R.drawable.globe48);
+			MenuItem menu_email = menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
+			menu_email.setIcon(R.drawable.movie48);
+		} else {
+			menu.removeItem(MENU_ITEM_3);
+			menu.removeItem(MENU_ITEM_4);
+		}
+	}
+
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
-		menu.add(0, MENU_ITEM_5, 0, "About");
-		menu.add(0, MENU_ITEM_6, 0, "Preferences");
+		MenuItem menu_about = menu.add(0, MENU_ITEM_5, 0, R.string.menu_about);
+		menu_about.setIcon(R.drawable.wizard48);
+		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0, R.string.menu_preferences);
+		menu_prefs.setIcon(R.drawable.options);
+		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0, R.string.menu_library);
+		menu_library.setIcon(R.drawable.business48);
 	}
 
 	@Override
@@ -303,6 +318,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			break;
 
+		case MENU_ITEM_7:
+			
+			//Library menu option
+			
+			//XXX Launch library activity, showing list of recorded videos
+			// their properties, if they are still 'on disk'
+			// how they were published, links to published sites 
+			// etc
+			
+			
+			break;
+			
+			
 		default:
 			return super.onOptionsItemSelected(menuitem);
 		}
@@ -316,6 +344,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	 */
 
 	private void menuResponseForEmailItem() {
+		
+		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
+		
 		if (canSendVideoFile && !recordingInMotion) {
 
 			launchEmailIntentWithCurrentVideo();
@@ -363,6 +394,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	private void menuResponseForPublishItem() {
+		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
+		
 		if (canSendVideoFile && !recordingInMotion) {
 
 			doPOSTtoVideoBin();
@@ -399,6 +432,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	private void menuResponseForStopItem() {
+		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
+		
 		if (recordingInMotion) {
 
 			stopRecording();
@@ -429,6 +464,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	
 
 	private void menuResponseForRecordItem() {
+		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
+		
 		if (!uploadedSuccessfully && canSendVideoFile) {
 
 			new AlertDialog.Builder(this)
@@ -467,13 +504,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 		Log.d(TAG,"doPOSTtoVideoBin starting");
 		
-		findViewById(R.id.ProgressBar01).setVisibility(View.VISIBLE);
+		
+		// Make the progress bar view visible.
+		findViewById(R.id.uploadprogress).setVisibility(View.VISIBLE);
 		 
 		new Thread(new Runnable() {
 				        public void run() {
-				            // Do heavy calculation
+				            // Do background task.
 				
-				        	
 				        	uploadedSuccessfully = false;
 
 				    		HttpClient client = new DefaultHttpClient();
@@ -575,11 +613,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		Log.d(TAG,"doVideoFTP starting");
 		
+		// Make the progress bar view visible.
+		findViewById(R.id.uploadprogress).setVisibility(View.VISIBLE);
+		
 		uploadedSuccessfully = false;
 
-		String ftpHostName = "engagemedia.org";
-		String ftpUsername = "re";
-		String ftpPassword = "rere!!";
+		// FTP; connect preferences here!
+		//
+		SharedPreferences prefs = PreferenceManager
+		.getDefaultSharedPreferences(getBaseContext());
+		String ftpHostName = prefs.getString("defaultFTPhostPreference",null);
+		String ftpUsername = prefs.getString("defaultFTPusernamePreference",null);
+		String ftpPassword = prefs.getString("defaultFTPpasswordPreference",null);
+		
+		//XXX use name of local file.
 		String ftpRemoteFtpFilename = "test2.mp4";
 
 		// FTP
@@ -598,6 +645,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 
 		if (uploadhost == null) {
+			
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+			
 			new AlertDialog.Builder(this)
 					.setMessage(R.string.cant_find_upload_host)
 					.setPositiveButton(R.string.yes,
@@ -654,6 +706,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				e.printStackTrace();
 			}
 
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+			
 			new AlertDialog.Builder(this)
 					.setMessage(R.string.cant_login_upload_host)
 					.setPositiveButton(R.string.yes,
@@ -696,6 +752,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			Log.e(TAG,
 					" got exception on local video file - video uploading failed.");
 
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+			
 			// This is a bad error, lets abort.
 			// XXX user dialog ?! shouldnt happen, but still...
 			return;
@@ -713,6 +773,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			// XXX user dialog ?! shouldnt happen, but still...
 
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+			
 			return;
 		}
 		try {
@@ -721,6 +785,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			//
 			e.printStackTrace();
 			Log.e(TAG, " got exception on buff.close - video uploading failed.");
+			
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+            
 			return;
 		}
 		try {
@@ -729,6 +798,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			//
 			e.printStackTrace();
 			Log.e(TAG, " got exception on ftp logout - video uploading failed.");
+			
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+			
 			return;
 		}
 		try {
@@ -738,9 +812,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			e.printStackTrace();
 			Log.e(TAG,
 					" got exception on ftp disconnect - video uploading failed.");
+			
+			 // Hide the progress bar
+            findViewById(R.id.uploadprogress)
+                .setVisibility(View.INVISIBLE);
+            
 			return;
 		}
 
+		
+		 // Hide the progress bar
+        findViewById(R.id.uploadprogress)
+            .setVisibility(View.INVISIBLE);
+		
 		// If we get here, it all worked out.
 		uploadedSuccessfully = true;
 	}
