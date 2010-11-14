@@ -34,8 +34,11 @@
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Check your preferences please.</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
     <string name="about_this">Robotic Eye version 0.2\nVideo capture and publishing tool.\nAuthor: Andrew Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+	
 	<string name="prefTitle">Preferences</string>
-	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to discard the captured video and record a new one?</string>
+	<string name="libraryTitle">Library</string>
+	
+	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to start recording a new one?</string>
 
 	<string name="uploadprogresstext">Uploading video in progress.</string>
 	

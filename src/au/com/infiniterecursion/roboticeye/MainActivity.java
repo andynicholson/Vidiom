@@ -35,10 +35,12 @@ import org.apache.http.util.EntityUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -54,6 +56,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
+
 
 /*
  * Main RoboticEye Activity 
@@ -103,7 +106,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private String latestVideoFile_filename;
 	private boolean canSendVideoFile;
 	private boolean uploadedSuccessfully;
-
+	private long startTimeinMillis;
+	private long endTimeinMillis;
+	
+	
 	//Video files
 	private File folder;
 	private String rootSDcardFolder = "/RoboticEye/";
@@ -121,8 +127,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	//Message queue
 	private Handler handler;
 
-	
-
+	//Database
+	private DBUtils db_utils;
 	
 	
 	/** Called when the activity is first created. */
@@ -148,10 +154,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 		handler = new Handler();
 		
+		startTimeinMillis=endTimeinMillis=0;
+		
 		findViewById(R.id.uploadprogress).setVisibility(View.INVISIBLE);
 		
 		// check our folder exists, and if not make it
 		checkInstallDirandCreateIfMissing();
+		
+		db_utils = new DBUtils(getBaseContext());
 	}
 	
 	@Override
@@ -161,7 +171,72 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		loadPreferences();
 		
 	}
+
+	@Override
+	public void onPause() {
+		
+		super.onDestroy();
+		Log.d(TAG,"On pause");
+		if (mediaRecorder != null) {
+			if (recordingInMotion) {
+				stopRecording();
+			}
+			mediaRecorder.release();
+		}
+		
+		
+	}
 	
+	/*
+	 * Returns the next filename number to use in naming the recorded videofile
+	 * 
+	 * -1 is error
+	 */
+	public int getNextFilenameNumberAndIncrement() {
+		
+		db_utils.genericWriteOpen();
+		
+		Cursor next_filename_number_cursor = db_utils.generic_write_db.query( DatabaseHelper.FILENAME_TABLE_NAME, null, null, null, null, null, null);
+		
+		if ( next_filename_number_cursor.moveToFirst() ) {
+			int column_index = next_filename_number_cursor.getColumnIndexOrThrow(DatabaseHelper.FilenameDetails.NEXT_FILENAME_NUMBER);
+			int next_number = next_filename_number_cursor.getInt(column_index);
+		
+			int next_number_in_db = next_number + 1;
+			//Increment the number
+			String incr_sql = "UPDATE " + DatabaseHelper.FILENAME_TABLE_NAME + " SET " + DatabaseHelper.FilenameDetails.NEXT_FILENAME_NUMBER + " = " + next_number_in_db ;
+			db_utils.generic_write_db.execSQL(incr_sql);
+			db_utils.close();
+			return next_number;
+		}
+		
+		//ERROR
+		return -1;
+		
+	}
+	
+	/*
+	 * Returns the ID of the new record, or -1 if error
+	 * 
+	 */
+	public long updateSDFileRecordwithNewVideoRecording(String filename, int duration, String video_audio_codecstr) {
+		db_utils.genericWriteOpen();
+		
+		ContentValues vals = new ContentValues();
+		vals.put(DatabaseHelper.SDFileRecord.FILENAME, filename);
+		vals.put(DatabaseHelper.SDFileRecord.LENGTH_SECS, duration);
+		vals.put(DatabaseHelper.SDFileRecord.VIDEO_AUDIO_CODEC_STRING, video_audio_codecstr);
+		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME, (Long) System.currentTimeMillis());
+		
+		long rez = db_utils.generic_write_db.insert(DatabaseHelper.SDFILERECORD_TABLE_NAME, DatabaseHelper.SDFileRecord.FILENAME, vals);
+	
+		db_utils.close();
+		
+		return rez;
+	}
+	
+	
+		
 	private void loadPreferences() {
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
@@ -269,11 +344,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			menu_publish.setIcon(R.drawable.globe48);
 			MenuItem menu_email = menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
 			menu_email.setIcon(R.drawable.movie48);
+			//XXX Add in publish to FTP host
+			
+			
 		} else {
 			menu.removeItem(MENU_ITEM_3);
 			menu.removeItem(MENU_ITEM_4);
 		}
 	}
+	
 
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
@@ -344,11 +423,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			
 			//Library menu option
 			
-			//XXX Launch library activity, showing list of recorded videos
+			// Launch library activity, showing list of recorded videos
 			// their properties, if they are still 'on disk'
 			// how they were published, links to published sites 
 			// etc
-			
+			Intent intent2 = new Intent().setClass(this,
+					LibraryActivity.class);
+			this.startActivityForResult(intent2, 0);
 			
 			break;
 			
@@ -889,9 +970,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			e.printStackTrace();
 		}
 	}
+	
 
 	public void surfaceCreated(SurfaceHolder holder) {
 		//
+		Log.d(TAG,"surfaceCreated!");
 		camera = Camera.open();
 		if (camera != null) {
 			Camera.Parameters params = camera.getParameters();
@@ -905,10 +988,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		//
+		Log.d(TAG,"surfaceDestroyed!");
 		camera.stopPreview();
 		previewRunning = false;
 		camera.release();
 	}
+	
 
 	private void tryToStartRecording() {
 		if (canAccessSDCard && startRecording()) {
@@ -981,8 +1066,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			} else {
 				//Sequentially 
 				
-				//XXX look into database for this number
-				String next_number = "001";
+				//look into database for this number
+				int next_number = getNextFilenameNumberAndIncrement();
+				
+				//XXX deal with -1 error condition
 				
 				new_videofile_name += next_number + file_ext_name;
 				
@@ -1018,6 +1105,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			mediaRecorder.prepare();
 			mediaRecorder.start();
 
+			startTimeinMillis = System.currentTimeMillis();
+			
 			return true;
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Illegal State Exception" + e.getMessage());
@@ -1029,6 +1118,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 	}
+	
 
 	public void stopRecording() {
 
@@ -1038,7 +1128,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		canSendVideoFile = true;
 		
 		doAutoCompletedRecordedActions();
+		
+		endTimeinMillis = System.currentTimeMillis();
+		
+		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds.");
+		
+		updateSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, (int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr");
 	}
+	
 
 	public void onInfo(MediaRecorder mr, int what, int extra) {
 		//

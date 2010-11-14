@@ -28,9 +28,17 @@
 
     <activity android:name=".PreferencesActivity"
           android:label="@string/prefTitle">
+   		<intent-filter>
+         	<action android:name="au.com.infiniterecursion.intent.action.Preferences" />
+        	<category android:name="android.intent.category.PREFERENCE" />
+   		</intent-filter>
+	</activity>
+    
+    <activity android:name=".LibraryActivity"
+          android:label="@string/libraryTitle">
     <intent-filter>
          <action android:name="au.com.infiniterecursion.intent.action.Preferences" />
-        <category android:name="android.intent.category.PREFERENCE" />
+        <category android:name="android.intent.category.LAUNCHER" />
     </intent-filter>
 	</activity>
     
