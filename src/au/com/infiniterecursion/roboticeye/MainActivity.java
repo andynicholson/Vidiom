@@ -1,50 +1,21 @@
 package au.com.infiniterecursion.roboticeye;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.http.HttpVersion;
-import org.apache.http.ParseException;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.util.EntityUtils;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -70,7 +41,7 @@ import android.widget.Toast;
  * http://www.infiniterecursion.com.au
  */
 
-public class MainActivity extends Activity implements SurfaceHolder.Callback,
+public class MainActivity extends Activity implements SurfaceHolder.Callback, RoboticEyeActivity,
 		MediaRecorder.OnInfoListener {
 
 	private static final String TAG = "RoboticEye";
@@ -130,13 +101,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	//Database
 	private DBUtils db_utils;
 	
+	private PublishingUtils pu;
+
+	private SharedPreferences prefs;
 	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-
+		pu=new PublishingUtils();
+		
 		Log.d(TAG,"On create");
 		
 		setContentView(R.layout.surface_layout);
@@ -155,20 +130,27 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		handler = new Handler();
 		
 		startTimeinMillis=endTimeinMillis=0;
+		prefs = PreferenceManager
+		.getDefaultSharedPreferences(getBaseContext());
 		
-		findViewById(R.id.uploadprogress).setVisibility(View.INVISIBLE);
+		hideProgressIndicator();
 		
 		// check our folder exists, and if not make it
 		checkInstallDirandCreateIfMissing();
 		
+		// Initial install?
+		checkIfFirstTimeRunAndWelcome();
+		
 		db_utils = new DBUtils(getBaseContext());
 	}
+	
 	
 	@Override
 	public void onResume() {
 		super.onResume();
 		Log.d(TAG,"On resume");
 		loadPreferences();
+		
 		
 	}
 
@@ -187,59 +169,45 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 	}
 	
-	/*
-	 * Returns the next filename number to use in naming the recorded videofile
-	 * 
-	 * -1 is error
-	 */
-	public int getNextFilenameNumberAndIncrement() {
+	public void showProgressIndicator() {
 		
-		db_utils.genericWriteOpen();
+		findViewById(R.id.uploadprogress).setVisibility(View.VISIBLE);
+	}
+	
+	public void hideProgressIndicator() {
 		
-		Cursor next_filename_number_cursor = db_utils.generic_write_db.query( DatabaseHelper.FILENAME_TABLE_NAME, null, null, null, null, null, null);
+		// Hide the progress bar
+		findViewById(R.id.uploadprogress)
+				.setVisibility(View.INVISIBLE);
+	}
+	
+	private void checkIfFirstTimeRunAndWelcome() {
+		// 
+		boolean first_time = prefs.getBoolean("firstTimeRun", true);
 		
-		if ( next_filename_number_cursor.moveToFirst() ) {
-			int column_index = next_filename_number_cursor.getColumnIndexOrThrow(DatabaseHelper.FilenameDetails.NEXT_FILENAME_NUMBER);
-			int next_number = next_filename_number_cursor.getInt(column_index);
-		
-			int next_number_in_db = next_number + 1;
-			//Increment the number
-			String incr_sql = "UPDATE " + DatabaseHelper.FILENAME_TABLE_NAME + " SET " + DatabaseHelper.FilenameDetails.NEXT_FILENAME_NUMBER + " = " + next_number_in_db ;
-			db_utils.generic_write_db.execSQL(incr_sql);
-			db_utils.close();
-			return next_number;
+		if (first_time) {
+			Editor editor = prefs.edit();
+			editor.putBoolean("firstTimeRun", false);
+			editor.commit();
+			
+			//Welcome dialog!
+			new AlertDialog.Builder(MainActivity.this)
+			.setMessage(R.string.welcome)
+			.setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+
+						}
+					}).show();
+			
+			
 		}
 		
-		//ERROR
-		return -1;
-		
 	}
 	
-	/*
-	 * Returns the ID of the new record, or -1 if error
-	 * 
-	 */
-	public long updateSDFileRecordwithNewVideoRecording(String filename, int duration, String video_audio_codecstr) {
-		db_utils.genericWriteOpen();
-		
-		ContentValues vals = new ContentValues();
-		vals.put(DatabaseHelper.SDFileRecord.FILENAME, filename);
-		vals.put(DatabaseHelper.SDFileRecord.LENGTH_SECS, duration);
-		vals.put(DatabaseHelper.SDFileRecord.VIDEO_AUDIO_CODEC_STRING, video_audio_codecstr);
-		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME, (Long) System.currentTimeMillis());
-		
-		long rez = db_utils.generic_write_db.insert(DatabaseHelper.SDFILERECORD_TABLE_NAME, DatabaseHelper.SDFileRecord.FILENAME, vals);
-	
-		db_utils.close();
-		
-		return rez;
-	}
-	
-	
-		
 	private void loadPreferences() {
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(getBaseContext());
+		
 		autoEmailPreference = prefs.getBoolean("autoemailPreference", false);
 		fTPPreference = prefs.getBoolean("ftpPreference", false);
 		videobinPreference = prefs.getBoolean("videobinPreference", false);
@@ -452,7 +420,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			launchEmailIntentWithCurrentVideo();
+			pu.launchEmailIntentWithCurrentVideo(this, latestVideoFile_absolutepath);
 
 		} else if (recordingInMotion) {
 
@@ -490,7 +458,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			doPOSTtoVideoBin();
+			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference);
 
 		} else if (recordingInMotion) {
 
@@ -585,353 +553,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
-	/*
-	 * 
-	 * Methods for publishing the video
-	 */
-
-	private void doPOSTtoVideoBin() {
-		
-		Log.d(TAG,"doPOSTtoVideoBin starting");
-		
-		
-		// Make the progress bar view visible.
-		findViewById(R.id.uploadprogress).setVisibility(View.VISIBLE);
-		 
-		new Thread(new Runnable() {
-				        public void run() {
-				            // Do background task.
-				
-				        	uploadedSuccessfully = false;
-
-				    		HttpClient client = new DefaultHttpClient();
-				    		client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION,
-				    				HttpVersion.HTTP_1_1);
-
-				    		URI url = null;
-				    		try {
-				    			url = new URI("http://videobin.org/add");
-				    		} catch (URISyntaxException e) {
-				    			//
-				    			e.printStackTrace();
-				    		}
-				    		HttpPost post = new HttpPost(url);
-				    		MultipartEntity entity = new MultipartEntity(
-				    				HttpMultipartMode.BROWSER_COMPATIBLE);
-
-				    		File file = new File(latestVideoFile_absolutepath);
-				    		entity.addPart("videoFile", new FileBody(file));
-
-				    		try {
-				    			entity.addPart("api",
-				    					new StringBody("1", "text/plain", Charset.forName("UTF-8")));
-				    		} catch (IllegalCharsetNameException e) {
-				    			//
-				    			e.printStackTrace();
-				    		} catch (UnsupportedCharsetException e) {
-				    			//
-				    			e.printStackTrace();
-				    		} catch (UnsupportedEncodingException e) {
-				    			//
-				    			e.printStackTrace();
-				    		}
-
-				    		post.setEntity(entity);
-
-				    		// Here we go!
-				    		String response = null;
-				    		try {
-				    			response = EntityUtils.toString(client.execute(post).getEntity(),
-				    					"UTF-8");
-				    		} catch (ParseException e) {
-				    			//
-				    			e.printStackTrace();
-				    		} catch (ClientProtocolException e) {
-				    			//
-				    			e.printStackTrace();
-				    		} catch (IOException e) {
-				    			//
-				    			e.printStackTrace();
-				    		}
-
-				    		client.getConnectionManager().shutdown();
-
-				    		Log.d(TAG, " got back " + response);
-
-				    		// XXX should this be another auto-email this to user preference ?
-				    		// stuck on YES here, if email is defined.
-
-				    		if (emailPreference != null) {
-				    		
-				    			//XXX convert EmailSender to use IR controlled system.
-				    			
-				    			EmailSender sender = new EmailSender("intothemist","#!$tesla."); // SUBSTITUTE HERE                    
-				    		                 try {  
-				    		                     sender.sendMail(  
-				    		                             "Robotic Eye automatic email.",   //subject.getText().toString(),   
-				    		                             "URL of video is  " + response,           //body.getText().toString(),   
-				    		                             emailPreference,          //from.getText().toString(),  
-				    		                             emailPreference            //to.getText().toString()  
-				    		                             );  
-				    		                 } catch (Exception e) {  
-				    		                     Log.e(TAG, e.getMessage(), e);  
-				    		                 }  
-				    		}
-				    		
-				    		
-				    		// Log record of this URL in POSTs table
-
-				    		uploadedSuccessfully = true;
-				        	
-				 
-				            // Use the handler to execute a Runnable on the
-				            // main thread in order to have access to the
-				            // UI elements.
-				            handler.postDelayed(new Runnable() {
-				                public void run() {
-				                    // Update UI
-				                    
-				                    // Hide the progress bar
-				                    findViewById(R.id.uploadprogress)
-				                        .setVisibility(View.INVISIBLE);
-				                }
-				            }, 0);
-				        }
-			}).start();
-		
-		
-	}
-
-	private void doVideoFTP() {
-
-		Log.d(TAG,"doVideoFTP starting");
-		
-		// Make the progress bar view visible.
-		findViewById(R.id.uploadprogress).setVisibility(View.VISIBLE);
-		
-		uploadedSuccessfully = false;
-
-		// FTP; connect preferences here!
-		//
-		SharedPreferences prefs = PreferenceManager
-		.getDefaultSharedPreferences(getBaseContext());
-		String ftpHostName = prefs.getString("defaultFTPhostPreference",null);
-		String ftpUsername = prefs.getString("defaultFTPusernamePreference",null);
-		String ftpPassword = prefs.getString("defaultFTPpasswordPreference",null);
-		
-		// use name of local file.
-		String ftpRemoteFtpFilename = latestVideoFile_filename;
-
-		// FTP
-		FTPClient ftpClient = new FTPClient();
-		InetAddress uploadhost = null;
-		try {
-
-			uploadhost = InetAddress.getByName(ftpHostName);
-		} catch (UnknownHostException e1) {
-			// If DNS resolution fails then abort immediately - show dialog to
-			// inform user first.
-			e1.printStackTrace();
-			Log.e(TAG, " got exception resolving " + ftpHostName
-					+ " - video uploading failed.");
-			uploadhost = null;
-		}
-
-		if (uploadhost == null) {
-			
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-			
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.cant_find_upload_host)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							}).show();
-
-			return;
-		}
-
-		try {
-			ftpClient.connect(uploadhost);
-		} catch (SocketException e) {
-			// These exceptions will be essentially caught by our check of
-			// ftpclient.login immediately below.
-			// if you cant connect you wont be able to login.
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			//
-			e.printStackTrace();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-		}
-
-		boolean reply = false;
-		try {
-
-			reply = ftpClient.login(ftpUsername, ftpPassword);
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on ftp.login - video uploading failed.");
-		}
-
-		// check the reply code here
-		// If we cant login, abort after showing user a dialog.
-		if (!reply) {
-			try {
-				ftpClient.disconnect();
-			} catch (IOException e) {
-				//
-				e.printStackTrace();
-			}
-
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-			
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.cant_login_upload_host)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							}).show();
-
-			return;
-		}
-
-		// Set File type to binary
-		try {
-			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-		}
-
-		// Construct the input strteam to send to Ftp server, from the local
-		// video file on the sd card
-		BufferedInputStream buffIn = null;
-		File file = new File(latestVideoFile_absolutepath);
-
-		try {
-			buffIn = new BufferedInputStream(new FileInputStream(file));
-		} catch (FileNotFoundException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG,
-					" got exception on local video file - video uploading failed.");
-
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-			
-			// This is a bad error, lets abort.
-			// XXX user dialog ?! shouldnt happen, but still...
-			return;
-		}
-
-		ftpClient.enterLocalPassiveMode();
-
-		try {
-			// UPLOAD THE LOCAL VIDEO FILE.
-			ftpClient.storeFile(ftpRemoteFtpFilename, buffIn);
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on storeFile - video uploading failed.");
-
-			// XXX user dialog ?! shouldnt happen, but still...
-
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-			
-			return;
-		}
-		try {
-			buffIn.close();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on buff.close - video uploading failed.");
-			
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-            
-			return;
-		}
-		try {
-			ftpClient.logout();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on ftp logout - video uploading failed.");
-			
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-			
-			return;
-		}
-		try {
-			ftpClient.disconnect();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG,
-					" got exception on ftp disconnect - video uploading failed.");
-			
-			 // Hide the progress bar
-            findViewById(R.id.uploadprogress)
-                .setVisibility(View.INVISIBLE);
-            
-			return;
-		}
-
-		
-		 // Hide the progress bar
-        findViewById(R.id.uploadprogress)
-            .setVisibility(View.INVISIBLE);
-		
-		// If we get here, it all worked out.
-		uploadedSuccessfully = true;
-	}
-
-	private void launchEmailIntentWithCurrentVideo() {
-		Log.d(TAG,"launchEmailIntentWithCurrentVideo starting");
-		
-		Intent i = new Intent(Intent.ACTION_SEND);
-		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.setType("video/mp4");
-		i.putExtra(Intent.EXTRA_STREAM,
-				Uri.parse("file://" + latestVideoFile_absolutepath));
-		startActivity(i);
-	}
+	
 	
 	/*
 	 * Camera methods
@@ -1067,7 +689,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				//Sequentially 
 				
 				//look into database for this number
-				int next_number = getNextFilenameNumberAndIncrement();
+				int next_number = db_utils.getNextFilenameNumberAndIncrement();
 				
 				//XXX deal with -1 error condition
 				
@@ -1131,9 +753,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		
 		endTimeinMillis = System.currentTimeMillis();
 		
-		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds.");
+		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
 		
-		updateSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, (int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr");
+		db_utils.updateSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr");
 	}
 	
 
@@ -1154,19 +776,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Log.d(TAG, "Doing auto completed recorded actions");
 		
 		if (videobinPreference) {
-
-			doPOSTtoVideoBin();
-
+			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference);
 		}
 
 		if (fTPPreference) {
-
-			doVideoFTP();
+			pu.doVideoFTP(this, latestVideoFile_filename, latestVideoFile_absolutepath);
 		}
 
 		if (autoEmailPreference) {
-
-			launchEmailIntentWithCurrentVideo();
+			pu.launchEmailIntentWithCurrentVideo(this, latestVideoFile_absolutepath);
 		}
 	}
 

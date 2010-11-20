@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="video_bin_API_api">api</string>
+    <string name="video_bin_API_videofile">videoFile</string>
+    <string name="http_videobin_org_add">http://videobin.org/add</string>
+    <string name="video_bin_uploaded_ok">Video successfully uploaded to videobin.org\nYou will receive an email with the URL to your video soon.</string>
+    
     <string name="maxFilesizePreferenceDefault">1024</string>
     <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes (KB)</string>
     <string name="maxFilesizePreferenceTitle">Video filesize</string>
@@ -33,7 +38,7 @@
     <string name="stop_recording_to_send">You are still recording video. Please stop recording first, then send.</string>
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Check your preferences please.</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
-    <string name="about_this">Robotic Eye version 0.2\nVideo capture and publishing tool.\nAuthor: Andrew Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+    <string name="about_this">Robotic Eye version 0.3\nVideo capture and publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
 	
 	<string name="prefTitle">Preferences</string>
 	<string name="libraryTitle">Library</string>
@@ -41,6 +46,10 @@
 	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to start recording a new one?</string>
 
 	<string name="uploadprogresstext">Uploading video in progress.</string>
+	
+	<string name="no_videos_in_library">You have no videos in the library.</string>
+	
+	<string name="welcome">Welcome to RoboticEye!\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
 	
 	<!-- menu -->
 	<string name="menu_start_recording">Record</string>
@@ -51,6 +60,10 @@
     <string name="menu_about">About</string>
 	<string name="menu_library">Library</string>
 
+	<!--  library menu -->
+	<string name="library_menu_delete">Delete video</string>
+	<string name="library_menu_play">Play video</string>
+	<string name="cant_show_video">Can not launch video player, sorry!.</string>
 
 	<string-array name="filenameConventionTypes">
 		<item>by date</item>

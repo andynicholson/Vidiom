@@ -1,12 +1,30 @@
-RobotEye 0.2
+RoboticEye 0.3 - 16th Nov 2010
 
-13th Nov 2010
+Author: Andrew Nicholson
 
-Andy Nicholson
-Copyright Infinite Recursion Pty Ltd
+Copyright, 2010, Infinite Recursion Pty Ltd
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+----------------------------------------------------------------------
+
+see 'LICENSE' file for full license.
 
 RELEASE LOG
 
-v0.1 Initial version. Prototype functionality, videobin.org /FTP /Email publishing working
+v0.3 Library 
 
 v0.2 Preferences, and initial database of videos, and posts.
+
+v0.1 Initial version. Prototype functionality, videobin.org /FTP /Email publishing working

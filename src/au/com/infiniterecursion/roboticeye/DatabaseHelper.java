@@ -9,6 +9,18 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+/*
+ * Database creation/upgrade
+ * 
+ * AUTHORS:
+ * 
+ * Andy Nicholson
+ * 
+ * 2010
+ * Copyright Infinite Recursion Pty Ltd.
+ * http://www.infiniterecursion.com.au
+ */
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public static final String AUTHORITY = "au.com.infiniterecursion.roboticeye";
@@ -16,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String CONTENT_ITEM_TYPE_BASE = "vnd.android.cursor.item/vnd.au.com.infiniterecursion.roboticeye";
 	
 	private static final String DB_FILENAME = "roboticeye.db";
-	private static final int DB_VERSION = 2;
+	private static final int DB_VERSION = 3;
 	
 	public static final String FILENAME_TABLE_NAME = "filename_details";
 	public static final String SDFILERECORD_TABLE_NAME = "videofiles";
@@ -57,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + SDFILERECORD_TABLE_NAME + " ("
                 + SDFileRecord._ID + " INTEGER PRIMARY KEY,"
                 + SDFileRecord.FILENAME + " TEXT,"
+                + SDFileRecord.FILEPATH + " TEXT,"
                 + SDFileRecord.LENGTH_SECS + " INTEGER,"
                 + SDFileRecord.CREATED_DATETIME + " INTEGER,"
                 + SDFileRecord.VIDEO_AUDIO_CODEC_STRING + " TEXT"
@@ -77,6 +90,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public static final class SDFileRecord implements BaseColumns {
+	
 		// This class cannot be instantiated
 		private SDFileRecord() {} 
 
@@ -98,7 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public static final String LENGTH_SECS = "length_secs";
 		public static final String VIDEO_AUDIO_CODEC_STRING="codec_str";
 		public static final String CREATED_DATETIME = "created_datetime";
-		
+		public static final String FILEPATH = "filepath";
 		
 	}
 	
