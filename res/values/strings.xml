@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--  
+/*
+ *  RoboticEye XML 
+ * 
+ * AUTHORS:
+ * 
+ * Andy Nicholson
+ * 
+ * 2010
+ * Copyright Infinite Recursion Pty Ltd.
+ * http://www.infiniterecursion.com.au
+ */
+
+-->
+
 <resources>
     <string name="video_bin_API_api">api</string>
     <string name="video_bin_API_videofile">videoFile</string>
@@ -64,7 +79,11 @@
 	<string name="library_menu_delete">Delete video</string>
 	<string name="library_menu_play">Play video</string>
 	<string name="cant_show_video">Can not launch video player, sorry!.</string>
-
+	<!--  Library list item  -->
+	<string name="text1intro">Filename : </string>
+	<string name="text2intro">Duration (seconds) : </string>
+	<string name="text3intro">Date Filmed : </string>
+	
 	<string-array name="filenameConventionTypes">
 		<item>by date</item>
 		<item>by sequential number</item>

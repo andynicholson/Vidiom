@@ -676,7 +676,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			Resources res = getResources();
 			if (filenameConventionPrefence.compareTo(res.getString(R.string.filenameConventionDefaultPreference)) == 0) {
 				//The default is by date
-				SimpleDateFormat postFormater = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); 
+				SimpleDateFormat postFormater = new SimpleDateFormat("yyyy-MM-dd-HH-mm"); 
 				Calendar cal = Calendar.getInstance();
 				Date now = cal.getTime();
 				String newDateStr = postFormater.format(now); 

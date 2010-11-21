@@ -14,6 +14,8 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -47,6 +49,20 @@ public class PublishingUtils {
 	private static final String TAG = "RoboticEye-PublishingUtils";
 	protected boolean uploadedSuccessfully = false;
 
+	
+	public static String showDate(long timemillis) {
+		
+		if (timemillis <= 0) 	
+			return "N/A";
+	
+		Calendar cal;
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss");
+		cal = Calendar.getInstance();
+		cal.setTimeInMillis(timemillis);
+		return sdf.format(cal.getTime());
+		
+	}
+	
 	/*
 	 * 
 	 * Methods for publishing the video

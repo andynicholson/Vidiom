@@ -15,7 +15,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+
 
 /*
  * RoboticEye Library Activity 
@@ -57,11 +59,20 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		emailPreference = prefs.getString("emailPreference",null);
 		
 		pu = new PublishingUtils();
-		
 		dbutils = new DBUtils(getBaseContext());		
+		handler = new Handler();
+	}
+	
+	public void onResume() {
+		super.onResume();
+		
+		
 		dbutils.genericWriteOpen();
-			
+		
 		Cursor c = dbutils.generic_write_db.query(DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null, null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
+		startManagingCursor(c);
+		
+		
 		Resources res = getResources();
 		
 		if (c.moveToFirst())
@@ -88,21 +99,52 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	    	videos_available = false;
 	    	
 	    }
-		c.close();
+		//c.close();
 		dbutils.close();
 		
+		
 		setContentView(R.layout.library_layout);
+		
+		/*
 		setListAdapter(new ArrayAdapter<String>(this,
 	            android.R.layout.simple_list_item_1, video_names)); 		    
-	    registerForContextMenu(getListView());
+	    */
+		/*
+		 ListAdapter adapter = new SimpleCursorAdapter(
+                 this, // Context.
+                 R.layout.library_list_item, 
+                 c,                                              // Pass in the cursor to bind to.
+                 new String[] {DatabaseHelper.SDFileRecord.FILENAME, DatabaseHelper.SDFileRecord.LENGTH_SECS, DatabaseHelper.SDFileRecord.CREATED_DATETIME},           // Array of cursor columns to bind to.
+                 new int[] {android.R.id.text1, android.R.id.text2, R.id.text3});  // Parallel array of which template objects to bind to those columns.
+	*/
+		String[] from =  new String[] {DatabaseHelper.SDFileRecord.FILENAME, DatabaseHelper.SDFileRecord.LENGTH_SECS, DatabaseHelper.SDFileRecord.CREATED_DATETIME};
+		int[] to = new int[] {android.R.id.text1, android.R.id.text2, R.id.text3};
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.library_list_item, c, from, to);
+		
+		
+		adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+		    public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+		        if(columnIndex == cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
+		        		long time_in_mills = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME));
+		        		TextView datetime = (TextView)view.findViewById(R.id.text3);
+		        		datetime.setText(PublishingUtils.showDate(time_in_mills));
+		                return true;
+		        }
+		        return false;
+		    }
+		});
+
+		
+		setListAdapter(adapter);
+		
+		registerForContextMenu(getListView());
 	    
 	    
-		handler = new Handler();
+		
 	
 		hideProgressIndicator();
+		
 	}
-	
-	
 	
 	public void onCreateContextMenu (ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		
