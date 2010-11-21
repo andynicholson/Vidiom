@@ -296,6 +296,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private void createConditionalMenu(Menu menu) {
 		menu.clear();
 
+		Log.i(TAG, "createConditionalMenu called. recordingInMotion ? "  + recordingInMotion + " : canSendVideoFile ? " + canSendVideoFile);
 		// Conditionally on menu items.
 		if (recordingInMotion) {
 			menu.removeItem(MENU_ITEM_1);
@@ -579,7 +580,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// p.setPictureSize(320,240);
 		p.setPreviewFormat(PixelFormat.YCbCr_420_SP);
 
-		Log.d(TAG, "Parameters are " + p.toString());
+		p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+		
+		//Log.d(TAG, "Parameters are " + p.toString());
 
 		camera.setParameters(p);
 
@@ -600,7 +603,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		camera = Camera.open();
 		if (camera != null) {
 			Camera.Parameters params = camera.getParameters();
+			
 			camera.setParameters(params);
+			
+			
+			
 		} else {
 			Toast.makeText(getApplicationContext(), "Camera not available!",
 					Toast.LENGTH_LONG).show();
