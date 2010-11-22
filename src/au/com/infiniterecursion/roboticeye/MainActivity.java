@@ -83,7 +83,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	
 	//Video files
 	private File folder;
-	private String rootSDcardFolder = "/RoboticEye/";
+	
 	private boolean canAccessSDCard = false;
 
 	//Preferences
@@ -110,7 +110,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		pu=new PublishingUtils();
+		
 		
 		Log.d(TAG,"On create");
 		
@@ -126,14 +126,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		latestVideoFile_absolutepath = "";
 		latestVideoFile_filename = "";
 		uploadedSuccessfully = false;
+		startTimeinMillis=endTimeinMillis=0;
+		
+		//Helper classes
+		//
 		
 		handler = new Handler();
-		
-		startTimeinMillis=endTimeinMillis=0;
+		db_utils = new DBUtils(getBaseContext());
+		pu=new PublishingUtils(getResources(), db_utils);
 		prefs = PreferenceManager
 		.getDefaultSharedPreferences(getBaseContext());
 		
-		hideProgressIndicator();
+		
 		
 		// check our folder exists, and if not make it
 		checkInstallDirandCreateIfMissing();
@@ -141,7 +145,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// Initial install?
 		checkIfFirstTimeRunAndWelcome();
 		
-		db_utils = new DBUtils(getBaseContext());
+		
 	}
 	
 	
@@ -151,7 +155,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		Log.d(TAG,"On resume");
 		loadPreferences();
 		
-		
+		//XXX check the uploading state!
+		hideProgressIndicator();
 	}
 
 	@Override
@@ -228,9 +233,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	private void checkInstallDirandCreateIfMissing() {
 		// android.os.Environment.getExternalStorageDirectory().getPath()
+		Resources res = getResources();
 		folder = new File(Environment.getExternalStorageDirectory()
-				+ rootSDcardFolder);
+				+ res.getString(R.string.rootSDcardFolder));
 		boolean success;
+		Log.d(TAG, "Base Folder:" + folder.getAbsolutePath());
 		if (!folder.exists()) {
 
 			Log.d(TAG, " Folder doesnt exit ... attempting to make it");
@@ -303,9 +310,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			MenuItem menu_stop = menu.add(0, MENU_ITEM_2, 0,R.string.menu_stop_recording);
 			menu_stop.setIcon(R.drawable.stop48);
 		} else {
-			MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0, R.string.menu_start_recording);
-			menu_start.setIcon(R.drawable.sun48);
-			menu.removeItem(MENU_ITEM_2);
+			if (canAccessSDCard) {
+				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0, R.string.menu_start_recording);
+				menu_start.setIcon(R.drawable.sun48);
+				menu.removeItem(MENU_ITEM_2);
+			}
 		}
 
 		if (canSendVideoFile) {
@@ -676,43 +685,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			maxDurationInMs = user_duration * 1000;
 			mediaRecorder.setMaxDuration(maxDurationInMs);
 
-			// Video file name selection process
-			String new_videofile_name = "RoboticEye-";
-			String file_ext_name = ".mp4";
-			
-			Resources res = getResources();
-			if (filenameConventionPrefence.compareTo(res.getString(R.string.filenameConventionDefaultPreference)) == 0) {
-				//The default is by date
-				SimpleDateFormat postFormater = new SimpleDateFormat("yyyy-MM-dd-HH-mm"); 
-				Calendar cal = Calendar.getInstance();
-				Date now = cal.getTime();
-				String newDateStr = postFormater.format(now); 
-				
-				new_videofile_name += newDateStr + file_ext_name;
-				
-				
-					
-			} else {
-				//Sequentially 
-				
-				//look into database for this number
-				int next_number = db_utils.getNextFilenameNumberAndIncrement();
-				
-				//XXX deal with -1 error condition
-				
-				new_videofile_name += next_number + file_ext_name;
-				
-			}
-			//save JUST the latest filename 
-			latestVideoFile_filename = new_videofile_name;
-			
-			File tempFile = new File(folder.getAbsolutePath(), new_videofile_name);
+			File tempFile = pu.selectFilenameAndCreateFile(filenameConventionPrefence);
+			latestVideoFile_filename = tempFile.getName();
+			latestVideoFile_absolutepath = tempFile.getAbsolutePath();
 			mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
-
 			Log.d(TAG, "Starting recording into " + tempFile.getAbsolutePath());
 
-			//Save the entire path to latest recorded video.
-			latestVideoFile_absolutepath = tempFile.getAbsolutePath();
 			
 			
 			mediaRecorder.setVideoFrameRate(videoFramesPerSecond);
@@ -747,7 +725,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			return false;
 		}
 	}
-	
+
+
 
 	public void stopRecording() {
 

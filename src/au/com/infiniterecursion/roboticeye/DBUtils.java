@@ -119,4 +119,23 @@ public class DBUtils {
 		return rez;
 	}
 
+	/**
+	 * Delete the db record, and all linked entries
+	 * 
+	 * @return -1 if error, else 0
+	 */
+	public long deleteSDFileRecord(long recordid) {
+		
+		if (recordid > 0) {
+			genericWriteOpen();
+			String args[] = new String[] { Long.toString(recordid) };
+			long rez = generic_write_db.delete(DatabaseHelper.SDFILERECORD_TABLE_NAME, " " + DatabaseHelper.SDFileRecord._ID + " = ?", args);
+			close();
+			return rez;
+		}
+		
+		return -1;
+		
+	}
+	
 }

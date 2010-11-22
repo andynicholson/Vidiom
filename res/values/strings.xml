@@ -15,6 +15,11 @@
 -->
 
 <resources>
+
+	<string name="rootSDcardFolder">/RoboticEye</string>
+	<string name="defaultVideoFilenamePrefix">video</string>
+	
+
     <string name="video_bin_API_api">api</string>
     <string name="video_bin_API_videofile">videoFile</string>
     <string name="http_videobin_org_add">http://videobin.org/add</string>

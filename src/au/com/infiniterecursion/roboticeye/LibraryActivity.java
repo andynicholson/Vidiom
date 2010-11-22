@@ -37,7 +37,8 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	// Database
 	DBUtils dbutils;
 	private String[] video_absolutepath;
-
+	private Integer[] video_ids;
+	
 	private boolean videos_available;
 
 	private static final int MENU_ITEM_1 = Menu.FIRST;
@@ -50,6 +51,8 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 	private Handler handler;
 	private String emailPreference;
+	private SimpleCursorAdapter listAdapter;
+	private Cursor libraryCursor;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -58,39 +61,50 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 				.getDefaultSharedPreferences(getBaseContext());
 		emailPreference = prefs.getString("emailPreference", null);
 
-		pu = new PublishingUtils();
+		
 		dbutils = new DBUtils(getBaseContext());
+		pu = new PublishingUtils(getResources(), dbutils);
 		handler = new Handler();
 	}
 
 	public void onResume() {
 		super.onResume();
+		
+		setContentView(R.layout.library_layout);
+		
+		makeCursorAndAdapter();
 
+		registerForContextMenu(getListView());
+
+		hideProgressIndicator();
+
+	}
+
+	private void makeCursorAndAdapter() {
 		dbutils.genericWriteOpen();
 
-		Cursor c = dbutils.generic_write_db.query(
+		libraryCursor = dbutils.generic_write_db.query(
 				DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null,
 				null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
-		startManagingCursor(c);
+		//startManagingCursor(libraryCursor);
 
-		Resources res = getResources();
-
-		if (c.moveToFirst()) {
-			ArrayList<String> video_names_al = new ArrayList<String>();
+		if (libraryCursor.moveToFirst()) {
+			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
 
 			do {
-				String video_name = c
-						.getString(c
-								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILENAME));
-				video_names_al.add(video_name);
-				String video_path = c
-						.getString(c
+				long video_id = libraryCursor
+						.getLong(libraryCursor
+								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
+				video_ids_al.add((int) video_id);
+				String video_path = libraryCursor
+						.getString(libraryCursor
 								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH));
 				video_paths_al.add(video_path);
 
-			} while (c.moveToNext());
+			} while (libraryCursor.moveToNext());
 
+			video_ids = video_ids_al.toArray(new Integer[video_ids_al.size()]);
 			video_absolutepath = video_paths_al
 					.toArray(new String[video_paths_al.size()]);
 			videos_available = true;
@@ -100,35 +114,22 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			videos_available = false;
 
 		}
-		dbutils.close();
+		
 
-		setContentView(R.layout.library_layout);
+		//Make Cursor Adapter
 
-		/*
-		 * setListAdapter(new ArrayAdapter<String>(this,
-		 * android.R.layout.simple_list_item_1, video_names));
-		 */
-		/*
-		 * ListAdapter adapter = new SimpleCursorAdapter( this, // Context.
-		 * R.layout.library_list_item, c, // Pass in the cursor to bind to. new
-		 * String[] {DatabaseHelper.SDFileRecord.FILENAME,
-		 * DatabaseHelper.SDFileRecord.LENGTH_SECS,
-		 * DatabaseHelper.SDFileRecord.CREATED_DATETIME}, // Array of cursor
-		 * columns to bind to. new int[] {android.R.id.text1,
-		 * android.R.id.text2, R.id.text3}); // Parallel array of which template
-		 * objects to bind to those columns.
-		 */
 		String[] from = new String[] { DatabaseHelper.SDFileRecord.FILENAME,
 				DatabaseHelper.SDFileRecord.LENGTH_SECS,
 				DatabaseHelper.SDFileRecord.CREATED_DATETIME };
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
 				R.id.text3 };
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-				R.layout.library_list_item, c, from, to);
+		listAdapter = new SimpleCursorAdapter(this,
+				R.layout.library_list_item, libraryCursor, from, to);
 
-		adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+		listAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
 			public boolean setViewValue(View view, Cursor cursor,
 					int columnIndex) {
+				//Transform the text3 specifically, from time in millis to text repr.
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
 					long time_in_mills = cursor.getLong(cursor
@@ -142,20 +143,21 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			}
 		});
 
-		setListAdapter(adapter);
-
-		registerForContextMenu(getListView());
-
-		hideProgressIndicator();
-
+		setListAdapter(listAdapter);
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Log.d(TAG, " onDestroy ");
+		libraryCursor.close();
+		dbutils.close();
+	}
+	
 	@Override
 	protected void onListItemClick(ListView l, View v, final int position,
 			long id) {
 		super.onListItemClick(l, v, position, id);
-		//Toast.makeText(this, "This is my row number " + position,
-			//	Toast.LENGTH_LONG).show();
 		
 		//play this selection.
 		String movieurl = video_absolutepath[(int) position];
@@ -179,13 +181,15 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 				.getMenuInfo();
 		Log.d(TAG, " got " + item.getItemId() + " at position " + info.position);
-
+		
+		
 		if (!videos_available) {
 			return true;
 		}
 
 		String movieurl = video_absolutepath[info.position];
-		Log.d(TAG, " operation on " + movieurl);
+		Integer movieid = video_ids[info.position];
+		Log.d(TAG, " operation on " + movieurl + " id " + movieid.longValue());
 
 		switch (item.getItemId()) {
 
@@ -197,8 +201,28 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		case MENU_ITEM_2:
 			// delete
 
-			// XXX deleting files, and removing DB records!
+			// deleting files,
+			if (!pu.deleteVideo(movieurl)) {
+				Log.w(TAG, "Cant delete file " + movieurl);
+				
+			}
+			// and removing DB records!
+			if (dbutils.deleteSDFileRecord(movieid) == -1) {
+				Log.w(TAG, "Cant delete record " + movieid);
+			}
+			
+			//Refresh the list view
+			runOnUiThread(new Runnable() {
+			    public void run() {
+			    	
+			    	makeCursorAndAdapter();
+					
+					listAdapter.notifyDataSetChanged();
 
+			    }
+			});
+
+			
 			break;
 
 		case MENU_ITEM_3:

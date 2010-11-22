@@ -16,6 +16,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -39,6 +40,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -48,7 +50,18 @@ public class PublishingUtils {
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
 	protected boolean uploadedSuccessfully = false;
-
+	private File folder;
+	private Resources res;
+	private DBUtils dbutils;
+	
+	PublishingUtils(Resources res, DBUtils dbutils) {
+		 	
+		this.res = res;
+		this.dbutils = dbutils;
+		folder = new File(Environment.getExternalStorageDirectory()
+				+ res.getString(R.string.rootSDcardFolder));
+		
+	}
 	
 	public static String showDate(long timemillis) {
 		
@@ -179,6 +192,10 @@ public class PublishingUtils {
 
 						((RoboticEyeActivity) activity).hideProgressIndicator();
 						
+						//XXX
+						//Indicate back to calling activity the result!
+						// update canSendVideoFile for instance
+						// update uploadInProgress state also.
 						
 						new AlertDialog.Builder(activity)
 						.setMessage(R.string.video_bin_uploaded_ok)
@@ -459,5 +476,48 @@ public class PublishingUtils {
 			return;
 		}
 
+	}
+
+
+	public File selectFilenameAndCreateFile(String filenameConventionPrefence) {
+		// Video file name selection process
+		String new_videofile_name = res.getString(R.string.defaultVideoFilenamePrefix);
+		String file_ext_name = ".mp4";
+		
+		if (filenameConventionPrefence.compareTo(res.getString(R.string.filenameConventionDefaultPreference)) == 0) {
+			//The default is by date
+			SimpleDateFormat postFormater = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); 
+			Calendar cal = Calendar.getInstance();
+			Date now = cal.getTime();
+			String newDateStr = postFormater.format(now); 
+			
+			new_videofile_name += newDateStr + file_ext_name;
+			
+			
+				
+		} else {
+			//Sequentially 
+			
+			//look into database for this number
+			int next_number = dbutils.getNextFilenameNumberAndIncrement();
+			
+			//XXX deal with -1 error condition
+			
+			new_videofile_name += next_number + file_ext_name;
+			
+		}
+		
+		File tempFile = new File(folder.getAbsolutePath(), new_videofile_name);
+		return tempFile;
+	}
+	
+	
+	public boolean deleteVideo(String movieuri) {
+		Log.d(TAG, "deleteVideo with " + movieuri);
+		
+		File tempFile = new File(movieuri);
+		
+		return tempFile.delete();
+		
 	}
 }
