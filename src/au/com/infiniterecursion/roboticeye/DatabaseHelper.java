@@ -28,11 +28,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String CONTENT_ITEM_TYPE_BASE = "vnd.android.cursor.item/vnd.au.com.infiniterecursion.roboticeye";
 	
 	private static final String DB_FILENAME = "roboticeye.db";
-	private static final int DB_VERSION = 3;
+	private static final int DB_VERSION = 4;
 	
 	public static final String FILENAME_TABLE_NAME = "filename_details";
 	public static final String SDFILERECORD_TABLE_NAME = "videofiles";
-	
+	public static final String HOST_TABLE_NAME = "hosts";
 	
 	private static final String TAG = "RoboticEye DatabaseHelper";
 	
@@ -41,7 +41,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public DatabaseHelper(Context context, String name, CursorFactory factory,
 			int version) {
 		super(context, name, factory, version);
-		//
 	}
 
 	
@@ -76,6 +75,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 
                 + " );");
  
+        db.execSQL("CREATE TABLE " + HOST_TABLE_NAME + " ("
+        		 + HostDetails._ID + " INTEGER PRIMARY KEY,"
+                 + HostDetails.HOST_URI + " TEXT,"
+                 + HostDetails.HOST_VIDEO_URL + " TEXT,"        		
+                 + HostDetails.HOST_PARAMS + " TEXT,"
+        		 + HostDetails.HOST_SDRECORD_ID + " INTEGER"
+        		 + " );");
+        
+        
 	}
 
 	@Override
@@ -85,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				+ newVersion + ", which will destroy all old data");
 		db.execSQL("DROP TABLE IF EXISTS " + FILENAME_TABLE_NAME);
 		db.execSQL("DROP TABLE IF EXISTS " + SDFILERECORD_TABLE_NAME);
+		db.execSQL("DROP TABLE IF EXISTS " + HOST_TABLE_NAME);
 		
 		onCreate(db);
 	}
@@ -98,13 +107,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public static final String DEFAULT_SORT_ORDER = "created_datetime DESC";
 
 		// The content:// style URL for this table
-		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/appstats");
+		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + SDFILERECORD_TABLE_NAME);
 
 		// The MIME type providing a directory of appstats.
-		public static final String CONTENT_TYPE = CONTENT_TYPE_BASE + ".filenamedetails";
+		public static final String CONTENT_TYPE = CONTENT_TYPE_BASE + "." + SDFILERECORD_TABLE_NAME;
 
 		// The MIME type providing a sub-directory of a single note.
-		public static final String CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_BASE + ".filenamedetails";
+		public static final String CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_BASE + "." + SDFILERECORD_TABLE_NAME;
 
 		// Table columns
 	
@@ -124,17 +133,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public static final String DEFAULT_SORT_ORDER = "DESC";
 
 		// The content:// style URL for this table
-		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/appstats");
+		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + FILENAME_TABLE_NAME);
 
 		// The MIME type providing a directory of appstats.
-		public static final String CONTENT_TYPE = CONTENT_TYPE_BASE + ".filenamedetails";
+		public static final String CONTENT_TYPE = CONTENT_TYPE_BASE + "." + FILENAME_TABLE_NAME;
 
 		// The MIME type providing a sub-directory of a single note.
-		public static final String CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_BASE + ".filenamedetails";
+		public static final String CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_BASE + "." + FILENAME_TABLE_NAME;
 
 		// Table columns
 	
 		public static final String NEXT_FILENAME_NUMBER = "next_filename_number";
 		
+	}
+	
+	
+	public static final class HostDetails implements BaseColumns {
+		// This class cannot be instantiated
+		private HostDetails() {} 
+
+		// The default sort order for this table
+		public static final String DEFAULT_SORT_ORDER = "DESC";
+
+		// The content:// style URL for this table
+		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + HOST_TABLE_NAME);
+
+		// The MIME type providing a directory of appstats.
+		public static final String CONTENT_TYPE = CONTENT_TYPE_BASE + "." + HOST_TABLE_NAME;
+
+		// The MIME type providing a sub-directory of a single note.
+		public static final String CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_BASE + "." + HOST_TABLE_NAME;
+
+		// Table columns
+	
+		public static final String HOST_URI = "host_uri";
+		public static final String HOST_VIDEO_URL = "host_video_url";
+		public static final String HOST_PARAMS = "host_params";
+		public static final String HOST_SDRECORD_ID = "sdrecord_id";
 	}
 }

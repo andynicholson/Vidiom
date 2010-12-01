@@ -49,7 +49,7 @@ import android.view.View;
 public class PublishingUtils {
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
-	protected boolean uploadedSuccessfully = false;
+	
 	private File folder;
 	private Resources res;
 	private DBUtils dbutils;
@@ -83,18 +83,18 @@ public class PublishingUtils {
 
 	public void doPOSTtoVideoBin(final Activity activity,
 			final Handler handler, final String video_absolutepath,
-			final String emailAddress) {
+			final String emailAddress, final long sdrecord_id) {
 
 		Log.d(TAG, "doPOSTtoVideoBin starting");
-
+		
+		
 		// Make the progress bar view visible.
-		((RoboticEyeActivity) activity).showProgressIndicator();
-
+		((RoboticEyeActivity) activity).startedUploading();
+		
 		new Thread(new Runnable() {
 			public void run() {
 				// Do background task.
-
-				uploadedSuccessfully = false;
+				
 				Resources res = activity.getResources();
 				
 				HttpClient client = new DefaultHttpClient();
@@ -106,8 +106,11 @@ public class PublishingUtils {
 				try {
 					url = new URI(res.getString(R.string.http_videobin_org_add));
 				} catch (URISyntaxException e) {
-					//
+					// Ours is a fixed URL, so not likely to get here.
 					e.printStackTrace();
+					((RoboticEyeActivity) activity).finishedUploading(false);
+					return;
+					
 				}
 				HttpPost post = new HttpPost(url);
 				MultipartEntity entity = new MultipartEntity(
@@ -120,14 +123,21 @@ public class PublishingUtils {
 					entity.addPart(res.getString(R.string.video_bin_API_api), new StringBody("1", "text/plain",
 							Charset.forName("UTF-8")));
 				} catch (IllegalCharsetNameException e) {
-					//
+					//error
 					e.printStackTrace();
+					((RoboticEyeActivity) activity).finishedUploading(false);
+					return;
+					
 				} catch (UnsupportedCharsetException e) {
-					//
+					//error
 					e.printStackTrace();
+					((RoboticEyeActivity) activity).finishedUploading(false);
+					return;
 				} catch (UnsupportedEncodingException e) {
-					//
+					//error
 					e.printStackTrace();
+					((RoboticEyeActivity) activity).finishedUploading(false);
+					return;
 				}
 
 				post.setEntity(entity);
@@ -138,19 +148,19 @@ public class PublishingUtils {
 					response = EntityUtils.toString(client.execute(post)
 							.getEntity(), "UTF-8");
 				} catch (ParseException e) {
-					//
+					//error
 					e.printStackTrace();
-					
+					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
 				} catch (ClientProtocolException e) {
-					//
+					//error
 					e.printStackTrace();
-					
+					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
 				} catch (IOException e) {
-					//
+					//error
 					e.printStackTrace();
-					
+					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
 				}
 
@@ -179,9 +189,8 @@ public class PublishingUtils {
 					}
 				}
 
-				//XXX Log record of this URL in POSTs table
-
-				uploadedSuccessfully = true;
+				//Log record of this URL in POSTs table
+				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id, res.getString(R.string.http_videobin_org_add) , response, "");
 
 				// Use the handler to execute a Runnable on the
 				// main thread in order to have access to the
@@ -190,12 +199,13 @@ public class PublishingUtils {
 					public void run() {
 						// Update UI
 
-						((RoboticEyeActivity) activity).hideProgressIndicator();
-						
-						//XXX
 						//Indicate back to calling activity the result!
-						// update canSendVideoFile for instance
 						// update uploadInProgress state also.
+						
+						((RoboticEyeActivity) activity).finishedUploading(true);
+
+						
+						
 						
 						new AlertDialog.Builder(activity)
 						.setMessage(R.string.video_bin_uploaded_ok)
@@ -223,9 +233,7 @@ public class PublishingUtils {
 		//XXX convert to Thread!
 
 		// Make the progress bar view visible.
-		((RoboticEyeActivity) activity).showProgressIndicator();
-		
-		uploadedSuccessfully = false;
+		((RoboticEyeActivity) activity).startedUploading();
 
 		// FTP; connect preferences here!
 		//
@@ -258,8 +266,7 @@ public class PublishingUtils {
 		if (uploadhost == null) {
 
 			// Hide the progress bar
-			activity.findViewById(R.id.uploadprogress).setVisibility(
-					View.INVISIBLE);
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			new AlertDialog.Builder(activity)
 					.setMessage(R.string.cant_find_upload_host)
@@ -318,7 +325,7 @@ public class PublishingUtils {
 			}
 
 			// Hide the progress bar
-			((RoboticEyeActivity) activity).hideProgressIndicator();
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			new AlertDialog.Builder(activity)
 					.setMessage(R.string.cant_login_upload_host)
@@ -363,7 +370,7 @@ public class PublishingUtils {
 					" got exception on local video file - video uploading failed.");
 
 			// Hide the progress bar
-			((RoboticEyeActivity) activity).hideProgressIndicator();
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			// This is a bad error, lets abort.
 			// XXX user dialog ?! shouldnt happen, but still...
@@ -383,7 +390,7 @@ public class PublishingUtils {
 			// XXX user dialog ?! shouldnt happen, but still...
 
 			// Hide the progress bar
-			((RoboticEyeActivity) activity).hideProgressIndicator();
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			return;
 		}
@@ -395,7 +402,7 @@ public class PublishingUtils {
 			Log.e(TAG, " got exception on buff.close - video uploading failed.");
 
 			// Hide the progress bar
-			((RoboticEyeActivity) activity).hideProgressIndicator();
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			return;
 		}
@@ -407,7 +414,7 @@ public class PublishingUtils {
 			Log.e(TAG, " got exception on ftp logout - video uploading failed.");
 
 			// Hide the progress bar
-			((RoboticEyeActivity) activity).hideProgressIndicator();
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			return;
 		}
@@ -420,16 +427,16 @@ public class PublishingUtils {
 					" got exception on ftp disconnect - video uploading failed.");
 
 			// Hide the progress bar
-			((RoboticEyeActivity) activity).hideProgressIndicator();
+			((RoboticEyeActivity) activity).finishedUploading(false);
 
 			return;
 		}
 
-		// Hide the progress bar
-		((RoboticEyeActivity) activity).hideProgressIndicator();
-
 		// If we get here, it all worked out.
-		uploadedSuccessfully = true;
+		// Hide the progress bar
+		((RoboticEyeActivity) activity).finishedUploading(true);
+
+
 	}
 
 	public void launchEmailIntentWithCurrentVideo(final Activity activity,

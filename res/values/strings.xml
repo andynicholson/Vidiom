@@ -88,6 +88,7 @@
 	<string name="text1intro">Filename : </string>
 	<string name="text2intro">Duration (seconds) : </string>
 	<string name="text3intro">Date Filmed : </string>
+	<string name="text4intro">Hosted details : </string>
 	
 	<string-array name="filenameConventionTypes">
 		<item>by date</item>

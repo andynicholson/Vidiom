@@ -85,4 +85,27 @@
   
 	</LinearLayout>
 	
+	<!--  Host details -->
+
+	<LinearLayout
+		 xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+   android:orientation="horizontal"
+	>
+	
+	<TextView 
+  android:id="@+id/text4intro"
+   android:textSize="16sp"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:text="@string/text4intro"/>
+    
+    <TextView android:id="@+id/text4"
+        android:textSize="16sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+  
+	</LinearLayout>
+	
 </LinearLayout>

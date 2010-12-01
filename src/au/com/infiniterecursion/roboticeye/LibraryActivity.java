@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.app.ListActivity;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /*
  * RoboticEye Library Activity 
@@ -53,6 +51,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	private String emailPreference;
 	private SimpleCursorAdapter listAdapter;
 	private Cursor libraryCursor;
+	private boolean isUploading;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -65,6 +64,8 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		dbutils = new DBUtils(getBaseContext());
 		pu = new PublishingUtils(getResources(), dbutils);
 		handler = new Handler();
+		
+		isUploading = false;
 	}
 
 	public void onResume() {
@@ -76,18 +77,31 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		registerForContextMenu(getListView());
 
-		hideProgressIndicator();
+		if (!isUploading()) {
+			hideProgressIndicator();
+		} else {
+			showProgressIndicator();
+		}
 
 	}
 
 	private void makeCursorAndAdapter() {
 		dbutils.genericWriteOpen();
 
-		libraryCursor = dbutils.generic_write_db.query(
-				DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null,
-				null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
-		//startManagingCursor(libraryCursor);
+		// This query is for videofiles only, no joins.
+		
+		//libraryCursor = dbutils.generic_write_db.query(
+		//		DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null,
+			//	null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
 
+		//SELECT 
+		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , " 
+						+ " b.host_uri as host_uri , b.host_video_url as host_video_url FROM " 
+						+ " videofiles a LEFT OUTER JOIN hosts b ON "
+						+ " a._id = b.sdrecord_id "
+						+ " ORDER BY a.created_datetime DESC ";
+		libraryCursor = dbutils.generic_write_db.rawQuery(join_sql, null);
+		
 		if (libraryCursor.moveToFirst()) {
 			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
@@ -120,9 +134,9 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		String[] from = new String[] { DatabaseHelper.SDFileRecord.FILENAME,
 				DatabaseHelper.SDFileRecord.LENGTH_SECS,
-				DatabaseHelper.SDFileRecord.CREATED_DATETIME };
+				DatabaseHelper.SDFileRecord.CREATED_DATETIME, DatabaseHelper.HostDetails.HOST_VIDEO_URL };
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
-				R.id.text3 };
+				R.id.text3, R.id.text4 };
 		listAdapter = new SimpleCursorAdapter(this,
 				R.layout.library_list_item, libraryCursor, from, to);
 
@@ -227,7 +241,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		case MENU_ITEM_3:
 			// publish to video bin
-			pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference);
+			pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, movieid);
 			break;
 
 		case MENU_ITEM_4:
@@ -251,4 +265,22 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		findViewById(R.id.uploadprogresslibrary).setVisibility(View.INVISIBLE);
 	}
 
+	public boolean isUploading() {
+		// 
+		return isUploading ;
+	}
+
+
+	public void startedUploading() {
+		// 
+		showProgressIndicator();
+		isUploading = true;
+	}
+
+
+	public void finishedUploading(boolean success) {
+		// 
+		hideProgressIndicator();
+		isUploading = false;
+	}
 }

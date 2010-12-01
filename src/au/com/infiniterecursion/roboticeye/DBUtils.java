@@ -97,7 +97,7 @@ public class DBUtils {
 	/*
 	 * Returns the ID of the new record, or -1 if error
 	 */
-	public long updateSDFileRecordwithNewVideoRecording(String filepath,
+	public long createSDFileRecordwithNewVideoRecording(String filepath,
 			String filename, int duration, String video_audio_codecstr) {
 		genericWriteOpen();
 
@@ -118,7 +118,30 @@ public class DBUtils {
 
 		return rez;
 	}
+	
+	/*
+	 * Returns the ID of the new record, or -1 if error
+	 */
+	public long creatHostDetailRecordwithNewVideoUploaded(long sdrecord_id,
+			String host_uri, String hosted_video_url, String params) {
+		genericWriteOpen();
 
+		ContentValues vals = new ContentValues();
+		vals.put(DatabaseHelper.HostDetails.HOST_SDRECORD_ID, sdrecord_id);
+		vals.put(DatabaseHelper.HostDetails.HOST_URI, host_uri);
+		vals.put(DatabaseHelper.HostDetails.HOST_VIDEO_URL, hosted_video_url);
+		vals.put(DatabaseHelper.HostDetails.HOST_PARAMS, params);
+
+		long rez = generic_write_db.insert(
+				DatabaseHelper.HOST_TABLE_NAME,
+				DatabaseHelper.HostDetails.HOST_URI, vals);
+
+		close();
+
+		return rez;
+	}
+	
+	
 	/**
 	 * Delete the db record, and all linked entries
 	 * 
@@ -130,6 +153,9 @@ public class DBUtils {
 			genericWriteOpen();
 			String args[] = new String[] { Long.toString(recordid) };
 			long rez = generic_write_db.delete(DatabaseHelper.SDFILERECORD_TABLE_NAME, " " + DatabaseHelper.SDFileRecord._ID + " = ?", args);
+			
+			//XXX Delete host records also.
+			
 			close();
 			return rez;
 		}

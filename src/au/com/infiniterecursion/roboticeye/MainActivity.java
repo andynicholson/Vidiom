@@ -2,9 +2,6 @@ package au.com.infiniterecursion.roboticeye;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -71,12 +68,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private final int videoFramesPerSecond = 25;
 
 	//App state
+	private boolean isUploading;
 	private boolean recordingInMotion;
 	//Filenames (abs, relative) for latest recorded video file.
 	private String latestVideoFile_absolutepath;
 	private String latestVideoFile_filename;
 	private boolean canSendVideoFile;
 	private boolean uploadedSuccessfully;
+	private long latestsdrecord_id;
 	private long startTimeinMillis;
 	private long endTimeinMillis;
 	
@@ -127,6 +126,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		latestVideoFile_filename = "";
 		uploadedSuccessfully = false;
 		startTimeinMillis=endTimeinMillis=0;
+		isUploading = false;
 		
 		//Helper classes
 		//
@@ -155,8 +155,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		Log.d(TAG,"On resume");
 		loadPreferences();
 		
-		//XXX check the uploading state!
-		hideProgressIndicator();
+		//check the uploading state!
+		if (!isUploading()) {
+			hideProgressIndicator();
+		} else {
+			showProgressIndicator();
+		}
 	}
 
 	@Override
@@ -468,7 +472,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference);
+			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 
 		} else if (recordingInMotion) {
 
@@ -733,7 +737,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		mediaRecorder.stop();
 		camera.lock();
 		recordingInMotion = false;
-		canSendVideoFile = true;
+		
 		
 		doAutoCompletedRecordedActions();
 		
@@ -741,7 +745,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
 		
-		db_utils.updateSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr");
+		latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr");
+		if (latestsdrecord_id > 0) {
+			canSendVideoFile = true;
+			Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
+		}
+		
+		
 	}
 	
 
@@ -762,7 +772,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		Log.d(TAG, "Doing auto completed recorded actions");
 		
 		if (videobinPreference) {
-			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference);
+			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 		}
 
 		if (fTPPreference) {
@@ -772,6 +782,30 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		if (autoEmailPreference) {
 			pu.launchEmailIntentWithCurrentVideo(this, latestVideoFile_absolutepath);
 		}
+	}
+
+
+	public boolean isUploading() {
+		// are we?
+		return isUploading ;
+	}
+
+
+	public void startedUploading() {
+		// show the progress indicator	
+		showProgressIndicator();
+		//flip the switch
+		isUploading = true;
+	}
+
+
+	public void finishedUploading(boolean success) {
+		// finished, one way or the other
+		uploadedSuccessfully = success;
+		//hide the progress indicator
+		hideProgressIndicator();
+		//not uploading.
+		isUploading = false;
 	}
 
 }
