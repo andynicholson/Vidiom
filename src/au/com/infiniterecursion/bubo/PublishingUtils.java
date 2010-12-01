@@ -80,7 +80,7 @@ public class PublishingUtils {
 	 * Methods for publishing the video
 	 */
 
-	public void doPOSTtoVideoBin(final Activity activity,
+	public Thread doPOSTtoVideoBin(final Activity activity,
 			final Handler handler, final String video_absolutepath,
 			final String emailAddress, final long sdrecord_id) {
 
@@ -89,7 +89,7 @@ public class PublishingUtils {
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
 
-		new Thread(new Runnable() {
+		Thread t = new Thread(new Runnable() {
 			public void run() {
 				// Do background task.
 
@@ -206,26 +206,32 @@ public class PublishingUtils {
 						// update uploadInProgress state also.
 
 						((RoboticEyeActivity) activity).finishedUploading(true);
+						if (!activity.isFinishing()) {
+							new AlertDialog.Builder(activity)
+									.setMessage(R.string.video_bin_uploaded_ok)
+									.setPositiveButton(
+											R.string.yes,
+											new DialogInterface.OnClickListener() {
+												public void onClick(
+														DialogInterface dialog,
+														int whichButton) {
 
-						new AlertDialog.Builder(activity)
-								.setMessage(R.string.video_bin_uploaded_ok)
-								.setPositiveButton(R.string.yes,
-										new DialogInterface.OnClickListener() {
-											public void onClick(
-													DialogInterface dialog,
-													int whichButton) {
-
-											}
-										}).show();
+												}
+											}).show();
+						}
 
 					}
 				}, 0);
 			}
-		}).start();
+		});
+
+		t.start();
+
+		return t;
 
 	}
 
-	public void doVideoFTP(final Activity activity, final Handler handler,
+	public Thread doVideoFTP(final Activity activity, final Handler handler,
 			final String latestVideoFile_filename,
 			final String latestVideoFile_absolutepath, final long sdrecord_id) {
 
@@ -234,7 +240,7 @@ public class PublishingUtils {
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
 
-		new Thread(new Runnable() {
+		Thread t = new Thread(new Runnable() {
 			public void run() {
 				// Do background task.
 				// FTP; connect preferences here!
@@ -366,8 +372,7 @@ public class PublishingUtils {
 														int whichButton) {
 
 												}
-											})
-									.show();
+											}).show();
 						}
 					}, 0);
 
@@ -396,20 +401,20 @@ public class PublishingUtils {
 					Log.e(TAG,
 							" got exception on local video file - video uploading failed.");
 
-					
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
-							
+
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
 
-						}},0);
-					
+						}
+					}, 0);
+
 					// This is a bad error, lets abort.
 					// user dialog ?! shouldnt happen, but still...
 					return;
@@ -425,7 +430,7 @@ public class PublishingUtils {
 					e.printStackTrace();
 					Log.e(TAG,
 							" got exception on storeFile - video uploading failed.");
-					
+
 					// This is a bad error, lets abort.
 					// user dialog ?! shouldnt happen, but still...
 					// Use the handler to execute a Runnable on the
@@ -434,12 +439,13 @@ public class PublishingUtils {
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
-							
+
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
 
-						}},0);
+						}
+					}, 0);
 					return;
 				}
 				try {
@@ -450,19 +456,19 @@ public class PublishingUtils {
 					Log.e(TAG,
 							" got exception on buff.close - video uploading failed.");
 
-					
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
-							
+
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
 
-						}},0);
+						}
+					}, 0);
 					return;
 				}
 				try {
@@ -473,19 +479,19 @@ public class PublishingUtils {
 					Log.e(TAG,
 							" got exception on ftp logout - video uploading failed.");
 
-					
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
-							
+
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
 
-						}},0);
+						}
+					}, 0);
 					return;
 				}
 				try {
@@ -496,19 +502,19 @@ public class PublishingUtils {
 					Log.e(TAG,
 							" got exception on ftp disconnect - video uploading failed.");
 
-					
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
-							
+
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
 
-						}},0);
+						}
+					}, 0);
 					return;
 				}
 
@@ -527,24 +533,33 @@ public class PublishingUtils {
 						// update uploadInProgress state also.
 
 						((RoboticEyeActivity) activity).finishedUploading(true);
+						Log.d(TAG,
+								"Activity isfinishing "
+										+ activity.isFinishing());
 
-						new AlertDialog.Builder(activity)
-								.setMessage(R.string.video_bin_uploaded_ok)
-								.setPositiveButton(R.string.yes,
-										new DialogInterface.OnClickListener() {
-											public void onClick(
-													DialogInterface dialog,
-													int whichButton) {
+						if (!activity.isFinishing()) {
+							new AlertDialog.Builder(activity)
+									.setMessage(R.string.video_bin_uploaded_ok)
+									.setPositiveButton(
+											R.string.yes,
+											new DialogInterface.OnClickListener() {
+												public void onClick(
+														DialogInterface dialog,
+														int whichButton) {
 
-											}
-										}).show();
+												}
+											}).show();
+						}
 
 					}
 				}, 0);
 
 			}
-		}).start();
+		});
 
+		t.start();
+
+		return t;
 	}
 
 	public void launchEmailIntentWithCurrentVideo(final Activity activity,

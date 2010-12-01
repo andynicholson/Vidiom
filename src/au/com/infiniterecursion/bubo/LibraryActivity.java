@@ -243,6 +243,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		case MENU_ITEM_3:
 			// publish to video bin
+			//XXX grab thread
 			pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, movieid);
 			break;
 

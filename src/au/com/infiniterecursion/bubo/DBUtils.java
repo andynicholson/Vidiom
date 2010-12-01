@@ -58,6 +58,44 @@ public class DBUtils {
 	}
 
 	/*
+	 * Logs statistics on the Database
+	 * 
+	 * -void
+	 */
+	public void getStats() {
+
+		genericWriteOpen();
+		String count_sql = "SELECT count(*) FROM "
+				+ DatabaseHelper.SDFILERECORD_TABLE_NAME;
+
+		Cursor stats_cursor = generic_write_db.rawQuery(count_sql, null);
+
+		if (stats_cursor.moveToFirst()) {
+
+			int count = stats_cursor.getInt(0);
+			Log.v(TAG, "getStats : " + count + " sdrecords");
+		}
+
+		count_sql = "SELECT count(*) FROM "
+			+ DatabaseHelper.HOST_TABLE_NAME;
+
+		stats_cursor = generic_write_db.rawQuery(count_sql, null);
+
+		if (stats_cursor.moveToFirst()) {
+
+			int count = stats_cursor.getInt(0);
+			Log.v(TAG, "getStats : " + count + " hosts");
+		}
+
+		
+		stats_cursor.close();
+		close();
+
+		return;
+
+	}
+
+	/*
 	 * Returns the next filename number to use in naming the recorded videofile
 	 * 
 	 * -1 is error
@@ -98,11 +136,13 @@ public class DBUtils {
 	 * Returns the ID of the new record, or -1 if error
 	 */
 	public long createSDFileRecordwithNewVideoRecording(String filepath,
-			String filename, int duration, String video_audio_codecstr, String title, String description) {
+			String filename, int duration, String video_audio_codecstr,
+			String title, String description) {
 		genericWriteOpen();
 
-		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called .. " + filepath);
-		
+		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called .. "
+				+ filepath);
+
 		ContentValues vals = new ContentValues();
 		vals.put(DatabaseHelper.SDFileRecord.FILENAME, filename);
 		vals.put(DatabaseHelper.SDFileRecord.FILEPATH, filepath);
@@ -110,21 +150,21 @@ public class DBUtils {
 		vals.put(DatabaseHelper.SDFileRecord.VIDEO_AUDIO_CODEC_STRING,
 				video_audio_codecstr);
 		vals.put(DatabaseHelper.SDFileRecord.TITLE, title);
-		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION,
-				description);
+		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION, description);
 		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME,
 				(Long) System.currentTimeMillis());
 
 		long rez = generic_write_db.insert(
 				DatabaseHelper.SDFILERECORD_TABLE_NAME,
 				DatabaseHelper.SDFileRecord.FILENAME, vals);
-		Log.v(TAG, "createSDFileRecordwithNewVideoRecording returning  .. " + rez);
-		
+		Log.v(TAG, "createSDFileRecordwithNewVideoRecording returning  .. "
+				+ rez);
+
 		close();
 
 		return rez;
 	}
-	
+
 	/*
 	 * Returns the ID of the new record, or -1 if error
 	 */
@@ -132,46 +172,50 @@ public class DBUtils {
 			String host_uri, String hosted_video_url, String params) {
 		genericWriteOpen();
 
-		Log.v(TAG, "creatHostDetailRecordwithNewVideoUploaded called .. " + sdrecord_id + " hosted_url " + hosted_video_url );
-		
+		Log.v(TAG, "creatHostDetailRecordwithNewVideoUploaded called .. "
+				+ sdrecord_id + " hosted_url " + hosted_video_url);
+
 		ContentValues vals = new ContentValues();
 		vals.put(DatabaseHelper.HostDetails.HOST_SDRECORD_ID, sdrecord_id);
 		vals.put(DatabaseHelper.HostDetails.HOST_URI, host_uri);
 		vals.put(DatabaseHelper.HostDetails.HOST_VIDEO_URL, hosted_video_url);
 		vals.put(DatabaseHelper.HostDetails.HOST_PARAMS, params);
 
-		long rez = generic_write_db.insert(
-				DatabaseHelper.HOST_TABLE_NAME,
+		long rez = generic_write_db.insert(DatabaseHelper.HOST_TABLE_NAME,
 				DatabaseHelper.HostDetails.HOST_URI, vals);
 
-		Log.v(TAG, "creatHostDetailRecordwithNewVideoUploaded returning  .. " + rez);
+		Log.v(TAG, "creatHostDetailRecordwithNewVideoUploaded returning  .. "
+				+ rez);
 		close();
 
 		return rez;
 	}
-	
-	
+
 	/**
 	 * Delete the db record, and all linked entries
 	 * 
 	 * @return -1 if error, else 0
 	 */
 	public long deleteSDFileRecord(long recordid) {
-		
+
 		if (recordid > 0) {
 			genericWriteOpen();
 			String args[] = new String[] { Long.toString(recordid) };
-			long rez = generic_write_db.delete(DatabaseHelper.SDFILERECORD_TABLE_NAME, " " + DatabaseHelper.SDFileRecord._ID + " = ?", args);
-			
+			long rez = generic_write_db.delete(
+					DatabaseHelper.SDFILERECORD_TABLE_NAME, " "
+							+ DatabaseHelper.SDFileRecord._ID + " = ?", args);
+
 			// Delete host records also.
-			long rez2 = generic_write_db.delete(DatabaseHelper.HOST_TABLE_NAME, " " + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + " = ?", args);
-			
+			long rez2 = generic_write_db.delete(DatabaseHelper.HOST_TABLE_NAME,
+					" " + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + " = ?",
+					args);
+
 			close();
 			return rez;
 		}
-		
+
 		return -1;
-		
+
 	}
-	
+
 }

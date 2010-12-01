@@ -104,6 +104,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private PublishingUtils pu;
 
 	private SharedPreferences prefs;
+
+	private Thread threadVB;
+
+	private Thread threadFTP;
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -138,7 +142,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		prefs = PreferenceManager
 		.getDefaultSharedPreferences(getBaseContext());
 		
-		
+		//dump stats
+		db_utils.getStats();
 		
 		// check our folder exists, and if not make it
 		checkInstallDirandCreateIfMissing();
@@ -146,6 +151,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// Initial install?
 		checkIfFirstTimeRunAndWelcome();
 		
+		threadVB = null;
+		threadFTP = null;
 		
 	}
 	
@@ -176,6 +183,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			mediaRecorder.release();
 		}
 		
+		if (threadVB != null) {
+			Log.d(TAG,"Interrupting videobin thread");
+			threadVB.interrupt();
+		}
+		if (threadFTP != null) {
+			Log.d(TAG,"Interrupting FTP thread;");
+			threadFTP.interrupt();
+		}
 		
 	}
 	
@@ -473,7 +488,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 
 		} else if (recordingInMotion) {
 
@@ -793,11 +808,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		Log.d(TAG, "Doing auto completed recorded actions");
 		
 		if (videobinPreference) {
-			pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 		}
 
 		if (fTPPreference) {
-			pu.doVideoFTP(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
+			threadFTP = pu.doVideoFTP(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
 		}
 
 		if (autoEmailPreference) {
