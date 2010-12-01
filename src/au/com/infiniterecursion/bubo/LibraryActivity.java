@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.roboticeye;
+package au.com.infiniterecursion.bubo;
 
 import java.util.ArrayList;
 
@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import au.com.infiniterecursion.bubo.R;
 
 /*
  * RoboticEye Library Activity 

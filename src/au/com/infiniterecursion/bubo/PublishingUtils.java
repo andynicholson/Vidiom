@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.roboticeye;
+package au.com.infiniterecursion.bubo;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -45,6 +45,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import au.com.infiniterecursion.bubo.R;
 
 public class PublishingUtils {
 

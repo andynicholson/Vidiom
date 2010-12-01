@@ -1,7 +1,8 @@
-package au.com.infiniterecursion.roboticeye;
+package au.com.infiniterecursion.bubo;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import au.com.infiniterecursion.bubo.R;
 
 
 /*

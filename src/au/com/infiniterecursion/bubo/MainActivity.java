@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.roboticeye;
+package au.com.infiniterecursion.bubo;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
+import au.com.infiniterecursion.bubo.R;
 
 
 /*

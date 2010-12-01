@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.roboticeye;
+package au.com.infiniterecursion.bubo;
 
 
 import java.io.ByteArrayInputStream;
