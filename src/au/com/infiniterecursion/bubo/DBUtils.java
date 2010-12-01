@@ -101,6 +101,8 @@ public class DBUtils {
 			String filename, int duration, String video_audio_codecstr) {
 		genericWriteOpen();
 
+		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called .. " + filepath);
+		
 		ContentValues vals = new ContentValues();
 		vals.put(DatabaseHelper.SDFileRecord.FILENAME, filename);
 		vals.put(DatabaseHelper.SDFileRecord.FILEPATH, filepath);
@@ -113,7 +115,8 @@ public class DBUtils {
 		long rez = generic_write_db.insert(
 				DatabaseHelper.SDFILERECORD_TABLE_NAME,
 				DatabaseHelper.SDFileRecord.FILENAME, vals);
-
+		Log.v(TAG, "createSDFileRecordwithNewVideoRecording returning  .. " + rez);
+		
 		close();
 
 		return rez;
@@ -126,6 +129,8 @@ public class DBUtils {
 			String host_uri, String hosted_video_url, String params) {
 		genericWriteOpen();
 
+		Log.v(TAG, "creatHostDetailRecordwithNewVideoUploaded called .. " + sdrecord_id + " hosted_url " + hosted_video_url );
+		
 		ContentValues vals = new ContentValues();
 		vals.put(DatabaseHelper.HostDetails.HOST_SDRECORD_ID, sdrecord_id);
 		vals.put(DatabaseHelper.HostDetails.HOST_URI, host_uri);
@@ -136,6 +141,7 @@ public class DBUtils {
 				DatabaseHelper.HOST_TABLE_NAME,
 				DatabaseHelper.HostDetails.HOST_URI, vals);
 
+		Log.v(TAG, "creatHostDetailRecordwithNewVideoUploaded returning  .. " + rez);
 		close();
 
 		return rez;

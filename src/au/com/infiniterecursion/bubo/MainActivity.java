@@ -738,10 +738,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		mediaRecorder.stop();
 		camera.lock();
 		recordingInMotion = false;
-		
-		
-		doAutoCompletedRecordedActions();
-		
+				
 		endTimeinMillis = System.currentTimeMillis();
 		
 		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
@@ -750,6 +747,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		if (latestsdrecord_id > 0) {
 			canSendVideoFile = true;
 			Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
+			
+			
+			Resources res = getResources();
+			
+			//File saved dialog!
+			new AlertDialog.Builder(MainActivity.this)
+			.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename)
+			.setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+
+							//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
+							doAutoCompletedRecordedActions();
+							
+						}
+					}).show();
 		}
 		
 		

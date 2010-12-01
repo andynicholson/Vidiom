@@ -48,7 +48,13 @@
     <string name="emailPreferenceSummary">Enter your email to receive your videos as attachments</string>
     <string name="emailTitle">Email Address</string>
    
+   <!--  activity titles -->
     <string name="app_name">Bubo : your wandering eye </string>
+    <string name="prefTitle">Bubo : Preferences</string>
+	<string name="libraryTitle">Bubo : Video gallery</string>
+	<string name="about_this">Bubo version 0.4\nVideo capture and publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+	 
+	<!--  dialog words -->
     <string name="camera_failed">The camera failed to start recording. Sorry.</string>
     <string name="sdcard_failed">The SD card access failed, so we can not record videos. Sorry.</string>
     <string name="cancel">Cancel</string>
@@ -58,10 +64,9 @@
     <string name="stop_recording_to_send">You are still recording video. Please stop recording first, then send.</string>
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Check your preferences please.</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
-    <string name="about_this">Bubo version 0.4\nVideo capture and publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+   <string name="file_saved">Recording finished.Video file is in gallery as </string>
 	
-	<string name="prefTitle">Preferences</string>
-	<string name="libraryTitle">Bubo video gallery</string>
+
 	
 	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to start recording a new one?</string>
 
@@ -69,7 +74,7 @@
 	
 	<string name="no_videos_in_library">You have no videos in the library.</string>
 	
-	<string name="welcome">Welcome to RoboticEye!\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
+	<string name="welcome">Welcome to Bubo !\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
 	
 	<!-- menu -->
 	<string name="menu_start_recording">Record</string>
