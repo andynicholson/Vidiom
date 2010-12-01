@@ -26,10 +26,10 @@
     <string name="video_bin_uploaded_ok">Video successfully uploaded to videobin.org\nYou will receive an email with the URL to your video soon.</string>
     
     <string name="maxFilesizePreferenceDefault">1024</string>
-    <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes (KB)</string>
+    <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes. Zero for unlimited.</string>
     <string name="maxFilesizePreferenceTitle">Video filesize</string>
     <string name="maxDurationPreferenceDefault">40</string>
-    <string name="maxDurationPreferenceSummary">Maximum duration for a recorded video in seconds</string>
+    <string name="maxDurationPreferenceSummary">Maximum duration for a recorded video in seconds. Zero for unlimited.</string>
     <string name="maxDurationPreferenceTitle">Recording Duration</string>
     <string name="defaultFTPpasswordPreferenceTitle">FTP host password</string>
     <string name="defaultFTPusernamePreferenceTitle">FTP host username</string>
@@ -45,7 +45,7 @@
     <string name="ftpPreferenceTitle">FTP video</string>
     <string name="autoEmailPreferenceSummary">Automatically launch email application with recorded video as attachment?</string>
     <string name="autoEmailPreferenceTitle">Email video</string>
-    <string name="emailPreferenceSummary">Enter your email to receive your videos as attachments</string>
+    <string name="emailPreferenceSummary">Enter your email to receive notifications of video publishing</string>
     <string name="emailTitle">Email Address</string>
    
    <!--  activity titles -->
@@ -64,7 +64,7 @@
     <string name="stop_recording_to_send">You are still recording video. Please stop recording first, then send.</string>
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Check your preferences please.</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
-   <string name="file_saved">Recording finished.Video file is in gallery as </string>
+   <string name="file_saved">Recording finished. Video file is in gallery as </string>
 	
 
 	

@@ -160,7 +160,8 @@ public class DBUtils {
 			String args[] = new String[] { Long.toString(recordid) };
 			long rez = generic_write_db.delete(DatabaseHelper.SDFILERECORD_TABLE_NAME, " " + DatabaseHelper.SDFileRecord._ID + " = ?", args);
 			
-			//XXX Delete host records also.
+			// Delete host records also.
+			long rez2 = generic_write_db.delete(DatabaseHelper.HOST_TABLE_NAME, " " + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + " = ?", args);
 			
 			close();
 			return rez;
