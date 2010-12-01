@@ -44,39 +44,37 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
-import au.com.infiniterecursion.bubo.R;
 
 public class PublishingUtils {
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
-	
+
 	private File folder;
 	private Resources res;
 	private DBUtils dbutils;
-	
+
 	PublishingUtils(Resources res, DBUtils dbutils) {
-		 	
+
 		this.res = res;
 		this.dbutils = dbutils;
 		folder = new File(Environment.getExternalStorageDirectory()
 				+ res.getString(R.string.rootSDcardFolder));
-		
+
 	}
-	
+
 	public static String showDate(long timemillis) {
-		
-		if (timemillis <= 0) 	
+
+		if (timemillis <= 0)
 			return "N/A";
-	
+
 		Calendar cal;
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss");
 		cal = Calendar.getInstance();
 		cal.setTimeInMillis(timemillis);
 		return sdf.format(cal.getTime());
-		
+
 	}
-	
+
 	/*
 	 * 
 	 * Methods for publishing the video
@@ -87,17 +85,16 @@ public class PublishingUtils {
 			final String emailAddress, final long sdrecord_id) {
 
 		Log.d(TAG, "doPOSTtoVideoBin starting");
-		
-		
+
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
-		
+
 		new Thread(new Runnable() {
 			public void run() {
 				// Do background task.
-				
+
 				Resources res = activity.getResources();
-				
+
 				HttpClient client = new DefaultHttpClient();
 				client.getParams().setParameter(
 						CoreProtocolPNames.PROTOCOL_VERSION,
@@ -111,31 +108,34 @@ public class PublishingUtils {
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
-					
+
 				}
 				HttpPost post = new HttpPost(url);
 				MultipartEntity entity = new MultipartEntity(
 						HttpMultipartMode.BROWSER_COMPATIBLE);
 
 				File file = new File(video_absolutepath);
-				entity.addPart(res.getString(R.string.video_bin_API_videofile), new FileBody(file));
+				entity.addPart(res.getString(R.string.video_bin_API_videofile),
+						new FileBody(file));
 
 				try {
-					entity.addPart(res.getString(R.string.video_bin_API_api), new StringBody("1", "text/plain",
-							Charset.forName("UTF-8")));
+					entity.addPart(
+							res.getString(R.string.video_bin_API_api),
+							new StringBody("1", "text/plain", Charset
+									.forName("UTF-8")));
 				} catch (IllegalCharsetNameException e) {
-					//error
+					// error
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
-					
+
 				} catch (UnsupportedCharsetException e) {
-					//error
+					// error
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
 				} catch (UnsupportedEncodingException e) {
-					//error
+					// error
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
@@ -149,17 +149,17 @@ public class PublishingUtils {
 					response = EntityUtils.toString(client.execute(post)
 							.getEntity(), "UTF-8");
 				} catch (ParseException e) {
-					//error
+					// error
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
 				} catch (ClientProtocolException e) {
-					//error
+					// error
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
 				} catch (IOException e) {
-					//error
+					// error
 					e.printStackTrace();
 					((RoboticEyeActivity) activity).finishedUploading(false);
 					return;
@@ -190,8 +190,10 @@ public class PublishingUtils {
 					}
 				}
 
-				//Log record of this URL in POSTs table
-				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id, res.getString(R.string.http_videobin_org_add) , response, "");
+				// Log record of this URL in POSTs table
+				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
+						res.getString(R.string.http_videobin_org_add),
+						response, "");
 
 				// Use the handler to execute a Runnable on the
 				// main thread in order to have access to the
@@ -200,24 +202,22 @@ public class PublishingUtils {
 					public void run() {
 						// Update UI
 
-						//Indicate back to calling activity the result!
+						// Indicate back to calling activity the result!
 						// update uploadInProgress state also.
-						
+
 						((RoboticEyeActivity) activity).finishedUploading(true);
 
-						
-						
-						
 						new AlertDialog.Builder(activity)
-						.setMessage(R.string.video_bin_uploaded_ok)
-						.setPositiveButton(R.string.yes,
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int whichButton) {
+								.setMessage(R.string.video_bin_uploaded_ok)
+								.setPositiveButton(R.string.yes,
+										new DialogInterface.OnClickListener() {
+											public void onClick(
+													DialogInterface dialog,
+													int whichButton) {
 
-									}
-								}).show();
-						
+											}
+										}).show();
+
 					}
 				}, 0);
 			}
@@ -225,218 +225,325 @@ public class PublishingUtils {
 
 	}
 
-	public void doVideoFTP(final Activity activity,
+	public void doVideoFTP(final Activity activity, final Handler handler,
 			final String latestVideoFile_filename,
-			final String latestVideoFile_absolutepath) {
+			final String latestVideoFile_absolutepath, final long sdrecord_id) {
 
 		Log.d(TAG, "doVideoFTP starting");
-
-		//XXX convert to Thread!
 
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
 
-		// FTP; connect preferences here!
-		//
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(activity.getBaseContext());
-		String ftpHostName = prefs.getString("defaultFTPhostPreference", null);
-		String ftpUsername = prefs.getString("defaultFTPusernamePreference",
-				null);
-		String ftpPassword = prefs.getString("defaultFTPpasswordPreference",
-				null);
-
-		// use name of local file.
-		String ftpRemoteFtpFilename = latestVideoFile_filename;
-
-		// FTP
-		FTPClient ftpClient = new FTPClient();
-		InetAddress uploadhost = null;
-		try {
-
-			uploadhost = InetAddress.getByName(ftpHostName);
-		} catch (UnknownHostException e1) {
-			// If DNS resolution fails then abort immediately - show dialog to
-			// inform user first.
-			e1.printStackTrace();
-			Log.e(TAG, " got exception resolving " + ftpHostName
-					+ " - video uploading failed.");
-			uploadhost = null;
-		}
-
-		if (uploadhost == null) {
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			new AlertDialog.Builder(activity)
-					.setMessage(R.string.cant_find_upload_host)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							}).show();
-
-			return;
-		}
-
-		try {
-			ftpClient.connect(uploadhost);
-		} catch (SocketException e) {
-			// These exceptions will be essentially caught by our check of
-			// ftpclient.login immediately below.
-			// if you cant connect you wont be able to login.
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			//
-			e.printStackTrace();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-		}
-
-		boolean reply = false;
-		try {
-
-			reply = ftpClient.login(ftpUsername, ftpPassword);
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on ftp.login - video uploading failed.");
-		}
-
-		// check the reply code here
-		// If we cant login, abort after showing user a dialog.
-		if (!reply) {
-			try {
-				ftpClient.disconnect();
-			} catch (IOException e) {
+		new Thread(new Runnable() {
+			public void run() {
+				// Do background task.
+				// FTP; connect preferences here!
 				//
-				e.printStackTrace();
+				SharedPreferences prefs = PreferenceManager
+						.getDefaultSharedPreferences(activity.getBaseContext());
+				String ftpHostName = prefs.getString(
+						"defaultFTPhostPreference", null);
+				String ftpUsername = prefs.getString(
+						"defaultFTPusernamePreference", null);
+				String ftpPassword = prefs.getString(
+						"defaultFTPpasswordPreference", null);
+
+				// use name of local file.
+				String ftpRemoteFtpFilename = latestVideoFile_filename;
+
+				// FTP
+				FTPClient ftpClient = new FTPClient();
+				InetAddress uploadhost = null;
+				try {
+
+					uploadhost = InetAddress.getByName(ftpHostName);
+				} catch (UnknownHostException e1) {
+					// If DNS resolution fails then abort immediately - show
+					// dialog to
+					// inform user first.
+					e1.printStackTrace();
+					Log.e(TAG, " got exception resolving " + ftpHostName
+							+ " - video uploading failed.");
+					uploadhost = null;
+				}
+
+				if (uploadhost == null) {
+
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+							new AlertDialog.Builder(activity)
+									.setMessage(R.string.cant_find_upload_host)
+									.setPositiveButton(
+											R.string.yes,
+											new DialogInterface.OnClickListener() {
+												public void onClick(
+														DialogInterface dialog,
+														int whichButton) {
+
+												}
+											})
+
+									.setNegativeButton(
+											R.string.cancel,
+											new DialogInterface.OnClickListener() {
+												public void onClick(
+														DialogInterface dialog,
+														int whichButton) {
+
+												}
+											}).show();
+
+						}
+					}, 0);
+
+					return;
+				}
+
+				try {
+					ftpClient.connect(uploadhost);
+				} catch (SocketException e) {
+					// These exceptions will be essentially caught by our check
+					// of
+					// ftpclient.login immediately below.
+					// if you cant connect you wont be able to login.
+					e.printStackTrace();
+				} catch (UnknownHostException e) {
+					//
+					e.printStackTrace();
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+				}
+
+				boolean reply = false;
+				try {
+
+					reply = ftpClient.login(ftpUsername, ftpPassword);
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+					Log.e(TAG,
+							" got exception on ftp.login - video uploading failed.");
+				}
+
+				// check the reply code here
+				// If we cant login, abort after showing user a dialog.
+				if (!reply) {
+					try {
+						ftpClient.disconnect();
+					} catch (IOException e) {
+						//
+						e.printStackTrace();
+					}
+
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+							new AlertDialog.Builder(activity)
+									.setMessage(R.string.cant_login_upload_host)
+									.setPositiveButton(
+											R.string.yes,
+											new DialogInterface.OnClickListener() {
+												public void onClick(
+														DialogInterface dialog,
+														int whichButton) {
+
+												}
+											})
+									.show();
+						}
+					}, 0);
+
+					return;
+				}
+
+				// Set File type to binary
+				try {
+					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+				}
+
+				// Construct the input strteam to send to Ftp server, from the
+				// local
+				// video file on the sd card
+				BufferedInputStream buffIn = null;
+				File file = new File(latestVideoFile_absolutepath);
+
+				try {
+					buffIn = new BufferedInputStream(new FileInputStream(file));
+				} catch (FileNotFoundException e) {
+					//
+					e.printStackTrace();
+					Log.e(TAG,
+							" got exception on local video file - video uploading failed.");
+
+					
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+							
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+						}},0);
+					
+					// This is a bad error, lets abort.
+					// user dialog ?! shouldnt happen, but still...
+					return;
+				}
+
+				ftpClient.enterLocalPassiveMode();
+
+				try {
+					// UPLOAD THE LOCAL VIDEO FILE.
+					ftpClient.storeFile(ftpRemoteFtpFilename, buffIn);
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+					Log.e(TAG,
+							" got exception on storeFile - video uploading failed.");
+					
+					// This is a bad error, lets abort.
+					// user dialog ?! shouldnt happen, but still...
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+							
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+						}},0);
+					return;
+				}
+				try {
+					buffIn.close();
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+					Log.e(TAG,
+							" got exception on buff.close - video uploading failed.");
+
+					
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+							
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+						}},0);
+					return;
+				}
+				try {
+					ftpClient.logout();
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+					Log.e(TAG,
+							" got exception on ftp logout - video uploading failed.");
+
+					
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+							
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+						}},0);
+					return;
+				}
+				try {
+					ftpClient.disconnect();
+				} catch (IOException e) {
+					//
+					e.printStackTrace();
+					Log.e(TAG,
+							" got exception on ftp disconnect - video uploading failed.");
+
+					
+					// Use the handler to execute a Runnable on the
+					// main thread in order to have access to the
+					// UI elements.
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+							
+							// Hide the progress bar
+							((RoboticEyeActivity) activity)
+									.finishedUploading(false);
+
+						}},0);
+					return;
+				}
+
+				// Log record of this URL in POSTs table
+				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
+						ftpHostName, ftpHostName, "");
+
+				// Use the handler to execute a Runnable on the
+				// main thread in order to have access to the
+				// UI elements.
+				handler.postDelayed(new Runnable() {
+					public void run() {
+						// Update UI
+
+						// Indicate back to calling activity the result!
+						// update uploadInProgress state also.
+
+						((RoboticEyeActivity) activity).finishedUploading(true);
+
+						new AlertDialog.Builder(activity)
+								.setMessage(R.string.video_bin_uploaded_ok)
+								.setPositiveButton(R.string.yes,
+										new DialogInterface.OnClickListener() {
+											public void onClick(
+													DialogInterface dialog,
+													int whichButton) {
+
+											}
+										}).show();
+
+					}
+				}, 0);
+
 			}
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			new AlertDialog.Builder(activity)
-					.setMessage(R.string.cant_login_upload_host)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							}).show();
-
-			return;
-		}
-
-		// Set File type to binary
-		try {
-			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-		}
-
-		// Construct the input strteam to send to Ftp server, from the local
-		// video file on the sd card
-		BufferedInputStream buffIn = null;
-		File file = new File(latestVideoFile_absolutepath);
-
-		try {
-			buffIn = new BufferedInputStream(new FileInputStream(file));
-		} catch (FileNotFoundException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG,
-					" got exception on local video file - video uploading failed.");
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			// This is a bad error, lets abort.
-			// XXX user dialog ?! shouldnt happen, but still...
-			return;
-		}
-
-		ftpClient.enterLocalPassiveMode();
-
-		try {
-			// UPLOAD THE LOCAL VIDEO FILE.
-			ftpClient.storeFile(ftpRemoteFtpFilename, buffIn);
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on storeFile - video uploading failed.");
-
-			// XXX user dialog ?! shouldnt happen, but still...
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			return;
-		}
-		try {
-			buffIn.close();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on buff.close - video uploading failed.");
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			return;
-		}
-		try {
-			ftpClient.logout();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG, " got exception on ftp logout - video uploading failed.");
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			return;
-		}
-		try {
-			ftpClient.disconnect();
-		} catch (IOException e) {
-			//
-			e.printStackTrace();
-			Log.e(TAG,
-					" got exception on ftp disconnect - video uploading failed.");
-
-			// Hide the progress bar
-			((RoboticEyeActivity) activity).finishedUploading(false);
-
-			return;
-		}
-
-		// If we get here, it all worked out.
-		// Hide the progress bar
-		((RoboticEyeActivity) activity).finishedUploading(true);
-
+		}).start();
 
 	}
 
@@ -452,8 +559,7 @@ public class PublishingUtils {
 		activity.startActivity(i);
 	}
 
-	public void launchVideoPlayer(final Activity activity,
-			final String movieurl) {
+	public void launchVideoPlayer(final Activity activity, final String movieurl) {
 
 		try {
 			Intent tostart = new Intent(Intent.ACTION_VIEW);
@@ -461,71 +567,69 @@ public class PublishingUtils {
 			activity.startActivity(tostart);
 		} catch (android.content.ActivityNotFoundException e) {
 			Log.e(TAG, " Cant start activity to show video!");
-			
-			
+
 			new AlertDialog.Builder(activity)
-			.setMessage(R.string.cant_show_video)
-			.setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+					.setMessage(R.string.cant_show_video)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-						}
-					})
+								}
+							})
 
-			.setNegativeButton(R.string.cancel,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+					.setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-						}
-					}).show();
-			
+								}
+							}).show();
+
 			return;
 		}
 
 	}
 
-
 	public File selectFilenameAndCreateFile(String filenameConventionPrefence) {
 		// Video file name selection process
-		String new_videofile_name = res.getString(R.string.defaultVideoFilenamePrefix);
+		String new_videofile_name = res
+				.getString(R.string.defaultVideoFilenamePrefix);
 		String file_ext_name = ".mp4";
-		
-		if (filenameConventionPrefence.compareTo(res.getString(R.string.filenameConventionDefaultPreference)) == 0) {
-			//The default is by date
-			SimpleDateFormat postFormater = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); 
+
+		if (filenameConventionPrefence.compareTo(res
+				.getString(R.string.filenameConventionDefaultPreference)) == 0) {
+			// The default is by date
+			SimpleDateFormat postFormater = new SimpleDateFormat(
+					"yyyy-MM-dd-HH-mm-ss");
 			Calendar cal = Calendar.getInstance();
 			Date now = cal.getTime();
-			String newDateStr = postFormater.format(now); 
-			
+			String newDateStr = postFormater.format(now);
+
 			new_videofile_name += newDateStr + file_ext_name;
-			
-			
-				
+
 		} else {
-			//Sequentially 
-			
-			//look into database for this number
+			// Sequentially
+
+			// look into database for this number
 			int next_number = dbutils.getNextFilenameNumberAndIncrement();
-			
-			//XXX deal with -1 error condition
-			
+
+			// XXX deal with -1 error condition
+
 			new_videofile_name += next_number + file_ext_name;
-			
+
 		}
-		
+
 		File tempFile = new File(folder.getAbsolutePath(), new_videofile_name);
 		return tempFile;
 	}
-	
-	
+
 	public boolean deleteVideo(String movieuri) {
 		Log.d(TAG, "deleteVideo with " + movieuri);
-		
+
 		File tempFile = new File(movieuri);
-		
+
 		return tempFile.delete();
-		
+
 	}
 }

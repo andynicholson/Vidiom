@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String CONTENT_ITEM_TYPE_BASE = "vnd.android.cursor.item/vnd.au.com.infiniterecursion.roboticeye";
 	
 	private static final String DB_FILENAME = "roboticeye.db";
-	private static final int DB_VERSION = 4;
+	private static final int DB_VERSION = 5;
 	
 	public static final String FILENAME_TABLE_NAME = "filename_details";
 	public static final String SDFILERECORD_TABLE_NAME = "videofiles";
@@ -71,8 +71,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + SDFileRecord.FILEPATH + " TEXT,"
                 + SDFileRecord.LENGTH_SECS + " INTEGER,"
                 + SDFileRecord.CREATED_DATETIME + " INTEGER,"
-                + SDFileRecord.VIDEO_AUDIO_CODEC_STRING + " TEXT"
-                
+                + SDFileRecord.VIDEO_AUDIO_CODEC_STRING + " TEXT,"
+                + SDFileRecord.TITLE + " TEXT,"
+                + SDFileRecord.DESCRIPTION + " TEXT"
                 + " );");
  
         db.execSQL("CREATE TABLE " + HOST_TABLE_NAME + " ("
@@ -122,6 +123,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		public static final String VIDEO_AUDIO_CODEC_STRING="codec_str";
 		public static final String CREATED_DATETIME = "created_datetime";
 		public static final String FILEPATH = "filepath";
+		public static final String TITLE = "title";
+		public static final String DESCRIPTION = "description";
 		
 	}
 	

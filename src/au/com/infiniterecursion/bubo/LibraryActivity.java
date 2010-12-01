@@ -189,6 +189,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		menu.add(0, MENU_ITEM_3, 0, R.string.menu_publish_to_videobin);
 		menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
 
+		//XXX add ftp to menu in library activity
 	}
 
 	public boolean onContextItemSelected(MenuItem item) {

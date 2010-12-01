@@ -98,7 +98,7 @@ public class DBUtils {
 	 * Returns the ID of the new record, or -1 if error
 	 */
 	public long createSDFileRecordwithNewVideoRecording(String filepath,
-			String filename, int duration, String video_audio_codecstr) {
+			String filename, int duration, String video_audio_codecstr, String title, String description) {
 		genericWriteOpen();
 
 		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called .. " + filepath);
@@ -109,6 +109,9 @@ public class DBUtils {
 		vals.put(DatabaseHelper.SDFileRecord.LENGTH_SECS, duration);
 		vals.put(DatabaseHelper.SDFileRecord.VIDEO_AUDIO_CODEC_STRING,
 				video_audio_codecstr);
+		vals.put(DatabaseHelper.SDFileRecord.TITLE, title);
+		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION,
+				description);
 		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME,
 				(Long) System.currentTimeMillis());
 

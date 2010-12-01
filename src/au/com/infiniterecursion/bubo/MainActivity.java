@@ -743,15 +743,22 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
 		
-		latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr");
+		//If preference is to ask for a title and description, show dialog
+		// else leave blank
+		//XXX ask for title
+		String title = null, description = null;
+		
+		latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
 		if (latestsdrecord_id > 0) {
 			canSendVideoFile = true;
 			Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
 			
+			//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
+			doAutoCompletedRecordedActions();
 			
 			Resources res = getResources();
 			
-			//File saved dialog!
+			//Video recording finished dialog!
 			new AlertDialog.Builder(MainActivity.this)
 			.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename)
 			.setPositiveButton(R.string.yes,
@@ -759,8 +766,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 						public void onClick(DialogInterface dialog,
 								int whichButton) {
 
-							//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
-							doAutoCompletedRecordedActions();
+							
 							
 						}
 					}).show();
@@ -791,7 +797,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		}
 
 		if (fTPPreference) {
-			pu.doVideoFTP(this, latestVideoFile_filename, latestVideoFile_absolutepath);
+			pu.doVideoFTP(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
 		}
 
 		if (autoEmailPreference) {
