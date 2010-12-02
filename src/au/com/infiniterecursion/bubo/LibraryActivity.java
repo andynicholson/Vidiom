@@ -53,6 +53,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	private SimpleCursorAdapter listAdapter;
 	private Cursor libraryCursor;
 	private boolean isUploading;
+	private Thread thread_vb;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -65,7 +66,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		dbutils = new DBUtils(getBaseContext());
 		pu = new PublishingUtils(getResources(), dbutils);
 		handler = new Handler();
-		
+		thread_vb = null;
 		isUploading = false;
 	}
 
@@ -170,6 +171,21 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	}
 	
 	@Override
+	public void onPause() {
+		
+		super.onDestroy();
+		Log.d(TAG,"On pause");
+		
+		if (thread_vb != null) {
+			Log.d(TAG,"Interrupting videobin thread");
+			thread_vb.interrupt();
+		}
+		
+		
+	}
+	
+	
+	@Override
 	protected void onListItemClick(ListView l, View v, final int position,
 			long id) {
 		super.onListItemClick(l, v, position, id);
@@ -244,7 +260,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		case MENU_ITEM_3:
 			// publish to video bin
 			//XXX grab thread
-			pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, movieid);
+			thread_vb = pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, movieid);
 			break;
 
 		case MENU_ITEM_4:

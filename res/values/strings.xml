@@ -52,7 +52,7 @@
     <string name="app_name">Bubo : your wandering eye </string>
     <string name="prefTitle">Bubo : Preferences</string>
 	<string name="libraryTitle">Bubo : Video gallery</string>
-	<string name="about_this">Bubo version 0.4\nVideo capture and publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+	<string name="about_this">Bubo version 0.5\nVideo capture and web video publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
 	 
 	<!--  dialog words -->
     <string name="camera_failed">The camera failed to start recording. Sorry.</string>
@@ -66,7 +66,9 @@
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
    <string name="file_saved">Recording finished. Video file is in gallery as </string>
 	
-
+	<string name="request_facebook_login">Login to Facebook to upload videos.</string>
+	<string name="videopost_ok">Post to Facebook</string>
+	<string name="videopost_cancel">Logout</string>
 	
 	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to start recording a new one?</string>
 

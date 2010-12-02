@@ -3,6 +3,8 @@ package au.com.infiniterecursion.bubo;
 import java.io.File;
 import java.io.IOException;
 
+import com.facebook.android.Facebook;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -24,7 +26,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
+
 import au.com.infiniterecursion.bubo.R;
+import au.com.infiniterecursion.bubo.facebook.LoginButton;
 
 
 /*
@@ -52,6 +56,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private static final int MENU_ITEM_5 = MENU_ITEM_4 + 1;
 	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
+
+	private static final String[] FB_LOGIN_PERMISSIONS = new String[] {"publish_stream", "read_stream", "offline_access", "video_upload"};
 	
 	//Camera objects
 	//
@@ -108,14 +114,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private Thread threadVB;
 
 	private Thread threadFTP;
+
+	private LoginButton lb;
+	private AlertDialog fb_dialog;
+	
+	private BuboApp mainapp;
 	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		
-		
+				
 		Log.d(TAG,"On create");
 		
 		setContentView(R.layout.surface_layout);
@@ -135,6 +144,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		//Helper classes
 		//
+		mainapp = (BuboApp) getApplication();
 		
 		handler = new Handler();
 		db_utils = new DBUtils(getBaseContext());
@@ -169,7 +179,64 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		} else {
 			showProgressIndicator();
 		}
+		
+		lb = new LoginButton(this);
+		lb.init(mainapp.getFacebook(), FB_LOGIN_PERMISSIONS, this);
+
 	}
+
+	private void askFacebookLogin() {
+		
+		fb_dialog = new AlertDialog.Builder(this)
+				.setMessage(R.string.request_facebook_login)
+				.setView(lb)
+				.setPositiveButton(R.string.videopost_ok,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								// If they succeeded in login, then the
+								// session will be valid.
+								// if it is, then set the facebook login
+								// preference to true, so they dont get
+								// asked, until they have logged out
+								// again.
+								if (mainapp.getFacebook()
+										.isSessionValid()) {
+									// we have a valid session.
+
+									if (canSendVideoFile) {
+										
+										pu.videoUploadToFacebook(mainapp.getFacebook(), latestVideoFile_absolutepath, "Test Video", "Uploaded by Bubo - your wandering Eye : http://apps.facebook.com/bubo ", latestsdrecord_id);
+										
+									}
+								} else {
+									// we can try to ask again.
+								
+								}
+
+							}
+						})
+				
+				.setNegativeButton(R.string.videopost_cancel,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+							
+
+								// logout of facebook, if the session is
+								// valid.
+								if (mainapp.getFacebook().isSessionValid()) {
+									lb.logout();
+								}
+
+							}
+						})
+
+				.show();
+		
+		
+	}
+
 
 	@Override
 	public void onPause() {
@@ -181,6 +248,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 				stopRecording();
 			}
 			mediaRecorder.release();
+		}
+		
+		if (fb_dialog != null && fb_dialog.isShowing()) {
+			Log.d(TAG, "Dismissing fb dialog");
+			fb_dialog.dismiss();
+			lb = null;
 		}
 		
 		if (threadVB != null) {
@@ -488,8 +561,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			//threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 
+			askFacebookLogin();
+			
 		} else if (recordingInMotion) {
 
 			new AlertDialog.Builder(this)

@@ -17,7 +17,7 @@
       package="au.com.infiniterecursion.bubo"
       android:versionCode="1"
       android:versionName="1.0">
-    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
+    <application android:name=".BuboApp" android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
         <activity android:name=".MainActivity"
                   android:label="@string/app_name" android:screenOrientation="landscape">
             <intent-filter>

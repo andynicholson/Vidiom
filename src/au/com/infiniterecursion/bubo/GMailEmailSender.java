@@ -34,10 +34,10 @@ import android.util.Log;
  */
 
 
-public class EmailSender extends javax.mail.Authenticator {
+public class GMailEmailSender extends javax.mail.Authenticator {
 
 	private static final String TAG = "RoboticEye-EmailSender";
-	private String mailhost = "smtp.gmail.com";  
+	private String mailhost = "stmp.gmail.com";  
 	private String user;  
 	private String password;  
 	private Session session;  
@@ -46,7 +46,7 @@ public class EmailSender extends javax.mail.Authenticator {
 	    //    Security.addProvider(new org.apache.harmony.xnet.provider.jsse.JSSEProvider());  
 	   // }  
 	   
-	     public EmailSender(String user, String password) {  
+	     public GMailEmailSender(String user, String password) {  
 	         this.user = user;  
 	         this.password = password;  
 	   

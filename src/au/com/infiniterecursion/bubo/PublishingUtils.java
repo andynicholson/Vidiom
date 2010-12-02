@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,7 +16,9 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -33,6 +37,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 
+import com.facebook.android.Facebook;
+import com.facebook.android.Util;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -40,12 +47,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import au.com.infiniterecursion.bubo.facebook.SessionEvents;
 
 public class PublishingUtils {
+
+	private static final String BUBO_INFINITERECURSION_COM_AU = "bubo@infiniterecursion.com.au";
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
 
@@ -79,6 +90,133 @@ public class PublishingUtils {
 	 * 
 	 * Methods for publishing the video
 	 */
+
+	/*
+	 * public Thread doPostToYouTube() {
+	 * 
+	 * new Thread(new Runnable() { public void run() { try { HttpTransport
+	 * transport = setUpTransport(); ClientLogin login = new ClientLogin();
+	 * login.applicationName = appName; login.authTokenType = "youtube";
+	 * login.username = getUsername(); login.password = getPassword(); Response
+	 * response = login.authenticate();
+	 * response.setAuthorizationHeader(transport);
+	 * 
+	 * showState("Autorization passed");
+	 * 
+	 * Entry entry = new Entry(); entry.group = new MediaGroup();
+	 * entry.group.title = getVideoTitle(); entry.group.description =
+	 * mDescription.getText().toString(); entry.group.incomplete = new
+	 * Incomplete(); entry.group.category = new MediaCategory();
+	 * entry.group.category.Cat = "People\n";
+	 * 
+	 * XmlNamespaceDictionary namespaceDictionary = new
+	 * XmlNamespaceDictionary(); namespaceDictionary.addNamespace("",
+	 * "http://www.w3.org/2005/Atom"); namespaceDictionary.addNamespace("media",
+	 * "http://search.yahoo.com/mrss/"); namespaceDictionary.addNamespace("gd",
+	 * "http://schemas.google.com/g/2005");
+	 * namespaceDictionary.addNamespace("yt",
+	 * "http://gdata.youtube.com/schemas/2007");
+	 * 
+	 * AtomContent aContent = new AtomContent(); aContent.entry = entry;
+	 * aContent.namespaceDictionary = namespaceDictionary;
+	 * 
+	 * InputStreamContent bContent = new InputStreamContent();
+	 * bContent.setFileInput(new File(mPath)); bContent.type = "video/mp4";
+	 * 
+	 * MultipartRelatedContent multiContent = new MultipartRelatedContent();
+	 * multiContent.parts.add(aContent); multiContent.parts.add(bContent);
+	 * 
+	 * HttpRequest request = transport.buildPostRequest(); request.setUrl(
+	 * "http://uploads.gdata.youtube.com/feeds/api/users/default/uploads");
+	 * GoogleHeaders headers = (GoogleHeaders) request.headers;
+	 * headers.setSlugFromFileName(mPath); request.content = multiContent;
+	 * request.execute(); showResult("Success", "Video uploaded"); } catch
+	 * (Exception e) { showResult("Error", e.getMessage()); } finally {
+	 * handler.sendEmptyMessage(0); } }
+	 * 
+	 * private void showState(final String message) { handler.post(new
+	 * Runnable() { public void run() { Toast.makeText(YoutubeActivity.this,
+	 * message, Toast.LENGTH_SHORT).show(); } }); }
+	 * 
+	 * private void showResult(final String title, final String message) {
+	 * handler.post(new Runnable() { public void run() { AlertDialog.Builder
+	 * builder = new AlertDialog.Builder(YoutubeActivity.this) .setTitle(title)
+	 * .setMessage(message) .setNegativeButton("Ok", new
+	 * DialogInterface.OnClickListener() { public void onClick(DialogInterface
+	 * dialog, int which) { YoutubeActivity.this.finish(); } }); builder.show();
+	 * } }); }
+	 * 
+	 * }).start();
+	 * 
+	 * 
+	 * 
+	 * }
+	 * 
+	 * private HttpTransport setUpTransport() { HttpTransport transport =
+	 * GoogleTransport.create(); GoogleHeaders headers = (GoogleHeaders)
+	 * transport.defaultHeaders; headers.setApplicationName(appName);
+	 * headers.setDeveloperId(devKey);
+	 * 
+	 * headers.gdataVersion = "2"; transport.addParser(new JsonCParser());
+	 * return transport; }
+	 */
+
+	// XXX Make Threaded
+	//
+	public void videoUploadToFacebook(Facebook mFacebook, String path, String title,
+			String description, long sdrecord_id) {
+		Log.i(TAG, "Upload starting");
+		// Initializing POST parameters
+		Bundle params = new Bundle();
+		params.putString("method", "facebook.video.upload");
+		params.putString("format", "json");
+		
+		params.putString("title", title);
+		params.putString("description", description);
+	
+		params.putString("call_id", String.valueOf(System.currentTimeMillis()));
+		params.putString("v", "1.0");
+		
+		params.putString("oauth_token", mFacebook.getAccessToken());
+	
+		// Reading input file
+		try {
+			File videoFile = new File(path);
+			byte[] data = new byte[(int) videoFile.length()];
+			int len = data.length;
+
+			InputStream is = new FileInputStream(videoFile);
+			is.read(data);
+			params.putByteArray(videoFile.getName(), data);
+		} catch (Exception ex) {
+			Log.e(TAG, "Cannot read file", ex);
+		}
+
+		// Sending POST request to Facebook
+		String response = null;
+		try {
+			String url = "https://api-video.facebook.com/restserver.php";
+			response = Util.openUrl(url, "POST", params);
+			// SessionEvents.onUploadComplete(response);
+		} catch (FileNotFoundException e) {
+			// SessionEvents.onFileNotFoundException(e);
+		} catch (MalformedURLException e) {
+			// SessionEvents.onMalformedURLException(e);
+		} catch (IOException e) {
+			// SessionEvents.onIOException(e);
+		}
+
+		Log.i(TAG, "Uploading complete. Response is " + response);
+		
+		//response is JSON
+		// decode, and grab URL
+		
+		// Log record of this URL in POSTs table
+		dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
+				"facebook.com",
+				response, "");
+	}
+
 
 	public Thread doPOSTtoVideoBin(final Activity activity,
 			final Handler handler, final String video_absolutepath,
@@ -169,20 +307,23 @@ public class PublishingUtils {
 
 				Log.d(TAG, " got back " + response);
 
-				// XXX should this be another auto-email this to user preference
+				// XXX Convert to preference for auto-email on videobin post
 				// ?
 				// stuck on YES here, if email is defined.
 
-				if (emailAddress != null && response != null) {
+				if (false && emailAddress != null && response != null) {
 
-					// XXX convert EmailSender to use IR controlled system.
-
-					EmailSender sender = new EmailSender("intothemist",
-							"#!$tesla."); // SUBSTITUTE HERE
+					// EmailSender through IR controlled gmail system.
+					// XX dont use gmail
+					GMailEmailSender sender = new GMailEmailSender(
+							BUBO_INFINITERECURSION_COM_AU, "bubo!!99"); // consider
+																		// this
+																		// public
+																		// knowledge.
 					try {
-						sender.sendMail("Robotic Eye automatic email.", // subject.getText().toString(),
+						sender.sendMail("Bubo automatic email.", // subject.getText().toString(),
 								"URL of video is  " + response, // body.getText().toString(),
-								emailAddress, // from.getText().toString(),
+								BUBO_INFINITERECURSION_COM_AU, // from.getText().toString(),
 								emailAddress // to.getText().toString()
 						);
 					} catch (Exception e) {
