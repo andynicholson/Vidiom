@@ -26,7 +26,7 @@ public class BuboApp extends Application {
 	private static final String FACEBOOK_APP_ID = "175287182490445";
 	private static final String FACEBOOK_APP_KEY = "2841286527d46765c6823bc9b08fdad9";
 	private static final String FACEBOOK_APP_SECRET = "ed97e81ca8b2327aaaa9291979f0e8cb";
-	
+	public static final String[] FB_LOGIN_PERMISSIONS = new String[] {"publish_stream", "read_stream", "offline_access", "video_upload"};
 	private static String TAG ="RoboticEye-MainApp";
 		
 	//Facebook associated objects
@@ -34,6 +34,8 @@ public class BuboApp extends Application {
 	private AsyncFacebookRunner mAsyncRunner;
 
 
+	private boolean isUploading;
+	
 	/*
 	 * On application startup, get the home position from the preferences.
 	 * 
@@ -50,7 +52,7 @@ public class BuboApp extends Application {
         mAsyncRunner = new AsyncFacebookRunner(mFacebook);
 		
 		SessionStore.restore(mFacebook, this);
-		
+		isUploading = false;
     }
 
     public void onTerminate() {
@@ -77,5 +79,15 @@ public class BuboApp extends Application {
 	return FACEBOOK_APP_SECRET;
    }
 
-
+   public boolean isUploading() {
+	   return isUploading;
+   }
+   
+   public void setUploading() {
+	   isUploading = true;
+   }
+   
+   public void setNotUploading() {
+	   isUploading = false;
+   }
 }

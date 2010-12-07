@@ -1,9 +1,17 @@
-package au.com.infiniterecursion.bubo;
+package au.com.infiniterecursion.bubo.activity;
 
 import java.util.ArrayList;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,7 +25,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import au.com.infiniterecursion.bubo.BuboApp;
 import au.com.infiniterecursion.bubo.R;
+import au.com.infiniterecursion.bubo.facebook.LoginButton;
+import au.com.infiniterecursion.bubo.utils.DBUtils;
+import au.com.infiniterecursion.bubo.utils.DatabaseHelper;
+import au.com.infiniterecursion.bubo.utils.PublishingUtils;
 
 /*
  * RoboticEye Library Activity 
@@ -36,7 +49,9 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	// Database
 	DBUtils dbutils;
 	private String[] video_absolutepath;
+	private String[] video_filename;
 	private Integer[] video_ids;
+	
 	
 	private boolean videos_available;
 
@@ -44,47 +59,65 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	private static final int MENU_ITEM_2 = MENU_ITEM_1 + 1;
 	private static final int MENU_ITEM_3 = MENU_ITEM_2 + 1;
 	private static final int MENU_ITEM_4 = MENU_ITEM_3 + 1;
-
+	private static final int MENU_ITEM_5 = MENU_ITEM_4 + 1;
+	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
+	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
+	
+	private LoginButton lb;
+	private AlertDialog fb_dialog;
+	
 	private static final String TAG = "RoboticEye-Library";
+	private static final int NOTIFICATION_ID = 2;
 	private PublishingUtils pu;
 
 	private Handler handler;
 	private String emailPreference;
 	private SimpleCursorAdapter listAdapter;
 	private Cursor libraryCursor;
-	private boolean isUploading;
+	
 	private Thread thread_vb;
-
+	private Thread thread_fb;
+	private Thread thread_ftp;
+	private Thread thread_youtube;
+	
+	private BuboApp mainapp;
+	
+	private String movieurl;
+	private String moviefilename;
+	private long sdrecord_id;
+	
+	private SharedPreferences prefs;
+	
+	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		SharedPreferences prefs = PreferenceManager
+		prefs = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
 		emailPreference = prefs.getString("emailPreference", null);
 
-		
+		Log.d(TAG, " onCreate ");
 		dbutils = new DBUtils(getBaseContext());
 		pu = new PublishingUtils(getResources(), dbutils);
 		handler = new Handler();
 		thread_vb = null;
-		isUploading = false;
+		thread_fb = null;
+		thread_ftp = null;
+		thread_youtube = null;
 	}
 
 	public void onResume() {
 		super.onResume();
-		
+		mainapp = (BuboApp) getApplication();
+		Log.d(TAG, " onResume ");
 		setContentView(R.layout.library_layout);
 		
 		makeCursorAndAdapter();
 
 		registerForContextMenu(getListView());
 
-		if (!isUploading()) {
-			hideProgressIndicator();
-		} else {
-			showProgressIndicator();
-		}
-
+		lb = new LoginButton(this);
+		lb.init(mainapp.getFacebook(), BuboApp.FB_LOGIN_PERMISSIONS, this);
 	}
 
 	private void makeCursorAndAdapter() {
@@ -107,7 +140,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		if (libraryCursor.moveToFirst()) {
 			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
-
+			ArrayList<String> video_filenames_al = new ArrayList<String>();
 			do {
 				long video_id = libraryCursor
 						.getLong(libraryCursor
@@ -117,12 +150,18 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 						.getString(libraryCursor
 								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH));
 				video_paths_al.add(video_path);
+				String video_filename = libraryCursor
+				.getString(libraryCursor
+						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILENAME));
+				video_filenames_al.add(video_filename);
+		
 
 			} while (libraryCursor.moveToNext());
 
 			video_ids = video_ids_al.toArray(new Integer[video_ids_al.size()]);
 			video_absolutepath = video_paths_al
 					.toArray(new String[video_paths_al.size()]);
+			video_filename = video_filenames_al.toArray(new String[video_filenames_al.size()]);
 			videos_available = true;
 
 		} else {
@@ -180,7 +219,23 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			Log.d(TAG,"Interrupting videobin thread");
 			thread_vb.interrupt();
 		}
-		
+		if (thread_fb != null) {
+			Log.d(TAG,"Interrupting facebook thread");
+			thread_fb.interrupt();
+		}
+		if (thread_ftp != null) {
+			Log.d(TAG,"Interrupting ftp thread");
+			thread_ftp.interrupt();
+		}
+		if (thread_youtube != null) {
+			Log.d(TAG,"Interrupting youtube thread");
+			thread_youtube.interrupt();
+		}
+		if (fb_dialog != null && fb_dialog.isShowing()) {
+			Log.d(TAG, "Dismissing fb dialog");
+			fb_dialog.dismiss();
+			lb = null;
+		}
 		
 	}
 	
@@ -201,11 +256,19 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			ContextMenu.ContextMenuInfo menuInfo) {
 
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
-		menu.add(0, MENU_ITEM_2, 0, R.string.library_menu_delete);
+	
 		menu.add(0, MENU_ITEM_3, 0, R.string.menu_publish_to_videobin);
+		
+		menu.add(0, MENU_ITEM_5, 0, R.string.menu_publish_to_facebook);
+		
+		menu.add(0, MENU_ITEM_6, 0, R.string.menu_ftp);
+		
+		menu.add(0, MENU_ITEM_7, 0, R.string.menu_youtube);
+		
 		menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
-
-		//XXX add ftp to menu in library activity
+		
+		menu.add(0, MENU_ITEM_2, 0, R.string.library_menu_delete);
+		
 	}
 
 	public boolean onContextItemSelected(MenuItem item) {
@@ -219,9 +282,10 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			return true;
 		}
 
-		String movieurl = video_absolutepath[info.position];
-		Integer movieid = video_ids[info.position];
-		Log.d(TAG, " operation on " + movieurl + " id " + movieid.longValue());
+		movieurl = video_absolutepath[info.position];
+		sdrecord_id = video_ids[info.position];
+		moviefilename = video_filename[info.position];
+		Log.d(TAG, " operation on " + movieurl + " id " + sdrecord_id + " filename " + moviefilename);
 
 		switch (item.getItemId()) {
 
@@ -233,34 +297,27 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		case MENU_ITEM_2:
 			// delete
 
+			//XXX ask if sure they want to delete ?
+			
 			// deleting files,
 			if (!pu.deleteVideo(movieurl)) {
 				Log.w(TAG, "Cant delete file " + movieurl);
 				
 			}
 			// and removing DB records!
-			if (dbutils.deleteSDFileRecord(movieid) == -1) {
-				Log.w(TAG, "Cant delete record " + movieid);
+			if (dbutils.deleteSDFileRecord(sdrecord_id) == -1) {
+				Log.w(TAG, "Cant delete record " + sdrecord_id);
 			}
 			
-			//Refresh the list view
-			runOnUiThread(new Runnable() {
-			    public void run() {
-			    	
-			    	makeCursorAndAdapter();
-					
-					listAdapter.notifyDataSetChanged();
-
-			    }
-			});
+			reloadList();
 
 			
 			break;
 
 		case MENU_ITEM_3:
 			// publish to video bin
-			//XXX grab thread
-			thread_vb = pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, movieid);
+			// grab thread
+			thread_vb = pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, sdrecord_id);
 			break;
 
 		case MENU_ITEM_4:
@@ -268,38 +325,141 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			pu.launchEmailIntentWithCurrentVideo(this, movieurl);
 			break;
 
+		case MENU_ITEM_5:
+			// facebook
+			if (fb_dialog != null ) {
+				Log.d(TAG, "Dismissing fb dialog");
+				fb_dialog.dismiss();
+				lb = null;
+				lb = new LoginButton(this);
+				lb.init(mainapp.getFacebook(), BuboApp.FB_LOGIN_PERMISSIONS, this);
+			}
+			
+			askFacebookLogin();
+			break;
+			
+		case MENU_ITEM_6:
+			// facebook
+			thread_ftp = pu.doVideoFTP(this, handler, moviefilename, movieurl, sdrecord_id);
+			
+			break;
+			
+		case MENU_ITEM_7:
+			// youtube
+			// XXX ask for title and description
+			String title="Experimental Bubo YouTube post";
+			String description=getString(R.string.uploaded_by_bubo_your_wandering_eye_http_bubovideo_info_);
+			//thread_ftp = pu.doPostToYouTube(this, handler, movieurl, title, description, sdrecord_id);
+			
+			pu.getAuthTokenWithPermission(this, "intothemist@gmail.com", movieurl, handler);
+			
+			break;
 		}
 
 		return true;
 
 	}
 
-	public void showProgressIndicator() {
-		//
-		findViewById(R.id.uploadprogresslibrary).setVisibility(View.VISIBLE);
+	private void reloadList() {
+		//Refresh the list view
+		runOnUiThread(new Runnable() {
+		    public void run() {
+		    	
+		    	makeCursorAndAdapter();
+				
+				listAdapter.notifyDataSetChanged();
+
+		    }
+		});
 	}
 
-	public void hideProgressIndicator() {
-		//
-		findViewById(R.id.uploadprogresslibrary).setVisibility(View.INVISIBLE);
-	}
 
 	public boolean isUploading() {
 		// 
-		return isUploading ;
+		return mainapp.isUploading() ;
 	}
 
 
 	public void startedUploading() {
 		// 
-		showProgressIndicator();
-		isUploading = true;
+		Resources res = getResources();
+		this.createNotification(res.getString(R.string.starting_upload) + " " + moviefilename);
+		
+		mainapp.setUploading();
 	}
 
 
 	public void finishedUploading(boolean success) {
-		// 
-		hideProgressIndicator();
-		isUploading = false;
+		// 	
+		reloadList();
+		
+		mainapp.setNotUploading();
 	}
+	
+	public void createNotification(String notification_text) {
+		Resources res = getResources();
+		 CharSequence contentTitle = res.getString(R.string.bubo_notification_title);
+		 CharSequence contentText = notification_text;
+
+		 final Notification notifyDetails =
+		        new Notification(R.drawable.icon, notification_text, System.currentTimeMillis());
+
+		 Intent notifyIntent = new Intent(this, LibraryActivity.class);
+
+		    PendingIntent intent =
+		          PendingIntent.getActivity(this, 0,
+		          notifyIntent,  PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_AUTO_CANCEL);
+
+		    notifyDetails.setLatestEventInfo(this, contentTitle, contentText, intent);
+		    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		    
+		   mNotificationManager.notify(NOTIFICATION_ID, notifyDetails);
+		
+	}
+	
+	private void askFacebookLogin() {
+		
+		fb_dialog = new AlertDialog.Builder(this)
+				.setMessage(R.string.request_facebook_login)
+				//XXX Add in title and description text boxes
+				.setView(lb)
+				.setPositiveButton(R.string.videopost_ok,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								// If they succeeded in login, then the
+								// session will be valid.
+								
+								if (mainapp.getFacebook()
+										.isSessionValid()) {
+									// we have a valid session.
+	
+									thread_fb = pu.videoUploadToFacebook(LibraryActivity.this, handler, mainapp.getFacebook(), movieurl, "Test Video", getString(R.string.uploaded_by_bubo_your_wandering_eye_http_bubovideo_info_), sdrecord_id);
+										
+									
+								} 
+
+							}
+						})
+				
+				.setNegativeButton(R.string.videopost_cancel,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+							
+
+								// logout of facebook, if the session is
+								// valid.
+								if (mainapp.getFacebook().isSessionValid()) {
+									lb.logout();
+								}
+
+							}
+						})
+
+				.show();
+		
+		
+	}
+
 }

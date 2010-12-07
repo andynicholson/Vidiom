@@ -1,4 +1,5 @@
-package au.com.infiniterecursion.bubo;
+package au.com.infiniterecursion.bubo.activity;
+
 
 public abstract interface RoboticEyeActivity  {
 	
@@ -7,4 +8,6 @@ public abstract interface RoboticEyeActivity  {
 	public abstract void startedUploading();
 	
 	public abstract void finishedUploading(boolean success);
+	
+	public void createNotification(String notification_text);
 }

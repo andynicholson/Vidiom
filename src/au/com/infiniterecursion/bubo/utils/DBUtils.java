@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo;
+package au.com.infiniterecursion.bubo.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -25,7 +25,7 @@ public class DBUtils {
 
 	private Context context;
 
-	DBUtils(Context c) {
+	public DBUtils(Context c) {
 		context = c;
 	}
 

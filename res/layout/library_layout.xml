@@ -30,11 +30,4 @@
        
                android:text="@string/no_videos_in_library"/>
   
-  <LinearLayout android:id="@+id/uploadprogresslibrary" android:layout_width="fill_parent"
-		android:layout_height="fill_parent">
-		<ProgressBar android:id="@+id/ProgressBar02" android:layout_width="wrap_content" android:layout_height="wrap_content"></ProgressBar>
-		<TextView android:text="@string/uploadprogresstext"  android:layout_width="wrap_content"
-		android:layout_height="wrap_content"></TextView>
-</LinearLayout>
-  
 </RelativeLayout>

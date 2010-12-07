@@ -7,6 +7,9 @@
 	<classpathentry kind="lib" path="mailjars/activation.jar"/>
 	<classpathentry kind="lib" path="mailjars/additionnal.jar"/>
 	<classpathentry kind="lib" path="mailjars/mail.jar"/>
+	<classpathentry kind="lib" path="google-api-client-1.2.1-alpha/google-api-client-1.2.1-alpha-javadoc.jar"/>
+	<classpathentry kind="lib" path="google-api-client-1.2.1-alpha/google-api-client-1.2.1-alpha-sources.jar"/>
+	<classpathentry kind="lib" path="google-api-client-1.2.1-alpha/google-api-client-1.2.1-alpha.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="FBSDK_src"/>

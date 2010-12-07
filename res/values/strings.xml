@@ -15,6 +15,14 @@
 -->
 
 <resources>
+    <string name="uploaded_by_bubo_your_wandering_eye_http_bubovideo_info_">Uploaded by Bubo - your wandering eye : http://bubovideo.info/ </string>
+    <string name="upload_to_facebook_failed_">Upload to Facebook failed.</string>
+    <string name="upload_to_facebook_succeeded_">Upload to Facebook succeeded.</string>
+    <string name="upload_to_videobin_org_failed_">Upload to videobin.org failed.</string>
+    <string name="upload_to_videobin_org_succeeded_">Upload to videobin.org succeeded.</string>
+    <string name="upload_to_ftp_host_succeeded_">Upload to FTP host succeeded.</string>
+    <string name="upload_to_ftp_host_failed_">Upload to FTP host failed.</string>
+	<string name="starting_upload">Starting upload of</string>
 
 	<string name="rootSDcardFolder">/Bubo</string>
 	<string name="defaultVideoFilenamePrefix">video</string>
@@ -24,6 +32,10 @@
     <string name="video_bin_API_videofile">videoFile</string>
     <string name="http_videobin_org_add">http://videobin.org/add</string>
     <string name="video_bin_uploaded_ok">Video successfully uploaded to videobin.org\nYou will receive an email with the URL to your video soon.</string>
+  
+     <string name="facebook_uploaded_ok">Video successfully uploaded to facebook.com\nYou will receive an email with the URL to your video soon.</string>
+	 <string name="ftp_uploaded_ok">Video successfully uploaded to your FTP host\nYou will receive an email with the URL to your video soon.</string>
+	
     
     <string name="maxFilesizePreferenceDefault">1024</string>
     <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes. Zero for unlimited.</string>
@@ -41,6 +53,8 @@
     <string name="filenameConventionPreferenceDialogTitle">Video filename style</string>
     <string name="videobinPreferenceSummary">Automatically publish video to videobin.org?</string>
     <string name="videobinPreferenceTitle">Videobin.org</string>
+    <string name="facebookPreferenceSummary">Automatically publish video to facebook.com?</string>
+    <string name="facebookPreferenceTitle">Facebook</string>
     <string name="ftpPreferenceSummary">Automatically send video via FTP to server?</string>
     <string name="ftpPreferenceTitle">FTP video</string>
     <string name="autoEmailPreferenceSummary">Automatically launch email application with recorded video as attachment?</string>
@@ -52,7 +66,9 @@
     <string name="app_name">Bubo : your wandering eye </string>
     <string name="prefTitle">Bubo : Preferences</string>
 	<string name="libraryTitle">Bubo : Video gallery</string>
-	<string name="about_this">Bubo version 0.5\nVideo capture and web video publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+	<string name="about_this">Bubo version 0.5 - http://bubovideo.info/ \nVideo capture and web video publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2010 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+	 
+	<string name="bubo_notification_title">Bubo</string>
 	 
 	<!--  dialog words -->
     <string name="camera_failed">The camera failed to start recording. Sorry.</string>
@@ -65,11 +81,11 @@
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Check your preferences please.</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
    <string name="file_saved">Recording finished. Video file is in gallery as </string>
-	
+	<string name="posts_in_gallery">You can upload this video via the gallery.</string>
 	<string name="request_facebook_login">Login to Facebook to upload videos.</string>
 	<string name="videopost_ok">Post to Facebook</string>
 	<string name="videopost_cancel">Logout</string>
-	
+	 
 	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to start recording a new one?</string>
 
 	<string name="uploadprogresstext">Uploading video in progress.</string>
@@ -82,10 +98,16 @@
 	<string name="menu_start_recording">Record</string>
     <string name="menu_stop_recording">Stop</string>
     <string name="menu_publish_to_videobin">Videobin.org</string>
+    <string name="menu_publish_to_facebook">Facebook</string>
     <string name="menu_send_via_email">Email</string>
     <string name="menu_preferences">Preferences</string>
     <string name="menu_about">About</string>
 	<string name="menu_library">Gallery</string>
+	<string name="menu_ftp">FTP</string>
+	<string name="menu_youtube">Youtube</string>
+
+	<string name="client_id">BuboVideo</string>
+	<string name="dev_key">AI39si6Zu-rO_UyAE03CFqKoVi_6w-2mueuGU7vvZUJVLDwPNTv1VGgY_Gq68VXwcHOla1Shcdthx8w7Hzvanr26e5oakeGXbg</string>
 
 	<!--  library menu -->
 	<string name="library_menu_delete">Delete video</string>

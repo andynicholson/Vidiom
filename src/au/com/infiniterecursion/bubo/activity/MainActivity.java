@@ -1,12 +1,14 @@
-package au.com.infiniterecursion.bubo;
+package au.com.infiniterecursion.bubo.activity;
 
 import java.io.File;
 import java.io.IOException;
 
-import com.facebook.android.Facebook;
-
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,9 +28,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
-
+import au.com.infiniterecursion.bubo.BuboApp;
 import au.com.infiniterecursion.bubo.R;
-import au.com.infiniterecursion.bubo.facebook.LoginButton;
+import au.com.infiniterecursion.bubo.utils.DBUtils;
+import au.com.infiniterecursion.bubo.utils.PublishingUtils;
 
 
 /*
@@ -57,7 +60,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
 
-	private static final String[] FB_LOGIN_PERMISSIONS = new String[] {"publish_stream", "read_stream", "offline_access", "video_upload"};
+	private static final int NOTIFICATION_ID = 1;
+
+	
 	
 	//Camera objects
 	//
@@ -75,7 +80,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private final int videoFramesPerSecond = 25;
 
 	//App state
-	private boolean isUploading;
 	private boolean recordingInMotion;
 	//Filenames (abs, relative) for latest recorded video file.
 	private String latestVideoFile_absolutepath;
@@ -96,6 +100,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private boolean autoEmailPreference;
 	private boolean fTPPreference;
 	private boolean videobinPreference;
+	private boolean facebookPreference;
 	private String emailPreference;
 	private String filenameConventionPrefence;
 	private String maxDurationPreference;
@@ -111,15 +116,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	private SharedPreferences prefs;
 
+	//Uploading threads
 	private Thread threadVB;
-
+	private Thread threadFB;
 	private Thread threadFTP;
 
-	private LoginButton lb;
-	private AlertDialog fb_dialog;
-	
 	private BuboApp mainapp;
-	
+
+
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -140,11 +145,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		latestVideoFile_filename = "";
 		uploadedSuccessfully = false;
 		startTimeinMillis=endTimeinMillis=0;
-		isUploading = false;
+	
+		mainapp = (BuboApp) getApplication();
 		
 		//Helper classes
 		//
-		mainapp = (BuboApp) getApplication();
+	
 		
 		handler = new Handler();
 		db_utils = new DBUtils(getBaseContext());
@@ -172,71 +178,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		super.onResume();
 		Log.d(TAG,"On resume");
 		loadPreferences();
-		
-		//check the uploading state!
-		if (!isUploading()) {
-			hideProgressIndicator();
-		} else {
-			showProgressIndicator();
-		}
-		
-		lb = new LoginButton(this);
-		lb.init(mainapp.getFacebook(), FB_LOGIN_PERMISSIONS, this);
-
 	}
-
-	private void askFacebookLogin() {
-		
-		fb_dialog = new AlertDialog.Builder(this)
-				.setMessage(R.string.request_facebook_login)
-				.setView(lb)
-				.setPositiveButton(R.string.videopost_ok,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int whichButton) {
-								// If they succeeded in login, then the
-								// session will be valid.
-								// if it is, then set the facebook login
-								// preference to true, so they dont get
-								// asked, until they have logged out
-								// again.
-								if (mainapp.getFacebook()
-										.isSessionValid()) {
-									// we have a valid session.
-
-									if (canSendVideoFile) {
-										
-										pu.videoUploadToFacebook(mainapp.getFacebook(), latestVideoFile_absolutepath, "Test Video", "Uploaded by Bubo - your wandering Eye : http://apps.facebook.com/bubo ", latestsdrecord_id);
-										
-									}
-								} else {
-									// we can try to ask again.
-								
-								}
-
-							}
-						})
-				
-				.setNegativeButton(R.string.videopost_cancel,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int whichButton) {
-							
-
-								// logout of facebook, if the session is
-								// valid.
-								if (mainapp.getFacebook().isSessionValid()) {
-									lb.logout();
-								}
-
-							}
-						})
-
-				.show();
-		
-		
-	}
-
+	
 
 	@Override
 	public void onPause() {
@@ -250,12 +193,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			mediaRecorder.release();
 		}
 		
-		if (fb_dialog != null && fb_dialog.isShowing()) {
-			Log.d(TAG, "Dismissing fb dialog");
-			fb_dialog.dismiss();
-			lb = null;
-		}
-		
+
 		if (threadVB != null) {
 			Log.d(TAG,"Interrupting videobin thread");
 			threadVB.interrupt();
@@ -264,20 +202,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			Log.d(TAG,"Interrupting FTP thread;");
 			threadFTP.interrupt();
 		}
-		
+		if (threadFB != null) {
+			Log.d(TAG,"Interrupting facebook thread");
+			threadFB.interrupt();
+		}
 	}
 	
-	public void showProgressIndicator() {
-		
-		findViewById(R.id.uploadprogress).setVisibility(View.VISIBLE);
-	}
 	
-	public void hideProgressIndicator() {
-		
-		// Hide the progress bar
-		findViewById(R.id.uploadprogress)
-				.setVisibility(View.INVISIBLE);
-	}
 	
 	private void checkIfFirstTimeRunAndWelcome() {
 		// 
@@ -309,7 +240,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		autoEmailPreference = prefs.getBoolean("autoemailPreference", false);
 		fTPPreference = prefs.getBoolean("ftpPreference", false);
 		videobinPreference = prefs.getBoolean("videobinPreference", false);
-		
+		facebookPreference = prefs.getBoolean("facebookPreference", false);
 		emailPreference = prefs.getString("emailPreference",null);
 	
 		// Filename style, duration, max filesize
@@ -410,18 +341,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			}
 		}
 
-		if (canSendVideoFile) {
-			MenuItem menu_publish = menu.add(0, MENU_ITEM_3, 0,R.string.menu_publish_to_videobin);
-			menu_publish.setIcon(R.drawable.globe48);
-			MenuItem menu_email = menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
-			menu_email.setIcon(R.drawable.movie48);
-			//XXX Add in publish to FTP host
-			
-			
-		} else {
-			menu.removeItem(MENU_ITEM_3);
-			menu.removeItem(MENU_ITEM_4);
-		}
 	}
 	
 
@@ -455,6 +374,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			menuResponseForStopItem();
 			break;
 
+			/*
 		// Post to Video FTP service
 		case MENU_ITEM_3:
 
@@ -466,7 +386,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			// Email
 			menuResponseForEmailItem();
 			break;
-
+	
+		*/
 		case MENU_ITEM_5:
 			// ABOUT
 			new AlertDialog.Builder(this)
@@ -561,9 +482,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			//threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
-
-			askFacebookLogin();
+			threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 			
 		} else if (recordingInMotion) {
 
@@ -835,7 +754,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		//If preference is to ask for a title and description, show dialog
 		// else leave blank
-		//XXX ask for title
+		//XXX ask for title and description after capture, if they want
+		
 		String title = null, description = null;
 		
 		latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
@@ -850,7 +770,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			
 			//Video recording finished dialog!
 			new AlertDialog.Builder(MainActivity.this)
-			.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename)
+			.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename + '\n' + res.getString(R.string.posts_in_gallery))
 			.setPositiveButton(R.string.yes,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,
@@ -890,33 +810,66 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			threadFTP = pu.doVideoFTP(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
 		}
 
+		// add in facebook auto publishing
+		if (facebookPreference) {
+			//XXX get title and description for video upload to FB
+			threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, "", "", latestsdrecord_id);
+		}
+		// 
+		//add in youtube, vimeo, when done.
+		
+		//Leave as last
 		if (autoEmailPreference) {
 			pu.launchEmailIntentWithCurrentVideo(this, latestVideoFile_absolutepath);
 		}
+		
+		
 	}
 
 
 	public boolean isUploading() {
 		// are we?
-		return isUploading ;
+		return mainapp.isUploading();
 	}
 
 
 	public void startedUploading() {
-		// show the progress indicator	
-		showProgressIndicator();
+		Resources res = getResources();
+		this.createNotification(res.getString(R.string.starting_upload) + " " + latestVideoFile_filename);
 		//flip the switch
-		isUploading = true;
+		mainapp.setUploading();
 	}
 
 
 	public void finishedUploading(boolean success) {
 		// finished, one way or the other
 		uploadedSuccessfully = success;
-		//hide the progress indicator
-		hideProgressIndicator();
+		
+	
 		//not uploading.
-		isUploading = false;
+		
+		mainapp.setNotUploading();
 	}
 
+	public void createNotification(String notification_text) {
+		Resources res = getResources();
+		 CharSequence contentTitle = res.getString(R.string.bubo_notification_title);
+		 CharSequence contentText = notification_text;
+
+		 final Notification notifyDetails =
+		        new Notification(R.drawable.icon, notification_text, System.currentTimeMillis());
+
+		 Intent notifyIntent = new Intent(this, MainActivity.class);
+
+		    PendingIntent intent =
+		          PendingIntent.getActivity(this, 0,
+		          notifyIntent,  PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_AUTO_CANCEL);
+
+		    notifyDetails.setLatestEventInfo(this, contentTitle, contentText, intent);
+		    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		    
+		   mNotificationManager.notify(NOTIFICATION_ID, notifyDetails);
+		
+	}
+	
 }

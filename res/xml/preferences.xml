@@ -13,6 +13,7 @@
 
 <CheckBoxPreference android:title="@string/autoEmailPreferenceTitle" android:summary="@string/autoEmailPreferenceSummary" android:key="autoemailPreference"></CheckBoxPreference>
 <CheckBoxPreference android:title="@string/videobinPreferenceTitle" android:summary="@string/videobinPreferenceSummary" android:key="videobinPreference"></CheckBoxPreference>
+<CheckBoxPreference android:title="@string/facebookPreferenceTitle" android:summary="@string/facebookPreferenceSummary" android:key="facebookPreference"></CheckBoxPreference>
 <CheckBoxPreference android:title="@string/ftpPreferenceTitle" android:summary="@string/ftpPreferenceSummary" android:key="ftpPreference"></CheckBoxPreference>
 
 <EditTextPreference android:summary="@string/defaultFTPhostPreferenceSummary" android:key="defaultFTPhostPreference" 
