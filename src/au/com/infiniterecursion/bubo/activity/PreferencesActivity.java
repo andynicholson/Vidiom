@@ -3,7 +3,6 @@ package au.com.infiniterecursion.bubo.activity;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import au.com.infiniterecursion.bubo.R;
-import au.com.infiniterecursion.bubo.R.xml;
 
 
 /*

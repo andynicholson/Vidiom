@@ -26,7 +26,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.widget.Toast;
 import au.com.infiniterecursion.bubo.BuboApp;
 import au.com.infiniterecursion.bubo.R;

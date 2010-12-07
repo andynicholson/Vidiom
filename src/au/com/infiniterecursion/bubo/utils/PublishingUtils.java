@@ -773,6 +773,7 @@ public class PublishingUtils {
 
 		Intent i = new Intent(Intent.ACTION_SEND);
 		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		//XXX hardcoded video mimetype
 		i.setType("video/mp4");
 		i.putExtra(Intent.EXTRA_STREAM,
 				Uri.parse("file://" + latestVideoFile_absolutepath));
@@ -855,6 +856,7 @@ public class PublishingUtils {
 
 	// youtube upload code from 
 	// from http://code.google.com/p/ytd-android/source/browse/trunk/src/com/google/ytd/SubmitActivity.java
+	// http://www.apache.org/licenses/LICENSE-2.0
 	// Copyright 2010 Google  License Apache
 	
 	public void asyncYouTubeUpload(final Activity activity, final File file,
@@ -1091,7 +1093,8 @@ public class PublishingUtils {
 		}
 		urlConnection.setDoOutput(true);
 		urlConnection.setFixedLengthStreamingMode(chunk);
-		urlConnection.setRequestProperty("Content-Type", "video/3gpp");
+		///XXX hardcoded video mimetype
+		urlConnection.setRequestProperty("Content-Type", "video/mp4");
 		urlConnection.setRequestProperty("Content-Range",
 				String.format("bytes %d-%d/%d", start, end, file.length()));
 		Log.d(TAG, urlConnection.getRequestProperty("Content-Range"));
@@ -1133,6 +1136,8 @@ public class PublishingUtils {
 
 				Log.i(TAG, "Youtube video submitted - new video id is " + videoId);
 
+				// 100% finished here.
+				
 				// dialog.setProgress(100);
 
 				return videoId;
@@ -1315,6 +1320,7 @@ public class PublishingUtils {
 					public void onSuccess(String result) {
 						PublishingUtils.this.clientLoginToken = result;
 						File file = new File(path);
+						//Launch Async YouTube video upload.
 						asyncYouTubeUpload(activity, file, handler);
 					}
 				});

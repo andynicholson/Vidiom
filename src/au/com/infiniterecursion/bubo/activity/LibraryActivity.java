@@ -349,8 +349,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			// XXX ask for title and description
 			String title="Experimental Bubo YouTube post";
 			String description=getString(R.string.uploaded_by_bubo_your_wandering_eye_http_bubovideo_info_);
-			//thread_ftp = pu.doPostToYouTube(this, handler, movieurl, title, description, sdrecord_id);
-			
+			// This launches the youtube upload process
 			pu.getAuthTokenWithPermission(this, "intothemist@gmail.com", movieurl, handler);
 			
 			break;
