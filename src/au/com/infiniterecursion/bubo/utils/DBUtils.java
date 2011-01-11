@@ -132,6 +132,49 @@ public class DBUtils {
 
 	}
 
+	public long updateTitleAndDescription(String title, String description, String[] sdrecord_id) {
+		genericWriteOpen();
+
+		Log.v(TAG, "updateTitleAndDescription called .. "
+				+ title + ":" + description);
+		
+		ContentValues vals = new ContentValues();
+		vals.put(DatabaseHelper.SDFileRecord.TITLE, title);
+		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION, description);
+		
+		long rez = generic_write_db.update(DatabaseHelper.SDFILERECORD_TABLE_NAME, vals, DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+		Log.v(TAG, "updateTitleAndDescription returning  "
+				+ rez);
+		close();
+		
+		return rez;
+	}
+	
+	
+	public String[] getTitleAndDescriptionFromID(String[] sdrecord_id) {
+		String[] rez = new String[2];
+		
+		genericWriteOpen();
+		
+		Cursor strs = generic_write_db.rawQuery("SELECT  " + DatabaseHelper.SDFileRecord.TITLE + " , " 
+				+ DatabaseHelper.SDFileRecord.DESCRIPTION + " FROM " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE " + DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+		
+		if (strs.moveToFirst() )  {
+			String title = strs.getString(0);
+			String descr = strs.getString(1);
+			
+			rez[0] = title;
+			rez[1] = descr;
+		} else {
+			rez[0] = "";
+			rez[1] = "";
+		}
+		
+		close();
+		
+		return rez;
+	}
+	
 	/*
 	 * Returns the ID of the new record, or -1 if error
 	 */

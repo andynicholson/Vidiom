@@ -1003,9 +1003,10 @@ public class PublishingUtils {
 			throw new YouTubeAccountException(this.youTubeName
 					+ " is not linked to a YouTube account.");
 		}
-
-		String uploadUrl = uploadMetaData(activity, file.getAbsolutePath(),
-				true);
+		
+		String[] strs = dbutils.getTitleAndDescriptionFromID(new String[] { Long.toString(sdrecord_id)});
+		//add our branding to the description.
+		String uploadUrl = uploadMetaData(activity, file.getAbsolutePath(), strs[0], strs[1]+ "\n" + activity.getString(R.string.uploaded_by_), true);
 
 		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is " + this.youTubeName);
 		Log.d(TAG, String.format("Client token : %s ", this.clientLoginToken));
@@ -1110,7 +1111,7 @@ public class PublishingUtils {
 	
 	
 
-	private String uploadMetaData(final Activity activity, String filePath,
+	private String uploadMetaData(final Activity activity, String filePath, String title, String description,
 			boolean retry) throws IOException {
 		String uploadUrl = INITIAL_UPLOAD_URL;
 
@@ -1121,9 +1122,7 @@ public class PublishingUtils {
 				.setRequestProperty("Content-Type", "application/atom+xml");
 		urlConnection.setRequestProperty("Slug", filePath);
 		String atomData = null;
-
-		String title = "Bubo test";
-		String description = "Bubo description";
+		
 		String category = DEFAULT_VIDEO_CATEGORY;
 		this.tags = DEFAULT_VIDEO_TAGS;
 
@@ -1144,7 +1143,7 @@ public class PublishingUtils {
 				this.clientLoginToken = authorizer.getFreshAuthToken(
 						youTubeName, clientLoginToken);
 				// Try again with fresh token
-				return uploadMetaData(activity, filePath, false);
+				return uploadMetaData(activity, filePath, title, description, false);
 			} else {
 				throw new IOException(String.format(
 						"response code='%s' (code %d)" + " for %s",

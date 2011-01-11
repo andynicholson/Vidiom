@@ -3,6 +3,8 @@ package au.com.infiniterecursion.bubo.activity;
 import java.io.File;
 import java.io.IOException;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -22,10 +24,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 import au.com.infiniterecursion.bubo.BuboApp;
 import au.com.infiniterecursion.bubo.R;
@@ -83,8 +88,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	//Filenames (abs, relative) for latest recorded video file.
 	private String latestVideoFile_absolutepath;
 	private String latestVideoFile_filename;
-	private boolean canSendVideoFile;
-	private boolean uploadedSuccessfully;
+	
 	private long latestsdrecord_id;
 	private long startTimeinMillis;
 	private long endTimeinMillis;
@@ -100,6 +104,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private boolean fTPPreference;
 	private boolean videobinPreference;
 	private boolean facebookPreference;
+	private boolean youtubePreference;
 	private String emailPreference;
 	private String filenameConventionPrefence;
 	private String maxDurationPreference;
@@ -122,6 +127,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	private BuboApp mainapp;
 
+	//For naming videos after recording finishes.
+	protected String title;
+	protected String description;
+
 
 
 	/** Called when the activity is first created. */
@@ -139,10 +148,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
 		recordingInMotion = false;
-		canSendVideoFile = false;
+		
 		latestVideoFile_absolutepath = "";
 		latestVideoFile_filename = "";
-		uploadedSuccessfully = false;
 		startTimeinMillis=endTimeinMillis=0;
 	
 		mainapp = (BuboApp) getApplication();
@@ -241,7 +249,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		videobinPreference = prefs.getBoolean("videobinPreference", false);
 		facebookPreference = prefs.getBoolean("facebookPreference", false);
 		emailPreference = prefs.getString("emailPreference",null);
-	
+		youtubePreference = prefs.getBoolean("youtubePreference", false);
+		
 		// Filename style, duration, max filesize
 		Resources res = getResources();
 
@@ -296,19 +305,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		}
 	}
 
-	/*
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		Log.i(TAG, "OnCreateOptionsMenu called");
-
-		// Conditionally on menu items.
-		menu.add(0, MENU_ITEM_1, 0, R.string.menu_start_recording);
-
-		addConstantMenuItems(menu);
-		return true;
-	}
-	*/
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
@@ -326,7 +322,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private void createConditionalMenu(Menu menu) {
 		menu.clear();
 
-		Log.i(TAG, "createConditionalMenu called. recordingInMotion ? "  + recordingInMotion + " : canSendVideoFile ? " + canSendVideoFile);
+		Log.i(TAG, "createConditionalMenu called. recordingInMotion ? "  + recordingInMotion );
 		// Conditionally on menu items.
 		if (recordingInMotion) {
 			menu.removeItem(MENU_ITEM_1);
@@ -364,7 +360,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// Record
 		case MENU_ITEM_1:
 
-			menuResponseForRecordItem();
+			tryToStartRecording();
 
 			break;
 
@@ -373,20 +369,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			menuResponseForStopItem();
 			break;
 
-			/*
-		// Post to Video FTP service
-		case MENU_ITEM_3:
-
-			menuResponseForPublishItem();
-
-			break;
-
-		case MENU_ITEM_4:
-			// Email
-			menuResponseForEmailItem();
-			break;
-	
-		*/
 		case MENU_ITEM_5:
 			// ABOUT
 			new AlertDialog.Builder(this)
@@ -436,86 +418,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	 * 
 	 * Menu response methods
 	 */
-
-	private void menuResponseForEmailItem() {
-		
-		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
-		
-		if (canSendVideoFile && !recordingInMotion) {
-
-			pu.launchEmailIntentWithCurrentVideo(this, latestVideoFile_absolutepath);
-
-		} else if (recordingInMotion) {
-
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.stop_recording_to_send)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.show();
-
-		} else if (!recordingInMotion) {
-
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.haventrecorded)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.show();
-
-		}
-	}
-
-	private void menuResponseForPublishItem() {
-		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
-		
-		if (canSendVideoFile && !recordingInMotion) {
-
-			threadVB = pu.videoUploadToVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
-			
-		} else if (recordingInMotion) {
-
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.stop_recording_to_send)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.show();
-
-		} else if (!recordingInMotion) {
-
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.haventrecorded)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.show();
-
-		}
-	}
-
+	
 	private void menuResponseForStopItem() {
-		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
+		Log.d(TAG, "State is recordingInMotion:"+recordingInMotion);
 		
 		if (recordingInMotion) {
 
@@ -544,37 +449,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		}
 	}
 
-	private void menuResponseForRecordItem() {
-		Log.d(TAG, "State is canSendVideoFile:"+canSendVideoFile + " recordingInMotion:"+recordingInMotion);
-		
-		if (!uploadedSuccessfully && canSendVideoFile) {
-
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.this_will_wipe_existing_video)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-									tryToStartRecording();
-
-								}
-
-							})
-
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							}).show();
-
-		} else {
-
-			tryToStartRecording();
-		}
-	}
+	
 
 	
 	
@@ -677,8 +552,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	public boolean startRecording() {
 		
-			canSendVideoFile = false;
-
 			camera.unlock();
 
 			mediaRecorder = new MediaRecorder();
@@ -751,36 +624,55 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
 		
-		//If preference is to ask for a title and description, show dialog
-		// else leave blank
-		//XXX ask for title and description after capture, if they want
+		// ask for title and description after capture.
+		title = null;
+		description = null;
+		LayoutInflater inflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	      
+		final View title_descr = inflater.inflate(R.layout.title_and_desc, null);		
+		final EditText title_edittext = (EditText) title_descr.findViewById(R.id.EditTextTitle);
+		final EditText desc_edittext = (EditText) title_descr.findViewById(R.id.EditTextDescr);
 		
-		String title = null, description = null;
-		
-		latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
-		if (latestsdrecord_id > 0) {
-			canSendVideoFile = true;
-			Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
-			
-			//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
-			doAutoCompletedRecordedActions();
-			
-			Resources res = getResources();
-			
-			//Video recording finished dialog!
-			new AlertDialog.Builder(MainActivity.this)
-			.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename + '\n' + res.getString(R.string.posts_in_gallery))
-			.setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+		AlertDialog title_descr_dialog = new AlertDialog.Builder(this)
+		.setMessage(R.string.rename_video)
+		.setView(title_descr)
+		.setPositiveButton(R.string.yes,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,
+							int whichButton) {
+						
+						//title and description.
+						MainActivity.this.title = title_edittext.getText().toString();
+						MainActivity.this.description = desc_edittext.getText().toString() ;
+						
+						latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
+						
+						//If ID > 0, then new record in DB was successfully created
+						if (latestsdrecord_id > 0) {
+							
+							Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
+							
+							//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
+							doAutoCompletedRecordedActions();
+							
+							Resources res = getResources();
+							
+							//Video recording finished dialog!
+							new AlertDialog.Builder(MainActivity.this)
+							.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename + '\n' + res.getString(R.string.posts_in_gallery))
+							.setPositiveButton(R.string.yes,
+									new DialogInterface.OnClickListener() {
+										public void onClick(DialogInterface dialog,
+												int whichButton) {
 
-							
-							
+											
+											
+										}
+									}).show();
 						}
-					}).show();
-		}
-		
+						
+					}
+				}).show();
 		
 	}
 	
@@ -809,13 +701,37 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			threadFTP = pu.videoUploadToFTPserver(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
 		}
 
-		// add in facebook auto publishing
+		// facebook auto publishing
 		if (facebookPreference) {
-			//XXX get title and description for video upload to FB
-			threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, "", "", latestsdrecord_id);
+			//get title and description for video upload to FB
+			String[] strs = db_utils.getTitleAndDescriptionFromID(new String[] { Long.toString(latestsdrecord_id)});
+			threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), latestsdrecord_id);
 		}
-		// 
-		//add in youtube, vimeo, when done.
+		
+		
+		// youtube auto publishing
+		if (youtubePreference) {
+			
+			
+			String possibleEmail = null;
+			//We need a linked google account for youtube.
+			Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
+			for (Account account : accounts) {
+			  // TODO: Check possibleEmail against an email regex or treat
+			  // account.name as an email address only for certain account.type values.
+			  possibleEmail = account.name;
+			  Log.d(TAG, "Could use : " + possibleEmail);
+			}
+			if (possibleEmail != null) {
+				Log.d(TAG,"Using account name for youtube upload .. " + possibleEmail);
+				// This launches the youtube upload process				
+				pu.getYouTubeAuthTokenWithPermissionAndUpload(this, possibleEmail, latestVideoFile_absolutepath, handler, latestsdrecord_id);
+			}
+			
+		}
+
+		//XXX add in vimeo, when done.
+				
 		
 		//Leave as last
 		if (autoEmailPreference) {
@@ -841,10 +757,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 
 	public void finishedUploading(boolean success) {
-		// finished, one way or the other
-		uploadedSuccessfully = success;
-		
-	
 		//not uploading.
 		
 		mainapp.setNotUploading();
