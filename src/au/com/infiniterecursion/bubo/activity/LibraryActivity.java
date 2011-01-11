@@ -2,6 +2,8 @@ package au.com.infiniterecursion.bubo.activity;
 
 import java.util.ArrayList;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.Notification;
@@ -62,6 +64,10 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	private static final int MENU_ITEM_5 = MENU_ITEM_4 + 1;
 	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
+	private static final int MENU_ITEM_8 = MENU_ITEM_7 + 1;
+	private static final int MENU_ITEM_9 = MENU_ITEM_8 + 1;
+	private static final int MENU_ITEM_10 = MENU_ITEM_9 + 1;
+	
 	
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
@@ -256,7 +262,11 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			ContextMenu.ContextMenuInfo menuInfo) {
 
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
-	
+
+		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
+		
+		menu.add(0, MENU_ITEM_9, 0, R.string.add_description);
+		
 		menu.add(0, MENU_ITEM_3, 0, R.string.menu_publish_to_videobin);
 		
 		menu.add(0, MENU_ITEM_5, 0, R.string.menu_publish_to_facebook);
@@ -267,8 +277,11 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		
 		menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
 		
+		menu.add(0, MENU_ITEM_10, 0, R.string.menu_send_hosted_url_via_email);
+		
 		menu.add(0, MENU_ITEM_2, 0, R.string.library_menu_delete);
 		
+
 	}
 
 	public boolean onContextItemSelected(MenuItem item) {
@@ -317,7 +330,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		case MENU_ITEM_3:
 			// publish to video bin
 			// grab thread
-			thread_vb = pu.doPOSTtoVideoBin(this, handler, movieurl, emailPreference, sdrecord_id);
+			thread_vb = pu.videoUploadToVideoBin(this, handler, movieurl, emailPreference, sdrecord_id);
 			break;
 
 		case MENU_ITEM_4:
@@ -340,7 +353,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			
 		case MENU_ITEM_6:
 			// facebook
-			thread_ftp = pu.doVideoFTP(this, handler, moviefilename, movieurl, sdrecord_id);
+			thread_ftp = pu.videoUploadToFTPserver(this, handler, moviefilename, movieurl, sdrecord_id);
 			
 			break;
 			
@@ -350,8 +363,25 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			String title="Experimental Bubo YouTube post";
 			String description=getString(R.string.uploaded_by_bubo_your_wandering_eye_http_bubovideo_info_);
 			// This launches the youtube upload process
-			pu.getAuthTokenWithPermission(this, "intothemist@gmail.com", movieurl, handler);
 			
+			
+			String possibleEmail = null;
+			//We need a linked google account for youtube.
+			Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
+			for (Account account : accounts) {
+			  // TODO: Check possibleEmail against an email regex or treat
+			  // account.name as an email address only for certain account.type values.
+			  possibleEmail = account.name;
+			  Log.d(TAG, "Could use : " + possibleEmail);
+			}
+			if (possibleEmail != null) {
+				Log.d(TAG,"Using account name for youtube upload .. " + possibleEmail);
+				pu.getYouTubeAuthTokenWithPermissionAndUpload(this, possibleEmail, movieurl, handler, sdrecord_id);
+			} else {
+				
+				//XXX throw up dialog
+				
+			}
 			break;
 		}
 
@@ -374,13 +404,12 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 
 	public boolean isUploading() {
-		// 
 		return mainapp.isUploading() ;
 	}
 
 
 	public void startedUploading() {
-		// 
+		// Show notification of uploading
 		Resources res = getResources();
 		this.createNotification(res.getString(R.string.starting_upload) + " " + moviefilename);
 		
@@ -389,7 +418,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 
 	public void finishedUploading(boolean success) {
-		// 	
+		// Reload the gallery list
 		reloadList();
 		
 		mainapp.setNotUploading();

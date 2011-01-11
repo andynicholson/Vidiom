@@ -481,7 +481,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 		if (canSendVideoFile && !recordingInMotion) {
 
-			threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			threadVB = pu.videoUploadToVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 			
 		} else if (recordingInMotion) {
 
@@ -802,11 +802,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		Log.d(TAG, "Doing auto completed recorded actions");
 		
 		if (videobinPreference) {
-			threadVB = pu.doPOSTtoVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			threadVB = pu.videoUploadToVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 		}
 
 		if (fTPPreference) {
-			threadFTP = pu.doVideoFTP(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
+			threadFTP = pu.videoUploadToFTPserver(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
 		}
 
 		// add in facebook auto publishing

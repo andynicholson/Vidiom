@@ -32,7 +32,7 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>FBSDK_src</name>
+			<name>FBSDK</name>
 			<type>2</type>
 			<locationURI>_android_FBSDK/src</locationURI>
 		</link>
