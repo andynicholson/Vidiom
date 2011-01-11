@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout android:id="@+id/TitleAndDescription" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+
+<TextView  android:layout_marginLeft="3px" android:text="Video Title" android:id="@+id/TextViewTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+<EditText android:layout_alignLeft="@+id/EditTextDescr" android:minWidth="250px" android:layout_height="wrap_content" android:id="@+id/EditTextTitle" android:layout_below="@+id/TextViewTitle" android:text="" android:layout_width="wrap_content"></EditText>
+
+<TextView android:layout_marginLeft="3px" android:layout_height="wrap_content" android:layout_below="@+id/EditTextTitle" android:id="@+id/TextViewDescr" android:text="Video Description" android:layout_width="wrap_content"></TextView>
+<EditText android:layout_height="wrap_content" android:lines="3" android:minWidth="250px" android:id="@+id/EditTextDescr" android:layout_below="@+id/TextViewDescr" android:text="" android:layout_width="wrap_content"></EditText>
+
+</RelativeLayout>
