@@ -1,6 +1,6 @@
 
 /*
- *  Bubo Facebook Login button 
+ *  Vidiom Facebook Login button 
  * 
  * AUTHORS:
  * 
@@ -10,7 +10,7 @@
  * Copyright Infinite Recursion Pty Ltd.
  */
 
-package au.com.infiniterecursion.bubo.facebook;
+package au.com.infiniterecursion.vidiom.facebook;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,9 +21,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import au.com.infiniterecursion.bubo.R;
-import au.com.infiniterecursion.bubo.facebook.SessionEvents.AuthListener;
-import au.com.infiniterecursion.bubo.facebook.SessionEvents.LogoutListener;
+import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiom.facebook.SessionEvents.AuthListener;
+import au.com.infiniterecursion.vidiom.facebook.SessionEvents.LogoutListener;
 
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.DialogError;

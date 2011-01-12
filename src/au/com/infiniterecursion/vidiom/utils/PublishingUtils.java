@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.utils;
+package au.com.infiniterecursion.vidiom.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -67,23 +67,31 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import au.com.infiniterecursion.bubo.GMailEmailSender;
-import au.com.infiniterecursion.bubo.R;
-import au.com.infiniterecursion.bubo.activity.RoboticEyeActivity;
-import au.com.infiniterecursion.bubo.utils.GoogleAuthoriser.AuthorizationListener;
+import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiom.GMailEmailSender;
+import au.com.infiniterecursion.vidiom.activity.RoboticEyeActivity;
+import au.com.infiniterecursion.vidiom.utils.GoogleAuthoriser.AuthorizationListener;
 
 import com.facebook.android.Facebook;
 import com.facebook.android.Util;
 
+/*
+ * Vidiom Library Activity 
+ * 
+ * AUTHORS:
+ * 
+ * Andy Nicholson
+ * 
+ * 2010
+ * Copyright Infinite Recursion Pty Ltd.
+ * http://www.infiniterecursion.com.au
+ */
+
 public class PublishingUtils {
 
-	private static final String BUBO_INFINITERECURSION_COM_AU = "bubo@infiniterecursion.com.au";
+	private static final String EMAIL_INFINITERECURSION_COM_AU = "vidiom@vidiom.net.au";
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
-
-	protected static final String developer_key = "AI39si6Zu-rO_UyAE03CFqKoVi_6w-2mueuGU7vvZUJVLDwPNTv1VGgY_Gq68VXwcHOla1Shcdthx8w7Hzvanr26e5oakeGXbg";
-
-	protected static final String clientID = null;
 
 	private File folder;
 	private Resources res;
@@ -392,14 +400,16 @@ public class PublishingUtils {
 					// EmailSender through IR controlled gmail system.
 					// XX dont use gmail
 					GMailEmailSender sender = new GMailEmailSender(
-							BUBO_INFINITERECURSION_COM_AU, "bubo!!99"); // consider
+							EMAIL_INFINITERECURSION_COM_AU, activity
+									.getString(R.string.automatic_email_password)); // consider
 																		// this
 																		// public
 																		// knowledge.
 					try {
-						sender.sendMail("Bubo automatic email.", // subject.getText().toString(),
-								"URL of video is  " + response, // body.getText().toString(),
-								BUBO_INFINITERECURSION_COM_AU, // from.getText().toString(),
+						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+								activity
+										.getString(R.string.url_of_hosted_video_is_) + response, // body.getText().toString(),
+								EMAIL_INFINITERECURSION_COM_AU, // from.getText().toString(),
 								emailAddress // to.getText().toString()
 						);
 					} catch (Exception e) {

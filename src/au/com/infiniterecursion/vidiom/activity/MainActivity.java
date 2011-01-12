@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.activity;
+package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,14 +32,14 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-import au.com.infiniterecursion.bubo.BuboApp;
-import au.com.infiniterecursion.bubo.R;
-import au.com.infiniterecursion.bubo.utils.DBUtils;
-import au.com.infiniterecursion.bubo.utils.PublishingUtils;
+import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiom.VidiomApp;
+import au.com.infiniterecursion.vidiom.utils.DBUtils;
+import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
 
 
 /*
- * Main RoboticEye Activity 
+ * Main Vidiom Activity 
  * 
  * AUTHORS:
  * 
@@ -125,7 +125,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private Thread threadFB;
 	private Thread threadFTP;
 
-	private BuboApp mainapp;
+	private VidiomApp mainapp;
 
 	//For naming videos after recording finishes.
 	protected String title;
@@ -153,7 +153,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		latestVideoFile_filename = "";
 		startTimeinMillis=endTimeinMillis=0;
 	
-		mainapp = (BuboApp) getApplication();
+		mainapp = (VidiomApp) getApplication();
 		
 		//Helper classes
 		//
@@ -764,7 +764,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	public void createNotification(String notification_text) {
 		Resources res = getResources();
-		 CharSequence contentTitle = res.getString(R.string.bubo_notification_title);
+		 CharSequence contentTitle = res.getString(R.string.notification_title);
 		 CharSequence contentText = notification_text;
 
 		 final Notification notifyDetails =

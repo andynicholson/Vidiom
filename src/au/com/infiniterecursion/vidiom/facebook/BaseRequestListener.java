@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.facebook;
+package au.com.infiniterecursion.vidiom.facebook;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

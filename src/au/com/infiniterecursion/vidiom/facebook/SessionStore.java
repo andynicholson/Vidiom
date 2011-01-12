@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package au.com.infiniterecursion.bubo.facebook;
+package au.com.infiniterecursion.vidiom.facebook;
 
 /*
  * Main Nibble Activity 

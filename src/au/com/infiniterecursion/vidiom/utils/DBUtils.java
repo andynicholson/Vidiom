@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.utils;
+package au.com.infiniterecursion.vidiom.utils;
 
 import android.content.ContentValues;
 import android.content.Context;

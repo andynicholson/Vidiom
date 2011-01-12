@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.activity;
+package au.com.infiniterecursion.vidiom.activity;
 
 import java.util.ArrayList;
 
@@ -31,15 +31,15 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import au.com.infiniterecursion.bubo.BuboApp;
-import au.com.infiniterecursion.bubo.R;
-import au.com.infiniterecursion.bubo.facebook.LoginButton;
-import au.com.infiniterecursion.bubo.utils.DBUtils;
-import au.com.infiniterecursion.bubo.utils.DatabaseHelper;
-import au.com.infiniterecursion.bubo.utils.PublishingUtils;
+import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiom.VidiomApp;
+import au.com.infiniterecursion.vidiom.facebook.LoginButton;
+import au.com.infiniterecursion.vidiom.utils.DBUtils;
+import au.com.infiniterecursion.vidiom.utils.DatabaseHelper;
+import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
 
 /*
- * RoboticEye Library Activity 
+ * Vidiom Library Activity 
  * 
  * AUTHORS:
  * 
@@ -88,7 +88,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	private Thread thread_ftp;
 	private Thread thread_youtube;
 
-	private BuboApp mainapp;
+	private VidiomApp mainapp;
 
 	private String movieurl;
 	private String moviefilename;
@@ -115,7 +115,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 	public void onResume() {
 		super.onResume();
-		mainapp = (BuboApp) getApplication();
+		mainapp = (VidiomApp) getApplication();
 		Log.d(TAG, " onResume ");
 		setContentView(R.layout.library_layout);
 
@@ -124,7 +124,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		registerForContextMenu(getListView());
 
 		lb = new LoginButton(this);
-		lb.init(mainapp.getFacebook(), BuboApp.FB_LOGIN_PERMISSIONS, this);
+		lb.init(mainapp.getFacebook(), VidiomApp.FB_LOGIN_PERMISSIONS, this);
 	}
 
 	private void makeCursorAndAdapter() {
@@ -383,7 +383,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 				fb_dialog.dismiss();
 				lb = null;
 				lb = new LoginButton(this);
-				lb.init(mainapp.getFacebook(), BuboApp.FB_LOGIN_PERMISSIONS,
+				lb.init(mainapp.getFacebook(), VidiomApp.FB_LOGIN_PERMISSIONS,
 						this);
 			}
 			// This launches the facebook upload , via a dialog.
@@ -542,7 +542,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	public void createNotification(String notification_text) {
 		Resources res = getResources();
 		CharSequence contentTitle = res
-				.getString(R.string.bubo_notification_title);
+				.getString(R.string.notification_title);
 		CharSequence contentText = notification_text;
 
 		final Notification notifyDetails = new Notification(R.drawable.icon,

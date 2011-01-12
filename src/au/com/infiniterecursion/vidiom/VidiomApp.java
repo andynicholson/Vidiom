@@ -1,7 +1,7 @@
-package au.com.infiniterecursion.bubo;
+package au.com.infiniterecursion.vidiom;
 
 /*
- * Main Bubo Application 
+ * Main Vidiom Application 
  * 
  * AUTHORS:
  * 
@@ -16,12 +16,12 @@ package au.com.infiniterecursion.bubo;
 import android.app.Application;
 
 import android.util.Log;
-import au.com.infiniterecursion.bubo.facebook.SessionStore;
+import au.com.infiniterecursion.vidiom.facebook.SessionStore;
 
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.Facebook;
 
-public class BuboApp extends Application {
+public class VidiomApp extends Application {
 	
 	private static final String FACEBOOK_APP_ID = "175287182490445";
 	private static final String FACEBOOK_APP_KEY = "2841286527d46765c6823bc9b08fdad9";

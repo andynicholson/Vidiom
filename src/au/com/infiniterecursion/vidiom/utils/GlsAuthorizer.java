@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.utils;
+package au.com.infiniterecursion.vidiom.utils;
 
 
 /* Copyright (c) 2010 Google Inc.

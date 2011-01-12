@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo;
+package au.com.infiniterecursion.vidiom;
 
 
 import java.io.ByteArrayInputStream;

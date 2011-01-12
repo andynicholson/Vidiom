@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.activity;
+package au.com.infiniterecursion.vidiom.activity;
 
 
 public abstract interface RoboticEyeActivity  {

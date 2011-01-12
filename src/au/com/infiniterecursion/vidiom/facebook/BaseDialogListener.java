@@ -1,4 +1,4 @@
-package au.com.infiniterecursion.bubo.facebook;
+package au.com.infiniterecursion.vidiom.facebook;
 
 import com.facebook.android.DialogError;
 import com.facebook.android.FacebookError;
