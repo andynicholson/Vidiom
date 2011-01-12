@@ -30,6 +30,8 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
@@ -139,6 +141,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		super.onCreate(savedInstanceState);
 				
 		Log.d(TAG,"On create");
+		
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 		
 		setContentView(R.layout.surface_layout);
 		surfaceView = (SurfaceView) findViewById(R.id.surface_camera);
