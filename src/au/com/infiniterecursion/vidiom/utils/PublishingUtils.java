@@ -68,8 +68,8 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.R;
-import au.com.infiniterecursion.vidiom.GMailEmailSender;
 import au.com.infiniterecursion.vidiom.activity.RoboticEyeActivity;
+import au.com.infiniterecursion.vidiom.sslemail.SSLEmailSender;
 import au.com.infiniterecursion.vidiom.utils.GoogleAuthoriser.AuthorizationListener;
 
 import com.facebook.android.Facebook;
@@ -89,7 +89,6 @@ import com.facebook.android.Util;
 
 public class PublishingUtils {
 
-	private static final String EMAIL_INFINITERECURSION_COM_AU = "vidiom@vidiom.net.au";
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
 
@@ -150,7 +149,7 @@ public class PublishingUtils {
 	//
 	public Thread videoUploadToFacebook(final Activity activity,
 			final Handler handler, final Facebook mFacebook, final String path,
-			final String title, final String description, final long sdrecord_id) {
+			final String title, final String description, final String emailAddress, final long sdrecord_id) {
 
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
@@ -254,6 +253,28 @@ public class PublishingUtils {
 					}
 				}
 
+				if (emailAddress != null && hosted_url != null) {
+
+					// EmailSender through IR controlled gmail system.
+					SSLEmailSender sender = new SSLEmailSender(
+							activity.getString(R.string.automatic_email_username), activity
+									.getString(R.string.automatic_email_password)); // consider
+																		// this
+																		// public
+																		// knowledge.
+					try {
+						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+								activity
+										.getString(R.string.url_of_hosted_video_is_) + " " + hosted_url, // body.getText().toString(),
+										activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+								emailAddress // to.getText().toString()
+						);
+					} catch (Exception e) {
+						Log.e(TAG, e.getMessage(), e);
+					}
+				}
+				
+				
 				// Log record of this URL in POSTs table
 				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 						url, hosted_url, "");
@@ -287,7 +308,7 @@ public class PublishingUtils {
 	}
 
 	public Thread videoUploadToVideoBin(final Activity activity,
-			final Handler handler, final String video_absolutepath,
+			final Handler handler, final String video_absolutepath, final String title, final String description,
 			final String emailAddress, final long sdrecord_id) {
 
 		Log.d(TAG, "doPOSTtoVideoBin starting");
@@ -329,6 +350,19 @@ public class PublishingUtils {
 							res.getString(R.string.video_bin_API_api),
 							new StringBody("1", "text/plain", Charset
 									.forName("UTF-8")));
+					
+					//title
+					entity.addPart(
+							res.getString(R.string.video_bin_API_title),
+							new StringBody(title, "text/plain", Charset
+									.forName("UTF-8")));
+					
+					//description
+					entity.addPart(
+							res.getString(R.string.video_bin_API_description),
+							new StringBody(description, "text/plain", Charset
+									.forName("UTF-8")));
+					
 				} catch (IllegalCharsetNameException e) {
 					// error
 					e.printStackTrace();
@@ -395,12 +429,11 @@ public class PublishingUtils {
 				// XXX ADD EMAIL NOTIF to all other upload methods
 				// stuck on YES here, if email is defined.
 
-				if (false && emailAddress != null && response != null) {
+				if (emailAddress != null && response != null) {
 
 					// EmailSender through IR controlled gmail system.
-					// XX dont use gmail
-					GMailEmailSender sender = new GMailEmailSender(
-							EMAIL_INFINITERECURSION_COM_AU, activity
+					SSLEmailSender sender = new SSLEmailSender(
+							activity.getString(R.string.automatic_email_username), activity
 									.getString(R.string.automatic_email_password)); // consider
 																		// this
 																		// public
@@ -408,8 +441,8 @@ public class PublishingUtils {
 					try {
 						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
 								activity
-										.getString(R.string.url_of_hosted_video_is_) + response, // body.getText().toString(),
-								EMAIL_INFINITERECURSION_COM_AU, // from.getText().toString(),
+										.getString(R.string.url_of_hosted_video_is_) + " " + response, // body.getText().toString(),
+										activity.getString(R.string.automatic_email_from), // from.getText().toString(),
 								emailAddress // to.getText().toString()
 						);
 					} catch (Exception e) {
@@ -450,7 +483,7 @@ public class PublishingUtils {
 
 	public Thread videoUploadToFTPserver(final Activity activity, final Handler handler,
 			final String latestVideoFile_filename,
-			final String latestVideoFile_absolutepath, final long sdrecord_id) {
+			final String latestVideoFile_absolutepath, final String emailAddress, final long sdrecord_id) {
 
 		Log.d(TAG, "doVideoFTP starting");
 
@@ -803,6 +836,27 @@ public class PublishingUtils {
 					return;
 				}
 
+				if (emailAddress != null && ftpHostName != null) {
+
+					// EmailSender through IR controlled gmail system.
+					SSLEmailSender sender = new SSLEmailSender(
+							activity.getString(R.string.automatic_email_username), activity
+									.getString(R.string.automatic_email_password)); // consider
+																		// this
+																		// public
+																		// knowledge.
+					try {
+						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+								activity
+										.getString(R.string.url_of_hosted_video_is_) + " " + ftpHostName, // body.getText().toString(),
+										activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+								emailAddress // to.getText().toString()
+						);
+					} catch (Exception e) {
+						Log.e(TAG, e.getMessage(), e);
+					}
+				}
+				
 				// Log record of this URL in POSTs table
 				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 						ftpHostName, ftpHostName, "");
@@ -932,7 +986,7 @@ public class PublishingUtils {
 	
 
 	public void asyncYouTubeUpload(final Activity activity, final File file,
-			final Handler handler, final long sdrecord_id) {
+			final Handler handler, final String emailAddress, final long sdrecord_id) {
 		
 		new Thread(new Runnable() {
 			public void run() {
@@ -946,7 +1000,7 @@ public class PublishingUtils {
 					while (submitCount <= MAX_RETRIES && videoId == null) {
 						try {
 							submitCount++;
-							videoId = startYouTubeUpload(activity, file, handler, sdrecord_id);
+							videoId = startYouTubeUpload(activity, file, handler, emailAddress, sdrecord_id);
 							assert videoId != null;
 						} catch (Internal500ResumeException e500) { // TODO -
 																	// this
@@ -1004,7 +1058,7 @@ public class PublishingUtils {
 		}
 	}
 
-	private String startYouTubeUpload(final Activity activity, File file, final Handler handler, final long sdrecord_id)
+	private String startYouTubeUpload(final Activity activity, File file, final Handler handler, final String emailAddress, final long sdrecord_id)
 			throws IOException, YouTubeAccountException, SAXException,
 			ParserConfigurationException, Internal500ResumeException {
 
@@ -1089,7 +1143,28 @@ public class PublishingUtils {
 		}
 
 		if (videoId != null) {
-					
+			
+			if (emailAddress != null ) {
+
+				// EmailSender through IR controlled gmail system.
+				SSLEmailSender sender = new SSLEmailSender(
+						activity.getString(R.string.automatic_email_username), activity
+								.getString(R.string.automatic_email_password)); // consider
+																	// this
+																	// public
+																	// knowledge.
+				try {
+					sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+							activity
+									.getString(R.string.url_of_hosted_video_is_) + " " + YOUTUBE_PLAYER_URL + videoId, // body.getText().toString(),
+									activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+							emailAddress // to.getText().toString()
+					);
+				} catch (Exception e) {
+					Log.e(TAG, e.getMessage(), e);
+				}
+			}
+			
 			// Log record of this URL in POSTs table
 			dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 					uploadUrl, YOUTUBE_PLAYER_URL + videoId, "");
@@ -1409,7 +1484,7 @@ public class PublishingUtils {
 	}
 
 	public void getYouTubeAuthTokenWithPermissionAndUpload(final Activity activity,
-			String accountName, final String path, final Handler handler, final long sdrecord_id) {
+			String accountName, final String path, final Handler handler, final String emailAddress, final long sdrecord_id) {
 		
 		
 		// Make the progress bar view visible.
@@ -1456,7 +1531,7 @@ public class PublishingUtils {
 						PublishingUtils.this.clientLoginToken = result;
 						File file = new File(path);
 						//Launch Async YouTube video upload.
-						asyncYouTubeUpload(activity, file, handler, sdrecord_id);
+						asyncYouTubeUpload(activity, file, handler, emailAddress, sdrecord_id);
 					}
 				});
 	}

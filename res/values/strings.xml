@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--  
 /*
- *  RoboticEye XML 
+ *  Vidiom XML 
  * 
  * AUTHORS:
  * 
@@ -15,7 +15,10 @@
 -->
 
 <resources>
-    <string name="automatic_email_password">bubo!!99</string>
+	<string name="automatic_email_username">bubo</string>
+	<string name="automatic_email_from">noreply@vidiom.mobi</string>
+    <string name="automatic_email_password">1f2f083cb72927cdb6077f21b200f82d</string>
+
     <string name="url_of_hosted_video_is_">URL of  hosted video is  </string>
     <string name="vidiom_automatic_email">Vidiom automatic email</string>
     <string name="uploaded_by_">Uploaded by Vidiom - your wandering eye : http://vidiom.net.au/ </string>
@@ -35,12 +38,12 @@
 	
 
     <string name="video_bin_API_api">api</string>
+    <string name="video_bin_API_title">title</string>
+    <string name="video_bin_API_description">description</string>
     <string name="video_bin_API_videofile">videoFile</string>
     <string name="http_videobin_org_add">http://videobin.org/add</string>
-    <string name="video_bin_uploaded_ok">Video successfully uploaded to videobin.org\nYou will receive an email with the URL to your video soon.</string>
-     <string name="facebook_uploaded_ok">Video successfully uploaded to facebook.com\nYou will receive an email with the URL to your video soon.</string>
-	 <string name="ftp_uploaded_ok">Video successfully uploaded to your FTP host\nYou will receive an email with the URL to your video soon.</string>
-	
+    
+ 
     
     <string name="maxFilesizePreferenceDefault">1024</string>
     <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes. Zero for unlimited.</string>
@@ -93,11 +96,10 @@
 	<string name="videopost_ok">Post to Facebook</string>
 	<string name="videopost_cancel">Logout</string>
 	 
-	<string name="this_will_wipe_existing_video">You have captured a video and have not uploaded it. Do you want to start recording a new one?</string>
 	<string name="uploadprogresstext">Uploading video in progress.</string>
 	<string name="no_videos_in_library">You have no videos in the library.</string>
 	
-	<string name="welcome">Welcome to Vidiom !\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
+	<string name="welcome">Welcome to Vidiom!\nUse the Menu key to start and stop video recording, set your Preferences and go to the Gallery.\nThe video camera only captures in Landscape orientation.\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
 	
 	<!-- menu -->
 	<string name="menu_start_recording">Record</string>

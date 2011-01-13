@@ -26,7 +26,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -150,24 +154,26 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 			ArrayList<String> video_paths_al = new ArrayList<String>();
 			ArrayList<String> video_filenames_al = new ArrayList<String>();
 			ArrayList<String> hosted_urls_al = new ArrayList<String>();
-			
+
 			do {
 				long video_id = libraryCursor
 						.getLong(libraryCursor
 								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
 				video_ids_al.add((int) video_id);
-				
+
 				String video_path = libraryCursor
 						.getString(libraryCursor
 								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH));
 				video_paths_al.add(video_path);
-				
+
 				String video_filename = libraryCursor
 						.getString(libraryCursor
 								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILENAME));
 				video_filenames_al.add(video_filename);
-				
-				String hosted_url = libraryCursor.getString(libraryCursor.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
+
+				String hosted_url = libraryCursor
+						.getString(libraryCursor
+								.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
 				hosted_urls_al.add(hosted_url);
 
 			} while (libraryCursor.moveToNext());
@@ -177,8 +183,9 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 					.toArray(new String[video_paths_al.size()]);
 			video_filename = video_filenames_al
 					.toArray(new String[video_filenames_al.size()]);
-			hosted_urls = hosted_urls_al.toArray(new String[hosted_urls_al.size()]);
-			
+			hosted_urls = hosted_urls_al.toArray(new String[hosted_urls_al
+					.size()]);
+
 			videos_available = true;
 
 		} else {
@@ -366,8 +373,13 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		case MENU_ITEM_3:
 			// publish to video bin
+			String[] strs_vb = dbutils
+					.getTitleAndDescriptionFromID(new String[] { Long
+							.toString(sdrecord_id) });
 			// grab thread
 			thread_vb = pu.videoUploadToVideoBin(this, handler, movieurl,
+					strs_vb[0], strs_vb[1] + "\n"
+							+ getString(R.string.uploaded_by_),
 					emailPreference, sdrecord_id);
 			break;
 
@@ -393,7 +405,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		case MENU_ITEM_6:
 			// FTP server upload
 			thread_ftp = pu.videoUploadToFTPserver(this, handler,
-					moviefilename, movieurl, sdrecord_id);
+					moviefilename, movieurl, emailPreference, sdrecord_id);
 
 			break;
 
@@ -416,7 +428,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 						+ possibleEmail);
 				// This launches the youtube upload process
 				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
-						possibleEmail, movieurl, handler, sdrecord_id);
+						possibleEmail, movieurl, handler, emailPreference, sdrecord_id);
 			} else {
 
 				// throw up dialog
@@ -435,75 +447,80 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		case MENU_ITEM_8:
 			// Title and Description of Video
 
-			// Launch View
-			LayoutInflater inflater = (LayoutInflater) getApplicationContext()
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-			final View title_descr = inflater.inflate(R.layout.title_and_desc,
-					null);
-			// preload any existing title and description
-			String[] strs = dbutils
-					.getTitleAndDescriptionFromID(new String[] { Long
-							.toString(sdrecord_id) });
-			final EditText title_edittext = (EditText) title_descr
-					.findViewById(R.id.EditTextTitle);
-			final EditText desc_edittext = (EditText) title_descr
-					.findViewById(R.id.EditTextDescr);
-
-			title_edittext.setText(strs[0]);
-			desc_edittext.setText(strs[1]);
-
-			AlertDialog title_descr_dialog = new AlertDialog.Builder(this)
-					.setMessage(R.string.rename_video).setView(title_descr)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-									// save title and description to DB.
-									String title_str = title_edittext.getText()
-											.toString();
-									String desc_str = desc_edittext.getText()
-											.toString();
-									String[] ids = new String[] { Long
-											.toString(sdrecord_id) };
-
-									Log.d(TAG, "New title and description is "
-											+ title_str + ":" + desc_str);
-
-									dbutils.updateTitleAndDescription(
-											title_str, desc_str, ids);
-
-									reloadList();
-								}
-							}).setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							}).show();
+			showTitleDescriptionDialog();
 
 			break;
-			
-			
+
 		case MENU_ITEM_9:
-			//Email the HOSTED URL field of the currently selected video 
-			
+			// Email the HOSTED URL field of the currently selected video
+
 			Intent i = new Intent(Intent.ACTION_SEND);
 			i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			i.setType("message/rfc822") ; 
+			i.setType("message/rfc822");
 			i.putExtra(Intent.EXTRA_TEXT, hosted_url);
 			this.startActivity(i);
-			
-			
+
 			break;
-			
 
 		}
 
 		return true;
 
+	}
+
+	private void showTitleDescriptionDialog() {
+		// Launch Title/Description Edit View
+		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+		final View title_descr = inflater.inflate(R.layout.title_and_desc,
+				null);
+		// preload any existing title and description
+		String[] strs = dbutils
+				.getTitleAndDescriptionFromID(new String[] { Long
+						.toString(sdrecord_id) });
+		final EditText title_edittext = (EditText) title_descr
+				.findViewById(R.id.EditTextTitle);
+		final EditText desc_edittext = (EditText) title_descr
+				.findViewById(R.id.EditTextDescr);
+
+		title_edittext.setText(strs[0]);
+		desc_edittext.setText(strs[1]);
+
+		final Dialog d = new Dialog(this);
+		Window w = d.getWindow();
+		w.setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+				WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+		d.setTitle(R.string.rename_video);
+		// the edit layout defined in an xml file (in res/layout)
+		d.setContentView(title_descr);
+		// Cancel
+		Button cbutton = (Button) d.findViewById(R.id.button2Cancel);
+		cbutton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				d.dismiss();
+			}
+		});
+		// Edit
+		Button ebutton = (Button) d.findViewById(R.id.button1Edit);
+		ebutton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				// save title and description to DB.
+				String title_str = title_edittext.getText().toString();
+				String desc_str = desc_edittext.getText().toString();
+				String[] ids = new String[] { Long.toString(sdrecord_id) };
+
+				Log.d(TAG, "New title and description is " + title_str
+						+ ":" + desc_str);
+
+				dbutils.updateTitleAndDescription(title_str, desc_str, ids);
+
+				reloadList();
+				
+				d.dismiss();
+			}
+		});
+		d.show();
 	}
 
 	private void reloadList() {
@@ -541,8 +558,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 	public void createNotification(String notification_text) {
 		Resources res = getResources();
-		CharSequence contentTitle = res
-				.getString(R.string.notification_title);
+		CharSequence contentTitle = res.getString(R.string.notification_title);
 		CharSequence contentText = notification_text;
 
 		final Notification notifyDetails = new Notification(R.drawable.icon,
@@ -582,7 +598,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 									LibraryActivity.this, handler, mainapp
 											.getFacebook(), movieurl, strs[0],
 									strs[1] + "\n"
-											+ getString(R.string.uploaded_by_),
+											+ getString(R.string.uploaded_by_), emailPreference,
 									sdrecord_id);
 
 						}

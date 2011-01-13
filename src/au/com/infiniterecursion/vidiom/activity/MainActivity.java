@@ -7,6 +7,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -32,6 +33,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
@@ -633,55 +636,82 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// ask for title and description after capture.
 		title = null;
 		description = null;
-		LayoutInflater inflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-	      
-		final View title_descr = inflater.inflate(R.layout.title_and_desc, null);		
-		final EditText title_edittext = (EditText) title_descr.findViewById(R.id.EditTextTitle);
-		final EditText desc_edittext = (EditText) title_descr.findViewById(R.id.EditTextDescr);
 		
-		AlertDialog title_descr_dialog = new AlertDialog.Builder(this)
-		.setMessage(R.string.rename_video)
-		.setView(title_descr)
-		.setPositiveButton(R.string.yes,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog,
-							int whichButton) {
-						
-						//title and description.
-						MainActivity.this.title = title_edittext.getText().toString();
-						MainActivity.this.description = desc_edittext.getText().toString() ;
-						
-						latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
-						
-						//If ID > 0, then new record in DB was successfully created
-						if (latestsdrecord_id > 0) {
-							
-							Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
-							
-							//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
-							doAutoCompletedRecordedActions();
-							
-							Resources res = getResources();
-							
-							//Video recording finished dialog!
-							new AlertDialog.Builder(MainActivity.this)
-							.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename + '\n' + res.getString(R.string.posts_in_gallery))
-							.setPositiveButton(R.string.yes,
-									new DialogInterface.OnClickListener() {
-										public void onClick(DialogInterface dialog,
-												int whichButton) {
-
-											
-											
-										}
-									}).show();
-						}
-						
-					}
-				}).show();
+		showTitleDescriptionDialog();
 		
 	}
 	
+	
+	private void showTitleDescriptionDialog() {
+		// Launch Title/Description Edit View
+		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+		final View title_descr = inflater.inflate(R.layout.title_and_desc,
+				null);
+		
+		final EditText title_edittext = (EditText) title_descr
+				.findViewById(R.id.EditTextTitle);
+		final EditText desc_edittext = (EditText) title_descr
+				.findViewById(R.id.EditTextDescr);
+
+		final Dialog d = new Dialog(this);
+		Window w = d.getWindow();
+		w.setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+				WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+		d.setTitle(R.string.rename_video);
+		// the edit layout defined in an xml file (in res/layout)
+		d.setContentView(title_descr);
+		// Cancel
+		Button cbutton = (Button) d.findViewById(R.id.button2Cancel);
+		cbutton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				d.dismiss();
+			}
+		});
+		// Edit
+		Button ebutton = (Button) d.findViewById(R.id.button1Edit);
+		ebutton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				// save title and description to DB.
+				title = title_edittext.getText().toString();
+				description = desc_edittext.getText().toString();
+				
+
+				Log.d(TAG, "New title and description is " + title
+						+ ":" + description);
+
+				latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
+				
+				//If ID > 0, then new record in DB was successfully created
+				if (latestsdrecord_id > 0) {
+					
+					Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
+					
+					//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
+					doAutoCompletedRecordedActions();
+					
+					Resources res = getResources();
+					
+					//Video recording finished dialog!
+					new AlertDialog.Builder(MainActivity.this)
+					.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename + '\n' + res.getString(R.string.posts_in_gallery))
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+
+									
+									
+								}
+							}).show();
+				}
+				
+				d.dismiss();
+			}
+		});
+		d.show();
+	}
 
 	public void onInfo(MediaRecorder mr, int what, int extra) {
 		//
@@ -698,20 +728,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// Auto completion actions
 
 		Log.d(TAG, "Doing auto completed recorded actions");
+		String[] strs = db_utils.getTitleAndDescriptionFromID(new String[] { Long.toString(latestsdrecord_id)});
 		
 		if (videobinPreference) {
-			threadVB = pu.videoUploadToVideoBin(this, handler, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			threadVB = pu.videoUploadToVideoBin(this, handler, latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), emailPreference, latestsdrecord_id);
 		}
 
 		if (fTPPreference) {
-			threadFTP = pu.videoUploadToFTPserver(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, latestsdrecord_id);
+			threadFTP = pu.videoUploadToFTPserver(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
 		}
 
 		// facebook auto publishing
 		if (facebookPreference) {
 			//get title and description for video upload to FB
-			String[] strs = db_utils.getTitleAndDescriptionFromID(new String[] { Long.toString(latestsdrecord_id)});
-			threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), latestsdrecord_id);
+			
+			threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), emailPreference, latestsdrecord_id);
 		}
 		
 		
@@ -731,7 +762,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			if (possibleEmail != null) {
 				Log.d(TAG,"Using account name for youtube upload .. " + possibleEmail);
 				// This launches the youtube upload process				
-				pu.getYouTubeAuthTokenWithPermissionAndUpload(this, possibleEmail, latestVideoFile_absolutepath, handler, latestsdrecord_id);
+				pu.getYouTubeAuthTokenWithPermissionAndUpload(this, possibleEmail, latestVideoFile_absolutepath, handler, emailPreference, latestsdrecord_id);
 			}
 			
 		}
