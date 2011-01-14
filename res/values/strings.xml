@@ -73,7 +73,7 @@
     <string name="emailTitle">Email Address</string>
    
    <!--  activity titles -->
-    <string name="app_name">Vidiom : your wandering eye </string>
+    <string name="app_name">Vidiom</string>
     <string name="prefTitle">Vidioum : Preferences</string>
 	<string name="libraryTitle">Vidiom : Video gallery</string>
 	<string name="about_this">Vidiom version 0.6 - http://vidiom.net.au/ \nVideo capture and web video publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
@@ -99,7 +99,7 @@
 	<string name="uploadprogresstext">Uploading video in progress.</string>
 	<string name="no_videos_in_library">You have no videos in the library.</string>
 	
-	<string name="welcome">Welcome to Vidiom!\nUse the Menu key to start and stop video recording, set your Preferences and go to the Gallery.\nThe video camera only captures in Landscape orientation.\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
+	<string name="welcome">Welcome to Vidiom!\nUse the Menu key to start and stop video recording, set your Preferences and go to the Gallery.\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
 	
 	<!-- menu -->
 	<string name="menu_start_recording">Record</string>
