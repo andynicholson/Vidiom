@@ -74,6 +74,7 @@
    
    <!--  activity titles -->
     <string name="app_name">Vidiom</string>
+    <string name="app_description">Your wandering eye.</string>
     <string name="prefTitle">Vidioum : Preferences</string>
 	<string name="libraryTitle">Vidiom : Video gallery</string>
 	<string name="about_this">Vidiom version 0.6 - http://vidiom.net.au/ \nVideo capture and web video publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
