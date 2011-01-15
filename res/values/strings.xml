@@ -101,7 +101,7 @@
 	<string name="no_videos_in_library">You have no videos in the library.</string>
 	
 	<string name="welcome">Welcome to Vidiom!\nUse the Menu key to start and stop video recording, set your Preferences and go to the Gallery.\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
-	<string name="welcome2">Please note, the video camera captures MP4 (H264/SAMR) video in Landscape orientation.\nTo upload to Youtube, you must associate your google account with Youtube at http://youtube.com/.\nGet support at http://vidiom.mobi/</string>
+	<string name="welcome2">Please note, the video camera captures MP4 (H264/SAMR) video in Landscape orientation. To upload to Youtube, you must associate your google account with Youtube at http://youtube.com/.\nGet support at http://vidiom.mobi/</string>
 	
 	
 	<!-- menu -->
