@@ -381,6 +381,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		case MENU_ITEM_5:
 			// ABOUT
 			new AlertDialog.Builder(this)
+					.setIcon(R.drawable.icon)
 					.setMessage(R.string.about_this)
 					.setPositiveButton(R.string.yes,
 							new DialogInterface.OnClickListener() {

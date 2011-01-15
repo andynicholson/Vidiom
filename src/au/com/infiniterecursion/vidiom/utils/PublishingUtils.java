@@ -162,17 +162,14 @@ public class PublishingUtils {
 				Log.i(TAG, "Upload starting");
 				// Initialising REST API video.upload parameters
 				Bundle params = new Bundle();
-				params.putString("method", "facebook.video.upload");
-				params.putString("format", "json");
-
-				params.putString("title", title);
-				params.putString("description", description);
-
-				params.putString("call_id",
-						String.valueOf(System.currentTimeMillis()));
-				params.putString("v", "1.0");
-
-				params.putString("oauth_token", mFacebook.getAccessToken());
+				params.putByteArray("method", "facebook.video.upload".getBytes());
+				params.putByteArray("format", "json".getBytes());	
+				params.putByteArray("title", title.getBytes());
+				params.putByteArray("description", description.getBytes());
+				params.putByteArray("call_id",
+						String.valueOf(System.currentTimeMillis()).getBytes());
+				params.putByteArray("v", "1.0".getBytes());
+				params.putByteArray("oauth_token", mFacebook.getAccessToken().getBytes());
 
 				// Reading input file
 				try {
@@ -1070,7 +1067,7 @@ public class PublishingUtils {
 		
 		String[] strs = dbutils.getTitleAndDescriptionFromID(new String[] { Long.toString(sdrecord_id)});
 		//add our branding to the description.
-		String uploadUrl = uploadMetaData(activity, file.getAbsolutePath(), strs[0], strs[1]+ "\n" + activity.getString(R.string.uploaded_by_), true);
+		String uploadUrl = uploadMetaData(activity, handler, file.getAbsolutePath(), strs[0], strs[1]+ "\n" + activity.getString(R.string.uploaded_by_), true);
 
 		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is " + this.youTubeName);
 		Log.d(TAG, String.format("Client token : %s ", this.clientLoginToken));
@@ -1196,7 +1193,7 @@ public class PublishingUtils {
 	
 	
 
-	private String uploadMetaData(final Activity activity, String filePath, String title, String description,
+	private String uploadMetaData(final Activity activity, final Handler handler, String filePath, String title, String description,
 			boolean retry) throws IOException {
 		String uploadUrl = INITIAL_UPLOAD_URL;
 
@@ -1228,12 +1225,40 @@ public class PublishingUtils {
 				this.clientLoginToken = authorizer.getFreshAuthToken(
 						youTubeName, clientLoginToken);
 				// Try again with fresh token
-				return uploadMetaData(activity, filePath, title, description, false);
+				return uploadMetaData(activity, handler, filePath, title, description, false);
 			} else {
+				
+				//Probably not authorised!
+				
+				//Need to setup a Youtube account.
+				
+				// Use the handler to execute a Runnable on the
+				// main thread in order to have access to the
+				// UI elements.
+				handler.postDelayed(new Runnable() {
+					public void run() {
+						// Update UI
+
+						// Indicate back to calling activity the result!
+						// update uploadInProgress state also.
+
+						((RoboticEyeActivity) activity).finishedUploading(true);
+						((RoboticEyeActivity) activity)
+								.createNotification(res
+										.getString(R.string.upload_to_youtube_host_failed_));
+
+					}
+				}, 0);
+				
+				
 				throw new IOException(String.format(
 						"response code='%s' (code %d)" + " for %s",
 						urlConnection.getResponseMessage(), responseCode,
 						urlConnection.getURL()));
+				
+				
+				
+				
 			}
 		}
 

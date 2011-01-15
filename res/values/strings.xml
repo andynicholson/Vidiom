@@ -91,7 +91,7 @@
     <string name="stop_recording_to_send">You are still recording video. Please stop recording first, then send.</string>
     <string name="cant_find_upload_host">We can not connect to the video hosting service. Check your preferences please.</string>
     <string name="cant_login_upload_host">We can not login to your account on the video hosting service. Sorry. Check your FTP host username and password preferences please.</string>
-   <string name="file_saved">Recording finished. Video file is in gallery as </string>
+    <string name="file_saved">Recording finished. Video file is in gallery as </string>
 	<string name="posts_in_gallery">You can upload this video via the gallery.</string>
 	<string name="request_facebook_login">Login to Facebook to upload videos.</string>
 	<string name="videopost_ok">Post to Facebook</string>
