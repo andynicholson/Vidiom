@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.StaticLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,8 +35,10 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
@@ -137,6 +140,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	protected String description;
 
 
+	protected TextView statusIndicator;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -156,6 +160,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		surfaceHolder.addCallback(this);
 		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
+		
+		//Overlay , for Recording indications etc
+		
+		LayoutInflater overlayInflater = LayoutInflater.from(getBaseContext());
+	    View viewControl = overlayInflater.inflate(R.layout.camera_overlay, null);
+	    LayoutParams layoutParamsControl = new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+	    this.addContentView(viewControl, layoutParamsControl);
+		
+	    statusIndicator = (TextView) findViewById(R.id.overlay);
+		
 		recordingInMotion = false;
 		
 		latestVideoFile_absolutepath = "";
@@ -242,9 +256,34 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,
 								int whichButton) {
+							
+							
+							//show second dialog
+							new AlertDialog.Builder(MainActivity.this)
+							.setMessage(R.string.welcome2)
+							.setPositiveButton(R.string.yes,
+									new DialogInterface.OnClickListener() {
+										public void onClick(DialogInterface dialog,
+												int whichButton) {
+											
+											
+											//show second dialog
+											
+											
+											
+											
+
+										}
+									}).show();
+							
+							
+							
 
 						}
 					}).show();
+			
+			
+			
 			
 			
 		}
@@ -564,6 +603,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		
 			camera.unlock();
 
+			statusIndicator.setText("REC");
+			
 			mediaRecorder = new MediaRecorder();
 			mediaRecorder.setOnInfoListener(this);
 
@@ -630,6 +671,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		camera.lock();
 		recordingInMotion = false;
 				
+		statusIndicator.setText("STOP");
+		
 		endTimeinMillis = System.currentTimeMillis();
 		
 		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
