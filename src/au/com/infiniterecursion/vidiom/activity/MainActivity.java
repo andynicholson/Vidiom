@@ -778,12 +778,30 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	}
 
 	public void onInfo(MediaRecorder mr, int what, int extra) {
-		//
+		//called when an error occurs
+		
+		Resources res = getResources();
+		
 		if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
 				|| what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
+			
 			Log.d(TAG, "We have reached the end limit");
 			
-			stopRecording();
+			//Video recording finished dialog!
+			new AlertDialog.Builder(MainActivity.this)
+			.setMessage(res.getString(R.string.limits_reached))
+			.setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+
+								stopRecording();
+							
+						}
+					}).show();
+			
+			
+			
 		}
 
 	}
