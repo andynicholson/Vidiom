@@ -785,8 +785,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		// facebook auto publishing
 		if (facebookPreference) {
 			//get title and description for video upload to FB
-			
-			threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), emailPreference, latestsdrecord_id);
+			if (mainapp.getFacebook() != null && mainapp.getFacebook().isSessionValid()) {				
+				threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), emailPreference, latestsdrecord_id);
+			}
 		}
 		
 		
