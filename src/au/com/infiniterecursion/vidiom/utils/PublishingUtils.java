@@ -280,10 +280,12 @@ public class PublishingUtils {
 
 							}
 						}, 0);
-
-					} else {
+					}
+					
+				} else {
 						
-						//an error
+						//an error -- fb_response is NULL.
+					
 						handler.postDelayed(new Runnable() {
 							public void run() {
 								// Update UI
@@ -299,9 +301,9 @@ public class PublishingUtils {
 							}
 						}, 0);
 						
-					}
-
 				}
+
+				
 
 				if (emailAddress != null && fb_response != null
 						&& hosted_url != null) {
