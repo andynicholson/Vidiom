@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.text.StaticLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -245,9 +244,30 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		boolean first_time = prefs.getBoolean("firstTimeRun", true);
 		
 		if (first_time) {
+			
 			Editor editor = prefs.edit();
 			editor.putBoolean("firstTimeRun", false);
 			editor.commit();
+			
+
+			String possibleEmail = null;
+			//We need an email account to send emails for video publishing notifications
+			Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
+			for (Account account : accounts) {
+			  // TODO: Check possibleEmail against an email regex or treat
+			  // account.name as an email address only for certain account.type values.
+			  possibleEmail = account.name;
+			  Log.d(TAG, "Could use : " + possibleEmail);
+			}
+			
+			
+			if (possibleEmail != null) {
+				
+				//Lets preset the emailPreference.
+				editor.putString("emailPreference", possibleEmail);
+				editor.commit();
+			}
+			
 			
 			//Welcome dialog!
 			new AlertDialog.Builder(MainActivity.this)

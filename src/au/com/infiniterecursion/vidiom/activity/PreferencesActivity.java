@@ -2,6 +2,7 @@ package au.com.infiniterecursion.vidiom.activity;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 import au.com.infiniterecursion.vidiom.R;
 
 
@@ -20,15 +21,16 @@ import au.com.infiniterecursion.vidiom.R;
 
 public class PreferencesActivity extends PreferenceActivity {
 
+	private static final String TAG = "RoboticEye-PreferencesActivity";
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
-		/*
-		EditTextPreference myEditTextPreference = null;
-		myEditTextPreference = (EditTextPreference) findPreference("mobilepreference");
-		EditText myEditText = (EditText)myEditTextPreference.getEditText(); 
-		myEditText.setKeyListener(DigitsKeyListener.getInstance(false,true));
-		*/
+		
+		Log.d(TAG, " preferences onCreate");
+		
+		
+		
 	}
 }
