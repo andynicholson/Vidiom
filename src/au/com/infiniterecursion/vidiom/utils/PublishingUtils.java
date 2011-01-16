@@ -89,7 +89,6 @@ import com.facebook.android.Util;
 
 public class PublishingUtils {
 
-
 	private static final String TAG = "RoboticEye-PublishingUtils";
 
 	private File folder;
@@ -106,7 +105,7 @@ public class PublishingUtils {
 
 	private String clientLoginToken = null;
 	private String youTubeName = null;
-	
+
 	private double currentFileSize = 0;
 	private double totalBytesUploaded = 0;
 	private int numberOfRetries = 0;
@@ -140,16 +139,16 @@ public class PublishingUtils {
 	 * Methods for publishing the video
 	 */
 
-	
 	// videoUploadToFacebook modified from
 	// http://code.google.com/p/stickman-android/source/browse/trunk/src/org/hackday/stickman/upload/FacebookHelper.java?spec=svn31&r=31
 	// http://www.apache.org/licenses/LICENSE-2.0
-	
-	// Facebook uploading 
+
+	// Facebook uploading
 	//
 	public Thread videoUploadToFacebook(final Activity activity,
 			final Handler handler, final Facebook mFacebook, final String path,
-			final String title, final String description, final String emailAddress, final long sdrecord_id) {
+			final String title, final String description,
+			final String emailAddress, final long sdrecord_id) {
 
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
@@ -162,14 +161,16 @@ public class PublishingUtils {
 				Log.i(TAG, "Upload starting");
 				// Initialising REST API video.upload parameters
 				Bundle params = new Bundle();
-				params.putByteArray("method", "facebook.video.upload".getBytes());
-				params.putByteArray("format", "json".getBytes());	
+				params.putByteArray("method", "facebook.video.upload"
+						.getBytes());
+				params.putByteArray("format", "json".getBytes());
 				params.putByteArray("title", title.getBytes());
 				params.putByteArray("description", description.getBytes());
-				params.putByteArray("call_id",
-						String.valueOf(System.currentTimeMillis()).getBytes());
+				params.putByteArray("call_id", String.valueOf(
+						System.currentTimeMillis()).getBytes());
 				params.putByteArray("v", "1.0".getBytes());
-				params.putByteArray("oauth_token", mFacebook.getAccessToken().getBytes());
+				params.putByteArray("oauth_token", mFacebook.getAccessToken()
+						.getBytes());
 
 				// Reading input file
 				try {
@@ -219,10 +220,13 @@ public class PublishingUtils {
 
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_facebook_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_facebook_failed_));
 						}
 					}, 0);
+					
+					return;
 				}
 
 				Log.i(TAG, "Uploading to facebook complete. Response is "
@@ -240,60 +244,93 @@ public class PublishingUtils {
 					fb_response = null;
 				}
 				String hosted_url = "facebook.com";
+
 				if (fb_response != null) {
+
 					try {
 						hosted_url = fb_response.getString("link");
 						Log.i(TAG, "Facebook hosted url is : " + hosted_url);
 					} catch (JSONException e) {
 						//
 						e.printStackTrace();
+						hosted_url = null;
 					}
+
+					if (hosted_url != null) {
+						// Log record of this URL in POSTs table
+						dbutils.creatHostDetailRecordwithNewVideoUploaded(
+								sdrecord_id, url, hosted_url, "");
+
+						// Use the handler to execute a Runnable on the
+						// main thread in order to have access to the
+						// UI elements.
+						handler.postDelayed(new Runnable() {
+
+							public void run() {
+								// Update UI
+
+								// Indicate back to calling activity the result!
+								// update uploadInProgress state also.
+
+								((RoboticEyeActivity) activity)
+										.finishedUploading(true);
+								((RoboticEyeActivity) activity)
+										.createNotification(res
+												.getString(R.string.upload_to_facebook_succeeded_));
+
+							}
+						}, 0);
+
+					} else {
+						
+						//an error
+						handler.postDelayed(new Runnable() {
+							public void run() {
+								// Update UI
+
+								// Indicate back to calling activity the result!
+								// update uploadInProgress state also.
+
+								((RoboticEyeActivity) activity)
+										.finishedUploading(false);
+								((RoboticEyeActivity) activity)
+										.createNotification(res
+												.getString(R.string.upload_to_facebook_failed_));
+							}
+						}, 0);
+						
+					}
+
 				}
 
-				if (emailAddress != null && hosted_url != null) {
+				if (emailAddress != null && fb_response != null
+						&& hosted_url != null) {
 
 					// EmailSender through IR controlled gmail system.
 					SSLEmailSender sender = new SSLEmailSender(
-							activity.getString(R.string.automatic_email_username), activity
+							activity
+									.getString(R.string.automatic_email_username),
+							activity
 									.getString(R.string.automatic_email_password)); // consider
-																		// this
-																		// public
-																		// knowledge.
+					// this
+					// public
+					// knowledge.
 					try {
-						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-								activity
-										.getString(R.string.url_of_hosted_video_is_) + " " + hosted_url, // body.getText().toString(),
-										activity.getString(R.string.automatic_email_from), // from.getText().toString(),
-								emailAddress // to.getText().toString()
-						);
+						sender
+								.sendMail(
+										activity
+												.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+										activity
+												.getString(R.string.url_of_hosted_video_is_)
+												+ " " + hosted_url, // body.getText().toString(),
+										activity
+												.getString(R.string.automatic_email_from), // from.getText().toString(),
+										emailAddress // to.getText().toString()
+								);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
 				}
-				
-				
-				// Log record of this URL in POSTs table
-				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
-						url, hosted_url, "");
-
-				// Use the handler to execute a Runnable on the
-				// main thread in order to have access to the
-				// UI elements.
-				handler.postDelayed(new Runnable() {
-
-					public void run() {
-						// Update UI
-
-						// Indicate back to calling activity the result!
-						// update uploadInProgress state also.
-
-						((RoboticEyeActivity) activity).finishedUploading(true);
-						((RoboticEyeActivity) activity)
-								.createNotification(res
-										.getString(R.string.upload_to_facebook_succeeded_));
-
-					}
-				}, 0);
 
 			}
 		});
@@ -305,7 +342,8 @@ public class PublishingUtils {
 	}
 
 	public Thread videoUploadToVideoBin(final Activity activity,
-			final Handler handler, final String video_absolutepath, final String title, final String description,
+			final Handler handler, final String video_absolutepath,
+			final String title, final String description,
 			final String emailAddress, final long sdrecord_id) {
 
 		Log.d(TAG, "doPOSTtoVideoBin starting");
@@ -343,23 +381,21 @@ public class PublishingUtils {
 						new FileBody(file));
 
 				try {
-					entity.addPart(
-							res.getString(R.string.video_bin_API_api),
+					entity.addPart(res.getString(R.string.video_bin_API_api),
 							new StringBody("1", "text/plain", Charset
 									.forName("UTF-8")));
-					
-					//title
-					entity.addPart(
-							res.getString(R.string.video_bin_API_title),
+
+					// title
+					entity.addPart(res.getString(R.string.video_bin_API_title),
 							new StringBody(title, "text/plain", Charset
 									.forName("UTF-8")));
-					
-					//description
-					entity.addPart(
-							res.getString(R.string.video_bin_API_description),
+
+					// description
+					entity.addPart(res
+							.getString(R.string.video_bin_API_description),
 							new StringBody(description, "text/plain", Charset
 									.forName("UTF-8")));
-					
+
 				} catch (IllegalCharsetNameException e) {
 					// error
 					e.printStackTrace();
@@ -412,11 +448,12 @@ public class PublishingUtils {
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
 
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_videobin_org_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_videobin_org_failed_));
 						}
 					}, 0);
-					
+
 					return;
 				}
 
@@ -430,18 +467,25 @@ public class PublishingUtils {
 
 					// EmailSender through IR controlled gmail system.
 					SSLEmailSender sender = new SSLEmailSender(
-							activity.getString(R.string.automatic_email_username), activity
+							activity
+									.getString(R.string.automatic_email_username),
+							activity
 									.getString(R.string.automatic_email_password)); // consider
-																		// this
-																		// public
-																		// knowledge.
+					// this
+					// public
+					// knowledge.
 					try {
-						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-								activity
-										.getString(R.string.url_of_hosted_video_is_) + " " + response, // body.getText().toString(),
-										activity.getString(R.string.automatic_email_from), // from.getText().toString(),
-								emailAddress // to.getText().toString()
-						);
+						sender
+								.sendMail(
+										activity
+												.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+										activity
+												.getString(R.string.url_of_hosted_video_is_)
+												+ " " + response, // body.getText().toString(),
+										activity
+												.getString(R.string.automatic_email_from), // from.getText().toString(),
+										emailAddress // to.getText().toString()
+								);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
@@ -478,9 +522,10 @@ public class PublishingUtils {
 
 	}
 
-	public Thread videoUploadToFTPserver(final Activity activity, final Handler handler,
-			final String latestVideoFile_filename,
-			final String latestVideoFile_absolutepath, final String emailAddress, final long sdrecord_id) {
+	public Thread videoUploadToFTPserver(final Activity activity,
+			final Handler handler, final String latestVideoFile_filename,
+			final String latestVideoFile_absolutepath,
+			final String emailAddress, final long sdrecord_id) {
 
 		Log.d(TAG, "doVideoFTP starting");
 
@@ -534,9 +579,10 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
-							
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
+
 							new AlertDialog.Builder(activity)
 									.setMessage(R.string.cant_find_upload_host)
 									.setPositiveButton(
@@ -566,15 +612,15 @@ public class PublishingUtils {
 				}
 
 				boolean connected = false;
-				
+
 				try {
 					ftpClient.connect(uploadhost);
 					connected = true;
-					
+
 				} catch (SocketException e) {
 					e.printStackTrace();
 					connected = false;
-					
+
 				} catch (UnknownHostException e) {
 					//
 					e.printStackTrace();
@@ -597,9 +643,10 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
-							
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
+
 							new AlertDialog.Builder(activity)
 									.setMessage(R.string.cant_login_upload_host)
 									.setPositiveButton(
@@ -627,9 +674,7 @@ public class PublishingUtils {
 
 					return;
 				}
-				
-				
-				
+
 				boolean reply = false;
 				try {
 
@@ -637,8 +682,9 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log.e(TAG,
-							" got exception on ftp.login - video uploading failed.");
+					Log
+							.e(TAG,
+									" got exception on ftp.login - video uploading failed.");
 				}
 
 				// check the reply code here
@@ -661,9 +707,10 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
-							
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
+
 							new AlertDialog.Builder(activity)
 									.setMessage(R.string.cant_login_upload_host)
 									.setPositiveButton(
@@ -703,8 +750,9 @@ public class PublishingUtils {
 				} catch (FileNotFoundException e) {
 					//
 					e.printStackTrace();
-					Log.e(TAG,
-							" got exception on local video file - video uploading failed.");
+					Log
+							.e(TAG,
+									" got exception on local video file - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -716,8 +764,9 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -735,8 +784,9 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log.e(TAG,
-							" got exception on storeFile - video uploading failed.");
+					Log
+							.e(TAG,
+									" got exception on storeFile - video uploading failed.");
 
 					// This is a bad error, lets abort.
 					// user dialog ?! shouldnt happen, but still...
@@ -750,8 +800,9 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -762,8 +813,9 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log.e(TAG,
-							" got exception on buff.close - video uploading failed.");
+					Log
+							.e(TAG,
+									" got exception on buff.close - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -775,8 +827,9 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -787,8 +840,9 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log.e(TAG,
-							" got exception on ftp logout - video uploading failed.");
+					Log
+							.e(TAG,
+									" got exception on ftp logout - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -800,8 +854,9 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -812,8 +867,9 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log.e(TAG,
-							" got exception on ftp disconnect - video uploading failed.");
+					Log
+							.e(TAG,
+									" got exception on ftp disconnect - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -825,8 +881,9 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((RoboticEyeActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity).createNotification(res
-									.getString(R.string.upload_to_ftp_host_failed_));
+							((RoboticEyeActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -837,23 +894,30 @@ public class PublishingUtils {
 
 					// EmailSender through IR controlled gmail system.
 					SSLEmailSender sender = new SSLEmailSender(
-							activity.getString(R.string.automatic_email_username), activity
+							activity
+									.getString(R.string.automatic_email_username),
+							activity
 									.getString(R.string.automatic_email_password)); // consider
-																		// this
-																		// public
-																		// knowledge.
+					// this
+					// public
+					// knowledge.
 					try {
-						sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-								activity
-										.getString(R.string.url_of_hosted_video_is_) + " " + ftpHostName, // body.getText().toString(),
-										activity.getString(R.string.automatic_email_from), // from.getText().toString(),
-								emailAddress // to.getText().toString()
-						);
+						sender
+								.sendMail(
+										activity
+												.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+										activity
+												.getString(R.string.url_of_hosted_video_is_)
+												+ " " + ftpHostName, // body.getText().toString(),
+										activity
+												.getString(R.string.automatic_email_from), // from.getText().toString(),
+										emailAddress // to.getText().toString()
+								);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
 				}
-				
+
 				// Log record of this URL in POSTs table
 				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 						ftpHostName, ftpHostName, "");
@@ -883,8 +947,6 @@ public class PublishingUtils {
 
 		return t;
 	}
-	
-	
 
 	public void launchEmailIntentWithCurrentVideo(final Activity activity,
 			final String latestVideoFile_absolutepath) {
@@ -892,14 +954,12 @@ public class PublishingUtils {
 
 		Intent i = new Intent(Intent.ACTION_SEND);
 		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		//XXX hardcoded video mimetype
+		// XXX hardcoded video mimetype
 		i.setType("video/mp4");
-		i.putExtra(Intent.EXTRA_STREAM,
-				Uri.parse("file://" + latestVideoFile_absolutepath));
+		i.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"
+				+ latestVideoFile_absolutepath));
 		activity.startActivity(i);
 	}
-	
-	
 
 	public void launchVideoPlayer(final Activity activity, final String movieurl) {
 
@@ -910,23 +970,22 @@ public class PublishingUtils {
 		} catch (android.content.ActivityNotFoundException e) {
 			Log.e(TAG, " Cant start activity to show video!");
 
-			new AlertDialog.Builder(activity)
-					.setMessage(R.string.cant_show_video)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
+			new AlertDialog.Builder(activity).setMessage(
+					R.string.cant_show_video).setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
 
-								}
-							})
+						}
+					})
 
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
+			.setNegativeButton(R.string.cancel,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
 
-								}
-							}).show();
+						}
+					}).show();
 
 			return;
 		}
@@ -975,16 +1034,16 @@ public class PublishingUtils {
 
 	}
 
-	// youtube upload code from 
-	// from http://code.google.com/p/ytd-android/source/browse/trunk/src/com/google/ytd/SubmitActivity.java
+	// youtube upload code from
+	// from
+	// http://code.google.com/p/ytd-android/source/browse/trunk/src/com/google/ytd/SubmitActivity.java
 	// http://www.apache.org/licenses/LICENSE-2.0
-	// Copyright 2010 Google  License Apache
-	
-	
+	// Copyright 2010 Google License Apache
 
 	public void asyncYouTubeUpload(final Activity activity, final File file,
-			final Handler handler, final String emailAddress, final long sdrecord_id) {
-		
+			final Handler handler, final String emailAddress,
+			final long sdrecord_id) {
+
 		new Thread(new Runnable() {
 			public void run() {
 				Message msg = new Message();
@@ -997,14 +1056,15 @@ public class PublishingUtils {
 					while (submitCount <= MAX_RETRIES && videoId == null) {
 						try {
 							submitCount++;
-							videoId = startYouTubeUpload(activity, file, handler, emailAddress, sdrecord_id);
+							videoId = startYouTubeUpload(activity, file,
+									handler, emailAddress, sdrecord_id);
 							assert videoId != null;
 						} catch (Internal500ResumeException e500) { // TODO -
-																	// this
-																	// should
-																	// not
-																	// really
-																	// happen
+							// this
+							// should
+							// not
+							// really
+							// happen
 							if (submitCount < MAX_RETRIES) {
 								Log.w(TAG, e500.getMessage());
 								Log.d(TAG, String.format("Upload retry :%d.",
@@ -1041,8 +1101,6 @@ public class PublishingUtils {
 			}
 		}).start();
 	}
-	
-	
 
 	static class YouTubeAccountException extends Exception {
 		/**
@@ -1055,8 +1113,10 @@ public class PublishingUtils {
 		}
 	}
 
-	private String startYouTubeUpload(final Activity activity, File file, final Handler handler, final String emailAddress, final long sdrecord_id)
-			throws IOException, YouTubeAccountException, SAXException,
+	private String startYouTubeUpload(final Activity activity, File file,
+			final Handler handler, final String emailAddress,
+			final long sdrecord_id) throws IOException,
+			YouTubeAccountException, SAXException,
 			ParserConfigurationException, Internal500ResumeException {
 
 		if (this.clientLoginToken == null) {
@@ -1064,12 +1124,17 @@ public class PublishingUtils {
 			throw new YouTubeAccountException(this.youTubeName
 					+ " is not linked to a YouTube account.");
 		}
-		
-		String[] strs = dbutils.getTitleAndDescriptionFromID(new String[] { Long.toString(sdrecord_id)});
-		//add our branding to the description.
-		String uploadUrl = uploadMetaData(activity, handler, file.getAbsolutePath(), strs[0], strs[1]+ "\n" + activity.getString(R.string.uploaded_by_), true);
 
-		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is " + this.youTubeName);
+		String[] strs = dbutils
+				.getTitleAndDescriptionFromID(new String[] { Long
+						.toString(sdrecord_id) });
+		// add our branding to the description.
+		String uploadUrl = uploadMetaData(activity, handler, file
+				.getAbsolutePath(), strs[0], strs[1] + "\n"
+				+ activity.getString(R.string.uploaded_by_), true);
+
+		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is "
+				+ this.youTubeName);
 		Log.d(TAG, String.format("Client token : %s ", this.clientLoginToken));
 
 		this.currentFileSize = file.length();
@@ -1089,15 +1154,14 @@ public class PublishingUtils {
 			} else {
 				end = start + (int) fileSize - 1;
 			}
-			Log.d(TAG,
-					String.format("start=%s end=%s total=%s", start, end,
-							file.length()));
+			Log.d(TAG, String.format("start=%s end=%s total=%s", start, end,
+					file.length()));
 			try {
 				videoId = gdataUpload(file, uploadUrl, start, end);
 				fileSize -= uploadChunk;
 				start = end + 1;
 				this.numberOfRetries = 0; // clear this counter as we had a
-											// succesfull upload
+				// succesfull upload
 			} catch (IOException e) {
 				Log.d(TAG, "Error during upload : " + e.getMessage());
 				ResumeInfo resumeInfo = null;
@@ -1119,7 +1183,7 @@ public class PublishingUtils {
 				Log.d(TAG, String.format("Resuming stalled upload to: %s.",
 						uploadUrl));
 				if (resumeInfo.videoId != null) { // upload actually complted
-													// despite the exception
+					// despite the exception
 					videoId = resumeInfo.videoId;
 					Log.d(TAG, String.format(
 							"No need to resume video ID '%s'.", videoId));
@@ -1129,10 +1193,10 @@ public class PublishingUtils {
 					Log.d(TAG, String.format("Next byte to upload is '%d'.",
 							nextByteToUpload));
 					this.totalBytesUploaded = nextByteToUpload; // possibly
-																// rolling back
-																// the
-																// previosuly
-																// saved value
+					// rolling back
+					// the
+					// previosuly
+					// saved value
 					fileSize = this.currentFileSize - nextByteToUpload;
 					start = nextByteToUpload;
 				}
@@ -1140,32 +1204,39 @@ public class PublishingUtils {
 		}
 
 		if (videoId != null) {
-			
-			if (emailAddress != null ) {
+
+			if (emailAddress != null) {
 
 				// EmailSender through IR controlled gmail system.
-				SSLEmailSender sender = new SSLEmailSender(
-						activity.getString(R.string.automatic_email_username), activity
-								.getString(R.string.automatic_email_password)); // consider
-																	// this
-																	// public
-																	// knowledge.
+				SSLEmailSender sender = new SSLEmailSender(activity
+						.getString(R.string.automatic_email_username), activity
+						.getString(R.string.automatic_email_password)); // consider
+				// this
+				// public
+				// knowledge.
 				try {
-					sender.sendMail(activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-							activity
-									.getString(R.string.url_of_hosted_video_is_) + " " + YOUTUBE_PLAYER_URL + videoId, // body.getText().toString(),
-									activity.getString(R.string.automatic_email_from), // from.getText().toString(),
-							emailAddress // to.getText().toString()
-					);
+					sender
+							.sendMail(
+									activity
+											.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+									activity
+											.getString(R.string.url_of_hosted_video_is_)
+											+ " "
+											+ YOUTUBE_PLAYER_URL
+											+ videoId, // body.getText().toString(),
+									activity
+											.getString(R.string.automatic_email_from), // from.getText().toString(),
+									emailAddress // to.getText().toString()
+							);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage(), e);
 				}
 			}
-			
+
 			// Log record of this URL in POSTs table
 			dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 					uploadUrl, YOUTUBE_PLAYER_URL + videoId, "");
-			
+
 			// Use the handler to execute a Runnable on the
 			// main thread in order to have access to the
 			// UI elements.
@@ -1183,18 +1254,16 @@ public class PublishingUtils {
 
 				}
 			}, 0);
-			
-			
+
 			return videoId;
 		}
 
 		return null;
 	}
-	
-	
 
-	private String uploadMetaData(final Activity activity, final Handler handler, String filePath, String title, String description,
-			boolean retry) throws IOException {
+	private String uploadMetaData(final Activity activity,
+			final Handler handler, String filePath, String title,
+			String description, boolean retry) throws IOException {
 		String uploadUrl = INITIAL_UPLOAD_URL;
 
 		HttpURLConnection urlConnection = getGDataUrlConnection(uploadUrl);
@@ -1204,7 +1273,7 @@ public class PublishingUtils {
 				.setRequestProperty("Content-Type", "application/atom+xml");
 		urlConnection.setRequestProperty("Slug", filePath);
 		String atomData = null;
-		
+
 		String category = DEFAULT_VIDEO_CATEGORY;
 		this.tags = DEFAULT_VIDEO_TAGS;
 
@@ -1225,13 +1294,14 @@ public class PublishingUtils {
 				this.clientLoginToken = authorizer.getFreshAuthToken(
 						youTubeName, clientLoginToken);
 				// Try again with fresh token
-				return uploadMetaData(activity, handler, filePath, title, description, false);
+				return uploadMetaData(activity, handler, filePath, title,
+						description, false);
 			} else {
-				
-				//Probably not authorised!
-				
-				//Need to setup a Youtube account.
-				
+
+				// Probably not authorised!
+
+				// Need to setup a Youtube account.
+
 				// Use the handler to execute a Runnable on the
 				// main thread in order to have access to the
 				// UI elements.
@@ -1249,22 +1319,17 @@ public class PublishingUtils {
 
 					}
 				}, 0);
-				
-				
+
 				throw new IOException(String.format(
 						"response code='%s' (code %d)" + " for %s",
 						urlConnection.getResponseMessage(), responseCode,
 						urlConnection.getURL()));
-				
-				
-				
-				
+
 			}
 		}
 
 		return urlConnection.getHeaderField("Location");
 	}
-	
 
 	private String gdataUpload(File file, String uploadUrl, int start, int end)
 			throws IOException {
@@ -1284,17 +1349,20 @@ public class PublishingUtils {
 		} else {
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setRequestProperty("X-HTTP-Method-Override", "PUT");
-			Log.d(TAG,
-					String.format(
-							"Uploaded %d bytes so far, using POST with X-HTTP-Method-Override PUT method.",
-							(int) totalBytesUploaded));
+			Log
+					.d(
+							TAG,
+							String
+									.format(
+											"Uploaded %d bytes so far, using POST with X-HTTP-Method-Override PUT method.",
+											(int) totalBytesUploaded));
 		}
 		urlConnection.setDoOutput(true);
 		urlConnection.setFixedLengthStreamingMode(chunk);
-		///XXX hardcoded video mimetype
+		// /XXX hardcoded video mimetype
 		urlConnection.setRequestProperty("Content-Type", "video/mp4");
-		urlConnection.setRequestProperty("Content-Range",
-				String.format("bytes %d-%d/%d", start, end, file.length()));
+		urlConnection.setRequestProperty("Content-Range", String.format(
+				"bytes %d-%d/%d", start, end, file.length()));
 		Log.d(TAG, urlConnection.getRequestProperty("Content-Range"));
 
 		OutputStream outStreamWriter = urlConnection.getOutputStream();
@@ -1308,14 +1376,14 @@ public class PublishingUtils {
 			totalRead += bytesRead;
 			this.totalBytesUploaded += bytesRead;
 
-			//double percent = (totalBytesUploaded / currentFileSize) * 99;
+			// double percent = (totalBytesUploaded / currentFileSize) * 99;
 
 			/*
-			Log.d(TAG, String.format(
-					"fileSize=%f totalBytesUploaded=%f percent=%f",
-					currentFileSize, totalBytesUploaded, percent));
+			 * Log.d(TAG, String.format(
+			 * "fileSize=%f totalBytesUploaded=%f percent=%f", currentFileSize,
+			 * totalBytesUploaded, percent));
 			 */
-			
+
 			if (totalRead == (end - start + 1)) {
 				break;
 			}
@@ -1332,10 +1400,11 @@ public class PublishingUtils {
 			if (responseCode == 201) {
 				String videoId = parseVideoId(urlConnection.getInputStream());
 
-				Log.i(TAG, "Youtube video submitted - new video id is " + videoId);
+				Log.i(TAG, "Youtube video submitted - new video id is "
+						+ videoId);
 
 				// 100% finished here.
-				
+
 				// dialog.setProgress(100);
 
 				return videoId;
@@ -1350,10 +1419,11 @@ public class PublishingUtils {
 				}
 				Log.w(TAG, "Received 200 response during resumable uploading");
 				throw new IOException(
-						String.format(
-								"Unexpected response code : responseCode=%d responseMessage=%s",
-								responseCode,
-								urlConnection.getResponseMessage()));
+						String
+								.format(
+										"Unexpected response code : responseCode=%d responseMessage=%s",
+										responseCode, urlConnection
+												.getResponseMessage()));
 			} else {
 				if ((responseCode + "").startsWith("5")) {
 					String error = String.format(
@@ -1373,12 +1443,16 @@ public class PublishingUtils {
 							urlConnection.getResponseMessage()));
 				} else {
 					// TODO - this case is not handled properly yet
-					Log.w(TAG,
-							String.format(
-									"Unexpected return code : %d %s while uploading :%s",
-									responseCode,
-									urlConnection.getResponseMessage(),
-									uploadUrl));
+					Log
+							.w(
+									TAG,
+									String
+											.format(
+													"Unexpected return code : %d %s while uploading :%s",
+													responseCode,
+													urlConnection
+															.getResponseMessage(),
+													uploadUrl));
 				}
 			}
 		} catch (ParserConfigurationException e) {
@@ -1389,8 +1463,6 @@ public class PublishingUtils {
 
 		return null;
 	}
-	
-	
 
 	public boolean isFirstRequest() {
 		return totalBytesUploaded == 0;
@@ -1432,24 +1504,23 @@ public class PublishingUtils {
 		} else if (responseCode == 500) {
 			// TODO this is a workaround for current problems with resuming
 			// uploads while switching transport (Wifi->EDGE)
-			throw new Internal500ResumeException(
-					String.format("Unexpected response for PUT to %s: %s "
-							+ "(code %d)", uploadUrl,
-							urlConnection.getResponseMessage(), responseCode));
+			throw new Internal500ResumeException(String
+					.format("Unexpected response for PUT to %s: %s "
+							+ "(code %d)", uploadUrl, urlConnection
+							.getResponseMessage(), responseCode));
 		} else {
-			throw new IOException(
-					String.format("Unexpected response for PUT to %s: %s "
-							+ "(code %d)", uploadUrl,
-							urlConnection.getResponseMessage(), responseCode));
+			throw new IOException(String
+					.format("Unexpected response for PUT to %s: %s "
+							+ "(code %d)", uploadUrl, urlConnection
+							.getResponseMessage(), responseCode));
 		}
 	}
-	
-	
+
 	//
-	// This process fetches a google-youtube auth token, linked from a google email account
+	// This process fetches a google-youtube auth token, linked from a google
+	// email account
 	// if successfully, it launches the async upload.
 	// 
-	
 
 	private boolean shouldResume() {
 		this.numberOfRetries++;
@@ -1481,11 +1552,11 @@ public class PublishingUtils {
 			String nodeName = node.getNodeName();
 			String val_print;
 			if (node.getFirstChild() != null) {
-				 val_print = node.getFirstChild().getNodeValue();
+				val_print = node.getFirstChild().getNodeValue();
 			} else {
 				val_print = "null";
 			}
-			
+
 			Log.d(TAG, " node name " + nodeName + " val : " + val_print);
 			if (nodeName != null && nodeName.equals("yt:videoid")) {
 				return node.getFirstChild().getNodeValue();
@@ -1498,40 +1569,41 @@ public class PublishingUtils {
 			throws IOException {
 		URL url = new URL(urlString);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestProperty("Authorization",
-				String.format("GoogleLogin auth=\"%s\"", clientLoginToken));
+		connection.setRequestProperty("Authorization", String.format(
+				"GoogleLogin auth=\"%s\"", clientLoginToken));
 		connection.setRequestProperty("GData-Version", "2");
-		connection.setRequestProperty("X-GData-Client",
-				res.getString(R.string.client_id));
-		connection.setRequestProperty("X-GData-Key",
-				String.format("key=%s", res.getString(R.string.dev_key)));
+		connection.setRequestProperty("X-GData-Client", res
+				.getString(R.string.client_id));
+		connection.setRequestProperty("X-GData-Key", String.format("key=%s",
+				res.getString(R.string.dev_key)));
 		return connection;
 	}
 
-	public void getYouTubeAuthTokenWithPermissionAndUpload(final Activity activity,
-			String accountName, final String path, final Handler handler, final String emailAddress, final long sdrecord_id) {
-		
-		
+	public void getYouTubeAuthTokenWithPermissionAndUpload(
+			final Activity activity, String accountName, final String path,
+			final Handler handler, final String emailAddress,
+			final long sdrecord_id) {
+
 		// Make the progress bar view visible.
 		((RoboticEyeActivity) activity).startedUploading();
-		
+
 		this.youTubeName = accountName;
-		
+
 		this.authorizer = new GlsAuthorizer.GlsAuthorizerFactory()
-		.getAuthorizer(activity, GlsAuthorizer.YOUTUBE_AUTH_TOKEN_TYPE);
-		
+				.getAuthorizer(activity, GlsAuthorizer.YOUTUBE_AUTH_TOKEN_TYPE);
+
 		this.authorizer.fetchAuthToken(accountName, activity,
 				new AuthorizationListener<String>() {
 					public void onCanceled() {
-						
+
 						Log.d(TAG, " Cancelled in fetchAuthToken! ");
-						
+
 					}
 
 					public void onError(Exception e) {
-						
+
 						Log.d(TAG, " Error in fetchAuthToken! ");
-						
+
 						// Use the handler to execute a Runnable on the
 						// main thread in order to have access to the
 						// UI elements.
@@ -1542,26 +1614,27 @@ public class PublishingUtils {
 								// Indicate back to calling activity the result!
 								// update uploadInProgress state also.
 
-								((RoboticEyeActivity) activity).finishedUploading(false);
+								((RoboticEyeActivity) activity)
+										.finishedUploading(false);
 								((RoboticEyeActivity) activity)
 										.createNotification(res
 												.getString(R.string.upload_to_youtube_host_failed_));
 
 							}
 						}, 0);
-						
+
 					}
 
 					public void onSuccess(String result) {
 						PublishingUtils.this.clientLoginToken = result;
 						File file = new File(path);
-						//Launch Async YouTube video upload.
-						asyncYouTubeUpload(activity, file, handler, emailAddress, sdrecord_id);
+						// Launch Async YouTube video upload.
+						asyncYouTubeUpload(activity, file, handler,
+								emailAddress, sdrecord_id);
 					}
 				});
 	}
 
-	
 	class ResumeInfo {
 		int nextByteToUpload;
 		String videoId;
@@ -1624,7 +1697,5 @@ public class PublishingUtils {
 			}
 		}
 	}
-
-	
 
 }
