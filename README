@@ -1,8 +1,7 @@
-RoboticEye 0.3 - 16th Nov 2010
-
+Vidiom 0.6.6 - 17th January 2011
+Video capture and web video publishing for Android devices.
 Author: Andrew Nicholson
-
-Copyright, 2010, Infinite Recursion Pty Ltd
+Copyright (C) 2011 Infinite Recursion Pty Ltd
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,8 +22,5 @@ see 'LICENSE' file for full license.
 
 RELEASE LOG
 
-v0.3 Library 
+v0.6.6 - Released to Android Market on January 16th 2011 (Yogyakarta, Indonesia)
 
-v0.2 Preferences, and initial database of videos, and posts.
-
-v0.1 Initial version. Prototype functionality, videobin.org /FTP /Email publishing working
