@@ -78,6 +78,9 @@
     <string name="prefTitle">Vidioum : Preferences</string>
 	<string name="libraryTitle">Vidiom : Video gallery</string>
 	<string name="about_this">Vidiom\nVideo capture and web video publishing tool\nVERSION - http://vidiom.net.au \nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au </string>
+	<string name="licenses">Show Licenses</string>
+	<string name="third_party_licenses">Vidiom contains third-party code:\nCopyright 2010 Google Inc.\nCode modified from ytd-android - http://code.google.com/p/youtube-direct &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Stickman studio Contributers.\nCode modified from stickman-android - http://code.google.com/p/stickman-android &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0</string>
+	 
 	 
 	<string name="notification_title">Vidiom</string>
 	 

@@ -3,9 +3,9 @@ TODO
 
 0. Real-time recording time on screen.
 
-1. Give credit for Apache-licensed code in About box
+1. Give credit for Apache-licensed code in About box -- DONE
 
-2. Vimeo uploading
+2. Vimeo uploading -- DENIED!
 
 3. Touch screen recording controls
 
@@ -13,4 +13,6 @@ TODO
 
 5. Video editing ability?
 
-6. Show in Gallery, and be able to upload, already recorded 3GP/MP4 files on sdcard.
+6. Show in Gallery, and be able to upload, already recorded 3GP/MP4 files on sdcard. -- DONE
+
+7. Twitter reposting (using URLs from youtube/facebook/videobin.org etc)

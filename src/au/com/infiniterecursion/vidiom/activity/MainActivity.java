@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	private static final String TAG = "RoboticEye";
 	private static final String VERSION = "0.6.7";
-	
+
 	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;
 	private static final int MENU_ITEM_2 = MENU_ITEM_1 + 1;
@@ -147,7 +147,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		res = getResources();
-		
+
 		Log.d(TAG, "On create");
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -434,24 +434,51 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		case MENU_ITEM_5:
 			// ABOUT
-			String mesg = getString(R.string.about_this);			
-			//find&replace VERSION
+			String mesg = getString(R.string.about_this);
+			// find&replace VERSION
 			mesg = mesg.replace("VERSION", "version " + VERSION);
-			
-			final SpannableString s = new SpannableString(mesg);
-		    Linkify.addLinks(s, Linkify.ALL);
-		    
-			AlertDialog about = new AlertDialog.Builder(this).setMessage(
-					s).setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
 
-						}
-					}).show();
-			//makes links work
-			((TextView)about.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-			
+			final SpannableString s = new SpannableString(mesg);
+			Linkify.addLinks(s, Linkify.ALL);
+
+			// Licenses
+			String mesg2 = getString(R.string.third_party_licenses);
+
+			final SpannableString s2 = new SpannableString(mesg2);
+			Linkify.addLinks(s2, Linkify.ALL);
+
+			AlertDialog about = new AlertDialog.Builder(this).setMessage(s)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+
+								}
+							}).setNegativeButton(R.string.licenses,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+
+									
+									AlertDialog licenses = new AlertDialog.Builder(MainActivity.this).setMessage(
+											s2).setPositiveButton(R.string.yes,
+											new DialogInterface.OnClickListener() {
+												public void onClick(DialogInterface dialog,
+														int whichButton) {
+
+												}
+											}).show();
+									
+									//makes links work
+									((TextView)licenses.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+									
+								}
+							}).show();
+
+			// makes links work
+			((TextView) about.findViewById(android.R.id.message))
+					.setMovementMethod(LinkMovementMethod.getInstance());
+
 			break;
 
 		case MENU_ITEM_6:

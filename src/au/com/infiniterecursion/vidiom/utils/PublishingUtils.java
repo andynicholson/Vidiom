@@ -142,7 +142,9 @@ public class PublishingUtils {
 	// videoUploadToFacebook modified from
 	// http://code.google.com/p/stickman-android/source/browse/trunk/src/org/hackday/stickman/upload/FacebookHelper.java?spec=svn31&r=31
 	// http://www.apache.org/licenses/LICENSE-2.0
-
+	// 
+	// Changed by Andy Nicholson
+	//
 	// Facebook uploading
 	//
 	public Thread videoUploadToFacebook(final Activity activity,
@@ -1042,6 +1044,8 @@ public class PublishingUtils {
 	// http://code.google.com/p/ytd-android/source/browse/trunk/src/com/google/ytd/SubmitActivity.java
 	// http://www.apache.org/licenses/LICENSE-2.0
 	// Copyright 2010 Google License Apache
+	// 
+	// Changed by Andy Nicholson
 
 	public void asyncYouTubeUpload(final Activity activity, final File file,
 			final Handler handler, final String emailAddress,
