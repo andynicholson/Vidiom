@@ -24,6 +24,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -44,7 +47,6 @@ import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.utils.DBUtils;
 import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
 
-
 /*
  * Main Vidiom Activity 
  * 
@@ -57,12 +59,13 @@ import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
  * http://www.infiniterecursion.com.au
  */
 
-public class MainActivity extends Activity implements SurfaceHolder.Callback, RoboticEyeActivity,
-		MediaRecorder.OnInfoListener {
+public class MainActivity extends Activity implements SurfaceHolder.Callback,
+		RoboticEyeActivity, MediaRecorder.OnInfoListener {
 
 	private static final String TAG = "RoboticEye";
-
-	//Menu ids
+	private static final String VERSION = "0.6.7";
+	
+	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;
 	private static final int MENU_ITEM_2 = MENU_ITEM_1 + 1;
 	private static final int MENU_ITEM_3 = MENU_ITEM_2 + 1;
@@ -73,9 +76,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	private static final int NOTIFICATION_ID = 1;
 
-	
-	
-	//Camera objects
+	// Camera objects
 	//
 	private SurfaceView surfaceView;
 	private SurfaceHolder surfaceHolder;
@@ -86,27 +87,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private MediaRecorder mediaRecorder;
 	// eg 40 seconds max video
 	private int maxDurationInMs = 0;
-	//eg 1MB limit
+	// eg 1MB limit
 	private long maxFileSizeInBytes = 0;
 	private final int videoFramesPerSecond = 25;
 
-	//App state
+	// App state
 	private boolean recordingInMotion;
-	//Filenames (abs, relative) for latest recorded video file.
+	// Filenames (abs, relative) for latest recorded video file.
 	private String latestVideoFile_absolutepath;
 	private String latestVideoFile_filename;
-	
+
 	private long latestsdrecord_id;
 	private long startTimeinMillis;
 	private long endTimeinMillis;
-	
-	
-	//Video files
+
+	// Video files
 	private File folder;
-	
+
 	private boolean canAccessSDCard = false;
 
-	//Preferences
+	// Preferences
 	private boolean autoEmailPreference;
 	private boolean fTPPreference;
 	private boolean videobinPreference;
@@ -116,42 +116,45 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private String filenameConventionPrefence;
 	private String maxDurationPreference;
 	private String maxFilesizePreference;
-	
-	//Message queue
+
+	// Message queue
 	private Handler handler;
 
-	//Database
+	// Database
 	private DBUtils db_utils;
-	
+
 	private PublishingUtils pu;
 
 	private SharedPreferences prefs;
 
-	//Uploading threads
+	// Uploading threads
 	private Thread threadVB;
 	private Thread threadFB;
 	private Thread threadFTP;
 
 	private VidiomApp mainapp;
 
-	//For naming videos after recording finishes.
+	// For naming videos after recording finishes.
 	protected String title;
 	protected String description;
 
-
 	protected TextView statusIndicator;
+
+	private Resources res;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-				
-		Log.d(TAG,"On create");
+		res = getResources();
 		
+		Log.d(TAG, "On create");
+
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-		
+		getWindow().clearFlags(
+				WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+
 		setContentView(R.layout.surface_layout);
 		surfaceView = (SurfaceView) findViewById(R.id.surface_camera);
 
@@ -159,181 +162,170 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		surfaceHolder.addCallback(this);
 		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-		
-		//Overlay , for Recording indications etc
-		
+		// Overlay , for Recording indications etc
+
 		LayoutInflater overlayInflater = LayoutInflater.from(getBaseContext());
-	    View viewControl = overlayInflater.inflate(R.layout.camera_overlay, null);
-	    LayoutParams layoutParamsControl = new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
-	    this.addContentView(viewControl, layoutParamsControl);
-		
-	    statusIndicator = (TextView) findViewById(R.id.overlay);
-		
+		View viewControl = overlayInflater.inflate(R.layout.camera_overlay,
+				null);
+		LayoutParams layoutParamsControl = new LayoutParams(
+				LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		this.addContentView(viewControl, layoutParamsControl);
+
+		statusIndicator = (TextView) findViewById(R.id.overlay);
+
 		recordingInMotion = false;
-		
+
 		latestVideoFile_absolutepath = "";
 		latestVideoFile_filename = "";
-		startTimeinMillis=endTimeinMillis=0;
-	
+		startTimeinMillis = endTimeinMillis = 0;
+
 		mainapp = (VidiomApp) getApplication();
-		
-		//Helper classes
+
+		// Helper classes
 		//
-	
-		
+
 		handler = new Handler();
 		db_utils = new DBUtils(getBaseContext());
-		pu=new PublishingUtils(getResources(), db_utils);
-		prefs = PreferenceManager
-		.getDefaultSharedPreferences(getBaseContext());
-		
-		//dump stats
+		pu = new PublishingUtils(res, db_utils);
+		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+		// dump stats
 		db_utils.getStats();
-		
+
 		// check our folder exists, and if not make it
 		checkInstallDirandCreateIfMissing();
-		
+
 		// Initial install?
 		checkIfFirstTimeRunAndWelcome();
-		
+
 		threadVB = null;
 		threadFTP = null;
-		
+
 	}
-	
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
-		Log.d(TAG,"On resume");
+		Log.d(TAG, "On resume");
 		loadPreferences();
 	}
-	
 
 	@Override
 	public void onPause() {
-		
+
 		super.onDestroy();
-		Log.d(TAG,"On pause");
+		Log.d(TAG, "On pause");
 		if (mediaRecorder != null) {
 			if (recordingInMotion) {
 				stopRecording();
 			}
 			mediaRecorder.release();
 		}
-		
 
 		if (threadVB != null) {
-			Log.d(TAG,"Interrupting videobin thread");
+			Log.d(TAG, "Interrupting videobin thread");
 			threadVB.interrupt();
 		}
 		if (threadFTP != null) {
-			Log.d(TAG,"Interrupting FTP thread;");
+			Log.d(TAG, "Interrupting FTP thread;");
 			threadFTP.interrupt();
 		}
 		if (threadFB != null) {
-			Log.d(TAG,"Interrupting facebook thread");
+			Log.d(TAG, "Interrupting facebook thread");
 			threadFB.interrupt();
 		}
 	}
-	
-	
-	
+
 	private void checkIfFirstTimeRunAndWelcome() {
 		// 
 		boolean first_time = prefs.getBoolean("firstTimeRun", true);
-		
+
 		if (first_time) {
-			
+
 			Editor editor = prefs.edit();
 			editor.putBoolean("firstTimeRun", false);
 			editor.commit();
-			
 
 			String possibleEmail = null;
-			//We need an email account to send emails for video publishing notifications
-			Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
+			// We need an email account to send emails for video publishing
+			// notifications
+			Account[] accounts = AccountManager.get(this).getAccountsByType(
+					"com.google");
 			for (Account account : accounts) {
-			  // TODO: Check possibleEmail against an email regex or treat
-			  // account.name as an email address only for certain account.type values.
-			  possibleEmail = account.name;
-			  Log.d(TAG, "Could use : " + possibleEmail);
+				// TODO: Check possibleEmail against an email regex or treat
+				// account.name as an email address only for certain
+				// account.type values.
+				possibleEmail = account.name;
+				Log.d(TAG, "Could use : " + possibleEmail);
 			}
-			
-			
+
 			if (possibleEmail != null) {
-				
-				//Lets preset the emailPreference.
+
+				// Lets preset the emailPreference.
 				editor.putString("emailPreference", possibleEmail);
 				editor.commit();
 			}
-			
-			
-			//Welcome dialog!
-			new AlertDialog.Builder(MainActivity.this)
-			.setMessage(R.string.welcome)
-			.setPositiveButton(R.string.yes,
+
+			// Welcome dialog!
+			new AlertDialog.Builder(MainActivity.this).setMessage(
+					R.string.welcome).setPositiveButton(R.string.yes,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,
 								int whichButton) {
-							
-							
-							//show second dialog
-							new AlertDialog.Builder(MainActivity.this)
-							.setMessage(R.string.welcome2)
-							.setPositiveButton(R.string.yes,
-									new DialogInterface.OnClickListener() {
-										public void onClick(DialogInterface dialog,
-												int whichButton) {
-											
-											
-											//show second dialog
-											
-											
-											
-											
 
-										}
-									}).show();
-							
-							
-							
+							// show second dialog
+							new AlertDialog.Builder(MainActivity.this)
+									.setMessage(R.string.welcome2)
+									.setPositiveButton(
+											R.string.yes,
+											new DialogInterface.OnClickListener() {
+												public void onClick(
+														DialogInterface dialog,
+														int whichButton) {
+
+													// show second dialog
+
+												}
+											}).show();
 
 						}
 					}).show();
-			
-			
-			
-			
-			
+
 		}
-		
+
 	}
-	
+
 	private void loadPreferences() {
-		
+
 		autoEmailPreference = prefs.getBoolean("autoemailPreference", false);
 		fTPPreference = prefs.getBoolean("ftpPreference", false);
 		videobinPreference = prefs.getBoolean("videobinPreference", false);
 		facebookPreference = prefs.getBoolean("facebookPreference", false);
-		emailPreference = prefs.getString("emailPreference",null);
+		emailPreference = prefs.getString("emailPreference", null);
 		youtubePreference = prefs.getBoolean("youtubePreference", false);
-		
-		// Filename style, duration, max filesize
-		Resources res = getResources();
 
-		filenameConventionPrefence = prefs.getString("filenameConventionPrefence",res.getString(R.string.filenameConventionDefaultPreference));
-		maxDurationPreference = prefs.getString("maxDurationPreference",res.getString(R.string.maxDurationPreferenceDefault));
-		maxFilesizePreference = prefs.getString("maxFilesizePreference",res.getString(R.string.maxFilesizePreferenceDefault));
-				
-		Log.d(TAG,"behaviour preferences are " + autoEmailPreference+":"+fTPPreference+":"+videobinPreference+":"+emailPreference);
-		
-		Log.d(TAG,"video recording preferences are " + filenameConventionPrefence+":"+maxDurationPreference+":"+maxFilesizePreference);
+		// Filename style, duration, max filesize
+
+		filenameConventionPrefence = prefs.getString(
+				"filenameConventionPrefence",
+				res.getString(R.string.filenameConventionDefaultPreference));
+		maxDurationPreference = prefs.getString("maxDurationPreference", res
+				.getString(R.string.maxDurationPreferenceDefault));
+		maxFilesizePreference = prefs.getString("maxFilesizePreference", res
+				.getString(R.string.maxFilesizePreferenceDefault));
+
+		Log.d(TAG, "behaviour preferences are " + autoEmailPreference + ":"
+				+ fTPPreference + ":" + videobinPreference + ":"
+				+ emailPreference);
+
+		Log.d(TAG, "video recording preferences are "
+				+ filenameConventionPrefence + ":" + maxDurationPreference
+				+ ":" + maxFilesizePreference);
 	}
 
 	private void checkInstallDirandCreateIfMissing() {
 		// android.os.Environment.getExternalStorageDirectory().getPath()
-		Resources res = getResources();
+
 		folder = new File(Environment.getExternalStorageDirectory()
 				+ res.getString(R.string.rootSDcardFolder));
 		boolean success;
@@ -347,8 +339,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 				canAccessSDCard = false;
 
 				new AlertDialog.Builder(this)
-						.setMessage(R.string.sdcard_failed)
-						.setPositiveButton(R.string.yes,
+						.setMessage(R.string.sdcard_failed).setPositiveButton(
+								R.string.yes,
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int whichButton) {
@@ -373,7 +365,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		}
 	}
 
-
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		super.onPrepareOptionsMenu(menu);
@@ -390,30 +381,34 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	private void createConditionalMenu(Menu menu) {
 		menu.clear();
 
-		Log.i(TAG, "createConditionalMenu called. recordingInMotion ? "  + recordingInMotion );
+		Log.i(TAG, "createConditionalMenu called. recordingInMotion ? "
+				+ recordingInMotion);
 		// Conditionally on menu items.
 		if (recordingInMotion) {
 			menu.removeItem(MENU_ITEM_1);
-			MenuItem menu_stop = menu.add(0, MENU_ITEM_2, 0,R.string.menu_stop_recording);
+			MenuItem menu_stop = menu.add(0, MENU_ITEM_2, 0,
+					R.string.menu_stop_recording);
 			menu_stop.setIcon(R.drawable.stop48);
 		} else {
 			if (canAccessSDCard) {
-				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0, R.string.menu_start_recording);
+				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0,
+						R.string.menu_start_recording);
 				menu_start.setIcon(R.drawable.sun48);
 				menu.removeItem(MENU_ITEM_2);
 			}
 		}
 
 	}
-	
 
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu.add(0, MENU_ITEM_5, 0, R.string.menu_about);
 		menu_about.setIcon(R.drawable.wizard48);
-		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0, R.string.menu_preferences);
+		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0,
+				R.string.menu_preferences);
 		menu_prefs.setIcon(R.drawable.options);
-		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0, R.string.menu_library);
+		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
+				R.string.menu_library);
 		menu_library.setIcon(R.drawable.business48);
 	}
 
@@ -439,17 +434,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 		case MENU_ITEM_5:
 			// ABOUT
-			new AlertDialog.Builder(this)
-					.setIcon(R.drawable.icon)
-					.setMessage(R.string.about_this)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
+			String mesg = getString(R.string.about_this);			
+			//find&replace VERSION
+			mesg = mesg.replace("VERSION", "version " + VERSION);
+			
+			final SpannableString s = new SpannableString(mesg);
+		    Linkify.addLinks(s, Linkify.ALL);
+		    
+			AlertDialog about = new AlertDialog.Builder(this).setMessage(
+					s).setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
 
-								}
-							}).show();
-
+						}
+					}).show();
+			//makes links work
+			((TextView)about.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			
 			break;
 
 		case MENU_ITEM_6:
@@ -462,20 +464,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			break;
 
 		case MENU_ITEM_7:
-			
-			//Library menu option
-			
+
+			// Library menu option
+
 			// Launch library activity, showing list of recorded videos
 			// their properties, if they are still 'on disk'
-			// how they were published, links to published sites 
+			// how they were published, links to published sites
 			// etc
-			Intent intent2 = new Intent().setClass(this,
-					LibraryActivity.class);
+			Intent intent2 = new Intent().setClass(this, LibraryActivity.class);
 			this.startActivityForResult(intent2, 0);
-			
+
 			break;
-			
-			
+
 		default:
 			return super.onOptionsItemSelected(menuitem);
 		}
@@ -487,19 +487,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	 * 
 	 * Menu response methods
 	 */
-	
+
 	private void menuResponseForStopItem() {
-		Log.d(TAG, "State is recordingInMotion:"+recordingInMotion);
-		
+		Log.d(TAG, "State is recordingInMotion:" + recordingInMotion);
+
 		if (recordingInMotion) {
 
 			stopRecording();
 
-			
 		} else {
 			//
-			new AlertDialog.Builder(this)
-					.setMessage(R.string.notrecording)
+			new AlertDialog.Builder(this).setMessage(R.string.notrecording)
 					.setPositiveButton(R.string.yes,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -518,16 +516,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		}
 	}
 
-	
-
-	
-	
 	/*
 	 * Camera methods
-	 * 
-	 *
 	 */
-	
+
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		//
@@ -547,8 +539,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		p.setPreviewFormat(PixelFormat.YCbCr_420_SP);
 
 		p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-		
-		//Log.d(TAG, "Parameters are " + p.toString());
+
+		// Log.d(TAG, "Parameters are " + p.toString());
 
 		camera.setParameters(p);
 
@@ -561,19 +553,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 			e.printStackTrace();
 		}
 	}
-	
 
 	public void surfaceCreated(SurfaceHolder holder) {
 		//
-		Log.d(TAG,"surfaceCreated!");
+		Log.d(TAG, "surfaceCreated!");
 		camera = Camera.open();
 		if (camera != null) {
 			Camera.Parameters params = camera.getParameters();
-			
+
 			camera.setParameters(params);
-			
-			
-			
+
 		} else {
 			Toast.makeText(getApplicationContext(), "Camera not available!",
 					Toast.LENGTH_LONG).show();
@@ -583,12 +572,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		//
-		Log.d(TAG,"surfaceDestroyed!");
+		Log.d(TAG, "surfaceDestroyed!");
 		camera.stopPreview();
 		previewRunning = false;
 		camera.release();
 	}
-	
 
 	private void tryToStartRecording() {
 		if (canAccessSDCard && startRecording()) {
@@ -597,80 +585,80 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 
 		} else {
 
-			new AlertDialog.Builder(MainActivity.this)
-					.setMessage(R.string.camera_failed)
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
+			new AlertDialog.Builder(MainActivity.this).setMessage(
+					R.string.camera_failed).setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
 
-								}
-							})
+						}
+					})
 
-					.setNegativeButton(R.string.cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
+			.setNegativeButton(R.string.cancel,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
 
-								}
-							}).show();
+						}
+					}).show();
 
 			recordingInMotion = false;
 		}
 	}
 
 	public boolean startRecording() {
-		
-			camera.unlock();
 
-			statusIndicator.setText("REC");
-			
-			mediaRecorder = new MediaRecorder();
-			mediaRecorder.setOnInfoListener(this);
+		camera.unlock();
 
-			mediaRecorder.setCamera(camera);
-			mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-			mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-			mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-			mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-			mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+		statusIndicator.setText("REC");
 
-			Log.d(TAG, " startRecording - preferences are " + maxDurationPreference + ":" + filenameConventionPrefence+":"+maxFilesizePreference);
-			
-			Integer user_duration = Integer.parseInt(maxDurationPreference);
-			//preferences for user in seconds.
-			maxDurationInMs = user_duration * 1000;
-			mediaRecorder.setMaxDuration(maxDurationInMs);
+		mediaRecorder = new MediaRecorder();
+		mediaRecorder.setOnInfoListener(this);
 
-			File tempFile = pu.selectFilenameAndCreateFile(filenameConventionPrefence);
-			latestVideoFile_filename = tempFile.getName();
-			latestVideoFile_absolutepath = tempFile.getAbsolutePath();
-			mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
-			Log.d(TAG, "Starting recording into " + tempFile.getAbsolutePath());
+		mediaRecorder.setCamera(camera);
+		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
 
-			
-			
-			mediaRecorder.setVideoFrameRate(videoFramesPerSecond);
+		Log.d(TAG, " startRecording - preferences are " + maxDurationPreference
+				+ ":" + filenameConventionPrefence + ":"
+				+ maxFilesizePreference);
 
-			// mediaRecorder.setVideoSize(surfaceView.getWidth(),
-			// surfaceView.getHeight())
+		Integer user_duration = Integer.parseInt(maxDurationPreference);
+		// preferences for user in seconds.
+		maxDurationInMs = user_duration * 1000;
+		mediaRecorder.setMaxDuration(maxDurationInMs);
 
-			mediaRecorder.setVideoSize(320, 240);
+		File tempFile = pu
+				.selectFilenameAndCreateFile(filenameConventionPrefence);
+		latestVideoFile_filename = tempFile.getName();
+		latestVideoFile_absolutepath = tempFile.getAbsolutePath();
+		mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
+		Log.d(TAG, "Starting recording into " + tempFile.getAbsolutePath());
 
-			mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
+		mediaRecorder.setVideoFrameRate(videoFramesPerSecond);
 
-			Integer user_filesize = Integer.parseInt(maxFilesizePreference);
-			//preferences for user in KB.
-			maxFileSizeInBytes = user_filesize * 1024;
-			mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
-	
+		// mediaRecorder.setVideoSize(surfaceView.getWidth(),
+		// surfaceView.getHeight())
+
+		mediaRecorder.setVideoSize(320, 240);
+
+		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
+
+		Integer user_filesize = Integer.parseInt(maxFilesizePreference);
+		// preferences for user in KB.
+		maxFileSizeInBytes = user_filesize * 1024;
+		mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
+
 		try {
-			
+
 			mediaRecorder.prepare();
 			mediaRecorder.start();
 
 			startTimeinMillis = System.currentTimeMillis();
-			
+
 			return true;
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Illegal State Exception" + e.getMessage());
@@ -683,37 +671,37 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 		}
 	}
 
-
-
 	public void stopRecording() {
 
 		mediaRecorder.stop();
 		camera.lock();
 		recordingInMotion = false;
-				
+
 		statusIndicator.setText("STOP");
-		
+
 		endTimeinMillis = System.currentTimeMillis();
-		
-		Log.d(TAG, "Recording time of video is " + ((endTimeinMillis-startTimeinMillis)/1000) + " seconds. filename " + latestVideoFile_filename + " : path " + latestVideoFile_absolutepath);
-		
+
+		Log.d(TAG, "Recording time of video is "
+				+ ((endTimeinMillis - startTimeinMillis) / 1000)
+				+ " seconds. filename " + latestVideoFile_filename + " : path "
+				+ latestVideoFile_absolutepath);
+
 		// ask for title and description after capture.
 		title = null;
 		description = null;
-		
+
 		showTitleDescriptionDialog();
-		
+
 	}
-	
-	
+
 	private void showTitleDescriptionDialog() {
 		// Launch Title/Description Edit View
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		final View title_descr = inflater.inflate(R.layout.title_and_desc,
-				null);
-		
+		final View title_descr = inflater
+				.inflate(R.layout.title_and_desc, null);
+
 		final EditText title_edittext = (EditText) title_descr
 				.findViewById(R.id.EditTextTitle);
 		final EditText desc_edittext = (EditText) title_descr
@@ -740,37 +728,43 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 				// save title and description to DB.
 				title = title_edittext.getText().toString();
 				description = desc_edittext.getText().toString();
-				
 
-				Log.d(TAG, "New title and description is " + title
-						+ ":" + description);
+				Log.d(TAG, "New title and description is " + title + ":"
+						+ description);
 
-				latestsdrecord_id = db_utils.createSDFileRecordwithNewVideoRecording(latestVideoFile_absolutepath, latestVideoFile_filename ,(int) ((endTimeinMillis-startTimeinMillis)/1000), "h263;samr", title, description);
-				
-				//If ID > 0, then new record in DB was successfully created
+				latestsdrecord_id = db_utils
+						.createSDFileRecordwithNewVideoRecording(
+								latestVideoFile_absolutepath,
+								latestVideoFile_filename,
+								(int) ((endTimeinMillis - startTimeinMillis) / 1000),
+								"h263;samr", title, description);
+
+				// If ID > 0, then new record in DB was successfully created
 				if (latestsdrecord_id > 0) {
-					
-					Log.d(TAG, "Valid DB Record - can send video file - sdrecord id  is " + latestsdrecord_id);
-					
-					//launch auto complete actions - make sure its AFTER latestsdrecord_id is set.
-					doAutoCompletedRecordedActions();
-					
-					Resources res = getResources();
-					
-					//Video recording finished dialog!
-					new AlertDialog.Builder(MainActivity.this)
-					.setMessage(res.getString(R.string.file_saved) + " " + latestVideoFile_filename + '\n' + res.getString(R.string.posts_in_gallery))
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
 
-									
-									
-								}
-							}).show();
+					Log.d(TAG,
+							"Valid DB Record - can send video file - sdrecord id  is "
+									+ latestsdrecord_id);
+
+					// launch auto complete actions - make sure its AFTER
+					// latestsdrecord_id is set.
+					doAutoCompletedRecordedActions();
+
+					// Video recording finished dialog!
+					new AlertDialog.Builder(MainActivity.this).setMessage(
+							res.getString(R.string.file_saved) + " "
+									+ latestVideoFile_filename + '\n'
+									+ res.getString(R.string.posts_in_gallery))
+							.setPositiveButton(R.string.yes,
+									new DialogInterface.OnClickListener() {
+										public void onClick(
+												DialogInterface dialog,
+												int whichButton) {
+
+										}
+									}).show();
 				}
-				
+
 				d.dismiss();
 			}
 		});
@@ -778,129 +772,135 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ro
 	}
 
 	public void onInfo(MediaRecorder mr, int what, int extra) {
-		//called when an error occurs
-		
-		Resources res = getResources();
-		
+		// called when an error occurs
+
 		if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
 				|| what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
-			
+
 			Log.d(TAG, "We have reached the end limit");
-			
-			//Video recording finished dialog!
-			new AlertDialog.Builder(MainActivity.this)
-			.setMessage(res.getString(R.string.limits_reached))
-			.setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
+
+			// Video recording finished dialog!
+			new AlertDialog.Builder(MainActivity.this).setMessage(
+					res.getString(R.string.limits_reached)).setPositiveButton(
+					R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,
 								int whichButton) {
 
-								stopRecording();
-							
+							stopRecording();
+
 						}
 					}).show();
-			
-			
-			
+
 		}
 
 	}
-	
+
 	private void doAutoCompletedRecordedActions() {
 		// Auto completion actions
 
 		Log.d(TAG, "Doing auto completed recorded actions");
-		String[] strs = db_utils.getTitleAndDescriptionFromID(new String[] { Long.toString(latestsdrecord_id)});
-		
+		String[] strs = db_utils
+				.getTitleAndDescriptionFromID(new String[] { Long
+						.toString(latestsdrecord_id) });
+
 		if (videobinPreference) {
-			threadVB = pu.videoUploadToVideoBin(this, handler, latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), emailPreference, latestsdrecord_id);
+			threadVB = pu.videoUploadToVideoBin(this, handler,
+					latestVideoFile_absolutepath, strs[0], strs[1] + "\n"
+							+ getString(R.string.uploaded_by_),
+					emailPreference, latestsdrecord_id);
 		}
 
 		if (fTPPreference) {
-			threadFTP = pu.videoUploadToFTPserver(this, handler, latestVideoFile_filename, latestVideoFile_absolutepath, emailPreference, latestsdrecord_id);
+			threadFTP = pu.videoUploadToFTPserver(this, handler,
+					latestVideoFile_filename, latestVideoFile_absolutepath,
+					emailPreference, latestsdrecord_id);
 		}
 
 		// facebook auto publishing
 		if (facebookPreference) {
-			//get title and description for video upload to FB
-			if (mainapp.getFacebook() != null && mainapp.getFacebook().isSessionValid()) {				
-				threadFB = pu.videoUploadToFacebook(this, handler, mainapp.getFacebook(), latestVideoFile_absolutepath, strs[0], strs[1]+ "\n" + getString(R.string.uploaded_by_), emailPreference, latestsdrecord_id);
+			// get title and description for video upload to FB
+			if (mainapp.getFacebook() != null
+					&& mainapp.getFacebook().isSessionValid()) {
+				threadFB = pu.videoUploadToFacebook(this, handler, mainapp
+						.getFacebook(), latestVideoFile_absolutepath, strs[0],
+						strs[1] + "\n" + getString(R.string.uploaded_by_),
+						emailPreference, latestsdrecord_id);
 			}
 		}
-		
-		
+
 		// youtube auto publishing
 		if (youtubePreference) {
-			
-			
+
 			String possibleEmail = null;
-			//We need a linked google account for youtube.
-			Account[] accounts = AccountManager.get(this).getAccountsByType("com.google");
+			// We need a linked google account for youtube.
+			Account[] accounts = AccountManager.get(this).getAccountsByType(
+					"com.google");
 			for (Account account : accounts) {
-			  // TODO: Check possibleEmail against an email regex or treat
-			  // account.name as an email address only for certain account.type values.
-			  possibleEmail = account.name;
-			  Log.d(TAG, "Could use : " + possibleEmail);
+				// TODO: Check possibleEmail against an email regex or treat
+				// account.name as an email address only for certain
+				// account.type values.
+				possibleEmail = account.name;
+				Log.d(TAG, "Could use : " + possibleEmail);
 			}
 			if (possibleEmail != null) {
-				Log.d(TAG,"Using account name for youtube upload .. " + possibleEmail);
-				// This launches the youtube upload process				
-				pu.getYouTubeAuthTokenWithPermissionAndUpload(this, possibleEmail, latestVideoFile_absolutepath, handler, emailPreference, latestsdrecord_id);
+				Log.d(TAG, "Using account name for youtube upload .. "
+						+ possibleEmail);
+				// This launches the youtube upload process
+				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
+						possibleEmail, latestVideoFile_absolutepath, handler,
+						emailPreference, latestsdrecord_id);
 			}
-			
+
 		}
 
-		//XXX add in vimeo, when done.
-				
-		
-		//Leave as last
+		// XXX add in vimeo, when done.
+
+		// Leave as last
 		if (autoEmailPreference) {
-			pu.launchEmailIntentWithCurrentVideo(this, latestVideoFile_absolutepath);
+			pu.launchEmailIntentWithCurrentVideo(this,
+					latestVideoFile_absolutepath);
 		}
-		
-		
-	}
 
+	}
 
 	public boolean isUploading() {
 		// are we?
 		return mainapp.isUploading();
 	}
 
-
 	public void startedUploading() {
-		Resources res = getResources();
-		this.createNotification(res.getString(R.string.starting_upload) + " " + latestVideoFile_filename);
-		//flip the switch
+		this.createNotification(res.getString(R.string.starting_upload) + " "
+				+ latestVideoFile_filename);
+		// flip the switch
 		mainapp.setUploading();
 	}
 
-
 	public void finishedUploading(boolean success) {
-		//not uploading.
-		
+		// not uploading.
+
 		mainapp.setNotUploading();
 	}
 
 	public void createNotification(String notification_text) {
-		Resources res = getResources();
-		 CharSequence contentTitle = res.getString(R.string.notification_title);
-		 CharSequence contentText = notification_text;
 
-		 final Notification notifyDetails =
-		        new Notification(R.drawable.icon, notification_text, System.currentTimeMillis());
+		CharSequence contentTitle = res.getString(R.string.notification_title);
+		CharSequence contentText = notification_text;
 
-		 Intent notifyIntent = new Intent(this, MainActivity.class);
+		final Notification notifyDetails = new Notification(R.drawable.icon,
+				notification_text, System.currentTimeMillis());
 
-		    PendingIntent intent =
-		          PendingIntent.getActivity(this, 0,
-		          notifyIntent,  PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_AUTO_CANCEL);
+		Intent notifyIntent = new Intent(this, MainActivity.class);
 
-		    notifyDetails.setLatestEventInfo(this, contentTitle, contentText, intent);
-		    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		    
-		   mNotificationManager.notify(NOTIFICATION_ID, notifyDetails);
-		
+		PendingIntent intent = PendingIntent.getActivity(this, 0, notifyIntent,
+				PendingIntent.FLAG_UPDATE_CURRENT
+						| Notification.FLAG_AUTO_CANCEL);
+
+		notifyDetails.setLatestEventInfo(this, contentTitle, contentText,
+				intent);
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+		mNotificationManager.notify(NOTIFICATION_ID, notifyDetails);
+
 	}
-	
+
 }

@@ -1,5 +1,6 @@
 package au.com.infiniterecursion.vidiom.activity;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import android.accounts.Account;
@@ -14,9 +15,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -64,6 +67,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 	private boolean videos_available;
 
+	//Context MENU
 	private static final int MENU_ITEM_1 = Menu.FIRST;
 	private static final int MENU_ITEM_2 = MENU_ITEM_1 + 1;
 	private static final int MENU_ITEM_3 = MENU_ITEM_2 + 1;
@@ -73,7 +77,9 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
 	private static final int MENU_ITEM_8 = MENU_ITEM_7 + 1;
 	private static final int MENU_ITEM_9 = MENU_ITEM_8 + 1;
-
+	// options MENU
+	private static final int MENU_ITEM_10 = MENU_ITEM_9 + 1;
+	
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
 
@@ -100,12 +106,18 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 	private SharedPreferences prefs;
 
+	private Resources res;
+
+	private boolean importPreference;
+	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		res = getResources();
 		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		emailPreference = prefs.getString("emailPreference", null);
-
+		importPreference = prefs.getBoolean("importPreference", true);
+		
+		
 		Log.d(TAG, " onCreate ");
 		dbutils = new DBUtils(getBaseContext());
 		pu = new PublishingUtils(getResources(), dbutils);
@@ -114,10 +126,106 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		thread_fb = null;
 		thread_ftp = null;
 		thread_youtube = null;
+
+	}
+
+	private class ImporterThread implements Runnable {
+
+		public void run() {
+			// Kick off the importing of existing videos.
+			scanForExistingVideosAndImport();
+
+			reloadList();
+			
+			//Set importPreference to false, to stop it running again.
+			Editor editor = prefs.edit();
+			editor.putBoolean("importPreference", false);
+			editor.commit();
+		}
+
+		public void scanForExistingVideosAndImport() {
+			boolean mExternalStorageAvailable = false;
+			boolean mExternalStorageWriteable = false;
+			File rootfolder = Environment.getExternalStorageDirectory();
+
+			String state = Environment.getExternalStorageState();
+			if (Environment.MEDIA_MOUNTED.equals(state)) {
+				mExternalStorageAvailable = mExternalStorageWriteable = true;
+			} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+				mExternalStorageAvailable = true;
+				mExternalStorageWriteable = false;
+			} else {
+				mExternalStorageAvailable = mExternalStorageWriteable = false;
+			}
+
+			// OK, start
+			if (mExternalStorageAvailable) {
+				Log.d(TAG, "Starting import. OUR Directory path is : "
+						+ Environment.getExternalStorageDirectory()
+								.getAbsolutePath()
+						+ res.getString(R.string.rootSDcardFolder));
+				directoryScanRecurse(rootfolder);
+			}
+			
+			Log.d(TAG, " Import FINISHED !");
+		}
+
+		public void directoryScanRecurse(File directory) {
+			// Recursive routine for finding existing videos.
+			// Dont import from our own directory.
+			// Log.d(TAG, "Scanning directory " + directory.getAbsolutePath());
+			if (!directory.getAbsolutePath().equals(
+					Environment.getExternalStorageDirectory().getAbsolutePath()
+							+ res.getString(R.string.rootSDcardFolder))) {
+
+				File[] files = directory.listFiles();
+
+				for (File f : files) {
+					if (f.isDirectory()) {
+						// recurse
+						directoryScanRecurse(f);
+					} else if (f.isFile()) {
+						// Check its a video file
+						String name = f.getName();
+						if (name.matches(".*\\.mp4")
+								|| name.matches(".*\\.3gp")) {
+							// found a video file.
+							// add it to the library.
+							// Log.d(TAG, "Found " + f.getAbsolutePath());
+
+							// Check this path isnt already in DB
+							String[] fp = new String[] { f.getAbsolutePath() };
+							boolean alreadyInDB = dbutils.checkFilePathInDB(fp);
+
+							// If not, insert a record into the DB
+							if (!alreadyInDB) {
+								String filename = f.getName();
+								dbutils
+										.createSDFileRecordwithNewVideoRecording(
+												f.getAbsolutePath(), filename,
+												0, "unknown", "", "");
+							}
+						}
+
+					}
+
+				}
+
+			} else {
+				// shouldnt log the directories files.
+
+				// Log.w(TAG, "Not logging.");
+				return;
+			}
+
+			return;
+		}
+
 	}
 
 	public void onResume() {
 		super.onResume();
+
 		mainapp = (VidiomApp) getApplication();
 		Log.d(TAG, " onResume ");
 		setContentView(R.layout.library_layout);
@@ -128,6 +236,11 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		lb = new LoginButton(this);
 		lb.init(mainapp.getFacebook(), VidiomApp.FB_LOGIN_PERMISSIONS, this);
+
+		if (importPreference) {
+			ImporterThread importer = new ImporterThread();
+			importer.run();
+		}
 	}
 
 	private void makeCursorAndAdapter() {
@@ -231,7 +344,7 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		});
 
 		setListAdapter(listAdapter);
-
+		
 		dbutils.close();
 	}
 
@@ -427,7 +540,8 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 						+ possibleEmail);
 				// This launches the youtube upload process
 				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
-						possibleEmail, movieurl, handler, emailPreference, sdrecord_id);
+						possibleEmail, movieurl, handler, emailPreference,
+						sdrecord_id);
 			} else {
 
 				// throw up dialog
@@ -472,8 +586,8 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		final View title_descr = inflater.inflate(R.layout.title_and_desc,
-				null);
+		final View title_descr = inflater
+				.inflate(R.layout.title_and_desc, null);
 		// preload any existing title and description
 		String[] strs = dbutils
 				.getTitleAndDescriptionFromID(new String[] { Long
@@ -509,13 +623,13 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 				String desc_str = desc_edittext.getText().toString();
 				String[] ids = new String[] { Long.toString(sdrecord_id) };
 
-				Log.d(TAG, "New title and description is " + title_str
-						+ ":" + desc_str);
+				Log.d(TAG, "New title and description is " + title_str + ":"
+						+ desc_str);
 
 				dbutils.updateTitleAndDescription(title_str, desc_str, ids);
 
 				reloadList();
-				
+
 				d.dismiss();
 			}
 		});
@@ -597,8 +711,8 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 									LibraryActivity.this, handler, mainapp
 											.getFacebook(), movieurl, strs[0],
 									strs[1] + "\n"
-											+ getString(R.string.uploaded_by_), emailPreference,
-									sdrecord_id);
+											+ getString(R.string.uploaded_by_),
+									emailPreference, sdrecord_id);
 
 						}
 
@@ -620,6 +734,45 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 		.show();
 
+	}
+	
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		super.onPrepareOptionsMenu(menu);
+
+		Log.i(TAG, "OnPrepareOptionsMenu called");
+
+		menu.clear();
+		
+		addConstantMenuItems(menu);
+
+		return true;
+	}
+
+	
+
+	private void addConstantMenuItems(Menu menu) {
+		// ALWAYS ON menu items.
+		MenuItem menu_about = menu.add(0, MENU_ITEM_10, 0, R.string.menu_import);
+		menu_about.setIcon(R.drawable.wizard48);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem menuitem) {
+		int menuNum = menuitem.getItemId();
+
+		Log.d("MENU", "Option " + menuNum + " selected");
+
+		switch (menuitem.getItemId()) {
+
+		// Importing
+		case MENU_ITEM_10:
+			ImporterThread importer = new ImporterThread();
+			importer.run();
+			break;
+		}
+		return true;
 	}
 
 }

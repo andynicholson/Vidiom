@@ -150,6 +150,28 @@ public class DBUtils {
 		return rez;
 	}
 	
+	public boolean checkFilePathInDB(String[] filePath) {
+		
+		boolean rez = false;
+		
+		genericWriteOpen();
+		
+		Cursor strs = generic_write_db.rawQuery("SELECT count(*) FROM " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE " + DatabaseHelper.SDFileRecord.FILEPATH + " = ?", filePath);
+		
+		if (strs.moveToFirst() )  {
+			int count = strs.getInt(0);
+			if (count > 0) {
+				rez = true;
+			}
+		} 
+		
+		strs.close();
+		
+		close();
+		
+		return rez;
+		
+	}
 	
 	public String[] getTitleAndDescriptionFromID(String[] sdrecord_id) {
 		String[] rez = new String[2];
@@ -169,7 +191,7 @@ public class DBUtils {
 			rez[0] = "";
 			rez[1] = "";
 		}
-		
+		strs.close();
 		close();
 		
 		return rez;

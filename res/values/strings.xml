@@ -77,7 +77,7 @@
     <string name="app_description">Your wandering eye.</string>
     <string name="prefTitle">Vidioum : Preferences</string>
 	<string name="libraryTitle">Vidiom : Video gallery</string>
-	<string name="about_this">Vidiom version 0.6 - http://vidiom.net.au/ \nVideo capture and web video publishing tool.\nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au/ </string>
+	<string name="about_this">Vidiom\nVideo capture and web video publishing tool\nVERSION - http://vidiom.net.au \nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au </string>
 	 
 	<string name="notification_title">Vidiom</string>
 	 
@@ -116,13 +116,14 @@
 	<string name="menu_library">Gallery</string>
 	<string name="menu_ftp">Publish via FTP</string>
 	<string name="menu_youtube">Publish to Youtube</string>
+	<string name="menu_import">Scan for Videos</string>
 
 	<string name="client_id">Vidiom</string>
 	<string name="dev_key">AI39si6Zu-rO_UyAE03CFqKoVi_6w-2mueuGU7vvZUJVLDwPNTv1VGgY_Gq68VXwcHOla1Shcdthx8w7Hzvanr26e5oakeGXbg</string>
 
 	<!--  library menu -->
 	<string name="library_menu_delete">Delete video</string>
-	<string name="really_delete_video">Do you really want to delete the video?</string>
+	<string name="really_delete_video">Do you really want to delete the video? This deletes the file from the disk as well as removing from the database!</string>
 	<string name="library_menu_play">Play video</string>
 	<string name="cant_show_video">Can not launch video player, sorry!.</string>
 	<string name="rename_video">Title/Description</string>
