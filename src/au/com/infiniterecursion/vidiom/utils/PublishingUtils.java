@@ -161,17 +161,18 @@ public class PublishingUtils {
 				Log.i(TAG, "Upload starting");
 				// Initialising REST API video.upload parameters
 				Bundle params = new Bundle();
-				params.putByteArray("method", "facebook.video.upload"
-						.getBytes());
-				params.putByteArray("format", "json".getBytes());
-				params.putByteArray("title", title.getBytes());
-				params.putByteArray("description", description.getBytes());
-				params.putByteArray("call_id", String.valueOf(
-						System.currentTimeMillis()).getBytes());
-				params.putByteArray("v", "1.0".getBytes());
-				params.putByteArray("oauth_token", mFacebook.getAccessToken()
-						.getBytes());
 
+				params.putString("method", "facebook.video.upload"
+						);
+				params.putString("format", "json");
+				params.putString("title", title);
+				params.putString("description", description);
+				params.putString("call_id", String.valueOf(
+						System.currentTimeMillis()));
+				params.putString("v", "1.0");
+				params.putString("oauth_token", mFacebook.getAccessToken()
+						);
+				
 				// Reading input file
 				try {
 					File videoFile = new File(path);
