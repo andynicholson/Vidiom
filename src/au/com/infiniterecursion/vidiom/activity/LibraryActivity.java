@@ -180,6 +180,10 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 
 				File[] files = directory.listFiles();
 
+				if (files == null) {
+					return;
+				}
+				
 				for (File f : files) {
 					if (f.isDirectory()) {
 						// recurse

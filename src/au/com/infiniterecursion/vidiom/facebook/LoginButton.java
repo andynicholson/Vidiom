@@ -12,6 +12,10 @@
 
 package au.com.infiniterecursion.vidiom.facebook;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
@@ -127,6 +131,33 @@ public class LoginButton extends ImageButton {
                 }
             });
         }
+
+		public void onComplete(String response, Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onFacebookError(FacebookError e, Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onFileNotFoundException(FileNotFoundException e,
+				Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onIOException(IOException e, Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onMalformedURLException(MalformedURLException e,
+				Object state) {
+			// TODO Auto-generated method stub
+			
+		}
     }
     
     private class SessionListener implements AuthListener, LogoutListener {

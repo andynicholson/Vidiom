@@ -2,6 +2,11 @@ package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -63,7 +68,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		RoboticEyeActivity, MediaRecorder.OnInfoListener {
 
 	private static final String TAG = "RoboticEye";
-	private static final String VERSION = "0.6.7";
+	private static final String VERSION = "0.6.8";
 
 	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;
@@ -119,12 +124,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	// Message queue
 	private Handler handler;
-
 	// Database
 	private DBUtils db_utils;
-
+	//Publishing utilities
 	private PublishingUtils pu;
-
+	//Android preferences
 	private SharedPreferences prefs;
 
 	// Uploading threads
@@ -141,7 +145,30 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	protected TextView statusIndicator;
 
 	private Resources res;
+	
+	//UI threaded updater infrastructure
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private int seconds_recording = 0;
+	ScheduledFuture<?> ui_Incrementer_handler;
+	
+	 final Runnable ui_Incrementer = new Runnable() {
+         public void run() { 
+        	 seconds_recording++;
+        	 Log.d(TAG, " Seconds recording are " + seconds_recording);
+        	 
+        	 int minutes = seconds_recording / 60;
+        	 int seconds = seconds_recording % 60;
+        	 final String time_format = String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
+        	 handler.postDelayed(new Runnable() {
+					public void run() {
+						 statusIndicator.setText("REC " + time_format);
+					}
+        	 },0);
+        	
+         }
+     };
 
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -553,8 +580,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		if (previewRunning) {
 			camera.stopPreview();
 		}
+		//Set parameters
 		Camera.Parameters p = camera.getParameters();
-
 		Log.d(TAG, " format width height are : " + format + ":" + width + ":"
 				+ height);
 
@@ -564,13 +591,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		p.setPreviewSize(320, 240);
 		// p.setPictureSize(320,240);
 		p.setPreviewFormat(PixelFormat.YCbCr_420_SP);
-
 		p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-
 		// Log.d(TAG, "Parameters are " + p.toString());
 
-		camera.setParameters(p);
-
+		try {
+			camera.setParameters(p);
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			Log.e(TAG, " setParameters failed! " + e.getMessage());
+		}
+			
+		
 		try {
 			camera.setPreviewDisplay(holder);
 			camera.startPreview();
@@ -584,12 +615,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public void surfaceCreated(SurfaceHolder holder) {
 		//
 		Log.d(TAG, "surfaceCreated!");
-		camera = Camera.open();
+		try {
+			camera = Camera.open();
+		} catch(RuntimeException e) {
+			e.printStackTrace();
+			camera = null;
+		}
+		
 		if (camera != null) {
 			Camera.Parameters params = camera.getParameters();
-
 			camera.setParameters(params);
-
 		} else {
 			Toast.makeText(getApplicationContext(), "Camera not available!",
 					Toast.LENGTH_LONG).show();
@@ -637,7 +672,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		camera.unlock();
 
-		statusIndicator.setText("REC");
+		statusIndicator.setText("REC 00:00");
 
 		mediaRecorder = new MediaRecorder();
 		mediaRecorder.setOnInfoListener(this);
@@ -686,7 +721,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			startTimeinMillis = System.currentTimeMillis();
 
+			//start UI updater thread
+			seconds_recording = 0;
+			ui_Incrementer_handler = scheduler.scheduleAtFixedRate(ui_Incrementer, 1, 1, TimeUnit.SECONDS);
+
 			return true;
+			
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Illegal State Exception" + e.getMessage());
 			e.printStackTrace();
@@ -704,10 +744,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		camera.lock();
 		recordingInMotion = false;
 
-		statusIndicator.setText("STOP");
-
 		endTimeinMillis = System.currentTimeMillis();
 
+		//Shutdown the threads
+		scheduler.schedule(new Runnable() {
+            public void run() { 
+            //cancel UI updater
+            ui_Incrementer_handler.cancel(true);
+            //reset the indicator
+            handler.postDelayed(new Runnable() {
+				public void run() {
+					 statusIndicator.setText("STOP");
+				}
+            },500);
+            
+            } }, 0, TimeUnit.SECONDS);
+
+		
 		Log.d(TAG, "Recording time of video is "
 				+ ((endTimeinMillis - startTimeinMillis) / 1000)
 				+ " seconds. filename " + latestVideoFile_filename + " : path "
@@ -717,6 +770,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		title = null;
 		description = null;
 
+		
+		
 		showTitleDescriptionDialog();
 
 	}
@@ -745,6 +800,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Button cbutton = (Button) d.findViewById(R.id.button2Cancel);
 		cbutton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				//delete the file
+				pu.deleteVideo(latestVideoFile_absolutepath);
+				
 				d.dismiss();
 			}
 		});
@@ -930,4 +988,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	}
 
+	
+	
+	
+	
 }

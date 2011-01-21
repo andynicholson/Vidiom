@@ -20,6 +20,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 see 'LICENSE' file for full license.
 
+----------------------------------------------------------------------
+
+Vidiom contains third-party code under separate copyrights:
+
+Copyright 2010 Google Inc.
+Code modified from ytd-android - http://code.google.com/p/youtube-direct & available under the license http://www.apache.org/licenses/LICENSE-2.0
+
+Copyright 2010 Stickman studio Contributers.
+Code modified from stickman-android - http://code.google.com/p/stickman-android & available under the license http://www.apache.org/licenses/LICENSE-2.0
+
+Copyright 2010 Facebook Inc.
+Code modified from Facebook SDK for Android - https://github.com/facebook/facebook-android-sdk & available under the license http://www.apache.org/licenses/LICENSE-2.0.html
+
+Copyright (c) 2007-2011, Yusuke Yamamoto 
+Code modified from Twitter4J - http://twitter4j.org/en/index.html & available under the BSD license http://twitter4j.org/en/index.html#license
+
+----------------------------------------------------------------------
+
+
 RELEASE LOG
 
 v0.6.7 - Released to Android Market on January 19th 2011 (Yogyakarta, Indonesia)
