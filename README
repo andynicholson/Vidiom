@@ -1,4 +1,4 @@
-Vidiom 0.6.7 - 19th January 2011
+Vidiom 0.6.8 - 21st January 2011
 Video capture and web video publishing for Android devices.
 Author: Andrew Nicholson
 Copyright (C) 2011 Infinite Recursion Pty Ltd
@@ -40,6 +40,8 @@ Code modified from Twitter4J - http://twitter4j.org/en/index.html & available un
 
 
 RELEASE LOG
+v0.6.8 - Released to Android Market on January 19th 2011 (Yogyakarta, Indonesia)
+	(Importing from sdcard fix, and UI recording time display)
 
 v0.6.7 - Released to Android Market on January 19th 2011 (Yogyakarta, Indonesia)
 	(Importing from sdcard, and facebook upload fix)
