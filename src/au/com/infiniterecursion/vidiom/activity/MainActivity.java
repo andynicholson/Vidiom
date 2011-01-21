@@ -584,6 +584,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Log.d(TAG, " format width height are : " + format + ":" + width + ":"
 				+ height);
 
+		//XXX should query supported capabilities first.
+		
 		// 320, 240 seems only possible resolution
 		// and it seems the preview size must be the same as the video size
 		//
