@@ -171,6 +171,11 @@ public class LibraryActivity extends ListActivity implements RoboticEyeActivity 
 		}
 
 		public void directoryScanRecurse(File directory) {
+			
+			if( directory == null) {
+				return;
+			}
+			
 			// Recursive routine for finding existing videos.
 			// Dont import from our own directory.
 			// Log.d(TAG, "Scanning directory " + directory.getAbsolutePath());
