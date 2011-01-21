@@ -56,7 +56,7 @@ import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
  * http://www.infiniterecursion.com.au
  */
 
-public class LibraryActivity extends ListActivity implements RoboticEyeActivity {
+public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	// Database
 	DBUtils dbutils;

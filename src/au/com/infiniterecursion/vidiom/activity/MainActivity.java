@@ -2,7 +2,6 @@ package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Timer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -65,7 +64,7 @@ import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
  */
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback,
-		RoboticEyeActivity, MediaRecorder.OnInfoListener {
+		VidiomActivity, MediaRecorder.OnInfoListener {
 
 	private static final String TAG = "RoboticEye";
 	private static final String VERSION = "0.6.8";

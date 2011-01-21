@@ -68,7 +68,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.R;
-import au.com.infiniterecursion.vidiom.activity.RoboticEyeActivity;
+import au.com.infiniterecursion.vidiom.activity.VidiomActivity;
 import au.com.infiniterecursion.vidiom.sslemail.SSLEmailSender;
 import au.com.infiniterecursion.vidiom.utils.GoogleAuthoriser.AuthorizationListener;
 
@@ -153,7 +153,7 @@ public class PublishingUtils {
 			final String emailAddress, final long sdrecord_id) {
 
 		// Make the progress bar view visible.
-		((RoboticEyeActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading();
 		final Resources res = activity.getResources();
 
 		Thread t = new Thread(new Runnable() {
@@ -221,9 +221,9 @@ public class PublishingUtils {
 							// Indicate back to calling activity the result!
 							// update uploadInProgress state also.
 
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_facebook_failed_));
 						}
@@ -275,9 +275,9 @@ public class PublishingUtils {
 								// Indicate back to calling activity the result!
 								// update uploadInProgress state also.
 
-								((RoboticEyeActivity) activity)
+								((VidiomActivity) activity)
 										.finishedUploading(true);
-								((RoboticEyeActivity) activity)
+								((VidiomActivity) activity)
 										.createNotification(res
 												.getString(R.string.upload_to_facebook_succeeded_));
 
@@ -296,9 +296,9 @@ public class PublishingUtils {
 								// Indicate back to calling activity the result!
 								// update uploadInProgress state also.
 
-								((RoboticEyeActivity) activity)
+								((VidiomActivity) activity)
 										.finishedUploading(false);
-								((RoboticEyeActivity) activity)
+								((VidiomActivity) activity)
 										.createNotification(res
 												.getString(R.string.upload_to_facebook_failed_));
 							}
@@ -354,7 +354,7 @@ public class PublishingUtils {
 		Log.d(TAG, "doPOSTtoVideoBin starting");
 
 		// Make the progress bar view visible.
-		((RoboticEyeActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading();
 		final Resources res = activity.getResources();
 
 		Thread t = new Thread(new Runnable() {
@@ -450,10 +450,10 @@ public class PublishingUtils {
 							// Indicate back to calling activity the result!
 							// update uploadInProgress state also.
 
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
 
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_videobin_org_failed_));
 						}
@@ -511,8 +511,8 @@ public class PublishingUtils {
 						// Indicate back to calling activity the result!
 						// update uploadInProgress state also.
 
-						((RoboticEyeActivity) activity).finishedUploading(true);
-						((RoboticEyeActivity) activity)
+						((VidiomActivity) activity).finishedUploading(true);
+						((VidiomActivity) activity)
 								.createNotification(res
 										.getString(R.string.upload_to_videobin_org_succeeded_));
 
@@ -535,7 +535,7 @@ public class PublishingUtils {
 		Log.d(TAG, "doVideoFTP starting");
 
 		// Make the progress bar view visible.
-		((RoboticEyeActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading();
 
 		final Resources res = activity.getResources();
 
@@ -582,9 +582,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -646,9 +646,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -710,9 +710,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -767,9 +767,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -803,9 +803,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -830,9 +830,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -857,9 +857,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -884,9 +884,9 @@ public class PublishingUtils {
 							// Update UI
 
 							// Hide the progress bar
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((RoboticEyeActivity) activity)
+							((VidiomActivity) activity)
 									.createNotification(res
 											.getString(R.string.upload_to_ftp_host_failed_));
 
@@ -937,8 +937,8 @@ public class PublishingUtils {
 						// Indicate back to calling activity the result!
 						// update uploadInProgress state also.
 
-						((RoboticEyeActivity) activity).finishedUploading(true);
-						((RoboticEyeActivity) activity)
+						((VidiomActivity) activity).finishedUploading(true);
+						((VidiomActivity) activity)
 								.createNotification(res
 										.getString(R.string.upload_to_ftp_host_succeeded_));
 
@@ -1254,8 +1254,8 @@ public class PublishingUtils {
 					// Indicate back to calling activity the result!
 					// update uploadInProgress state also.
 
-					((RoboticEyeActivity) activity).finishedUploading(true);
-					((RoboticEyeActivity) activity)
+					((VidiomActivity) activity).finishedUploading(true);
+					((VidiomActivity) activity)
 							.createNotification(res
 									.getString(R.string.upload_to_youtube_host_succeeded_));
 
@@ -1319,8 +1319,8 @@ public class PublishingUtils {
 						// Indicate back to calling activity the result!
 						// update uploadInProgress state also.
 
-						((RoboticEyeActivity) activity).finishedUploading(true);
-						((RoboticEyeActivity) activity)
+						((VidiomActivity) activity).finishedUploading(true);
+						((VidiomActivity) activity)
 								.createNotification(res
 										.getString(R.string.upload_to_youtube_host_failed_));
 
@@ -1592,7 +1592,7 @@ public class PublishingUtils {
 			final long sdrecord_id) {
 
 		// Make the progress bar view visible.
-		((RoboticEyeActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading();
 
 		this.youTubeName = accountName;
 
@@ -1621,9 +1621,9 @@ public class PublishingUtils {
 								// Indicate back to calling activity the result!
 								// update uploadInProgress state also.
 
-								((RoboticEyeActivity) activity)
+								((VidiomActivity) activity)
 										.finishedUploading(false);
-								((RoboticEyeActivity) activity)
+								((VidiomActivity) activity)
 										.createNotification(res
 												.getString(R.string.upload_to_youtube_host_failed_));
 

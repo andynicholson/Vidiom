@@ -1,7 +1,18 @@
 package au.com.infiniterecursion.vidiom.activity;
 
+/*
+ * Vidiom  Activity interface 
+ * 
+ * AUTHORS:
+ * 
+ * Andy Nicholson
+ * 
+ * 2010
+ * Copyright Infinite Recursion Pty Ltd.
+ * http://www.infiniterecursion.com.au
+ */
 
-public abstract interface RoboticEyeActivity  {
+public abstract interface VidiomActivity  {
 	
 	public abstract boolean isUploading();
 	
