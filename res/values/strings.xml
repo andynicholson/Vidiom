@@ -15,9 +15,11 @@
 -->
 
 <resources>
-	<string name="automatic_email_username">bubo</string>
+	<!-- dont publish this to GITHUB -->
+	<string name="automatic_email_username">vidiom</string>
 	<string name="automatic_email_from">noreply@vidiom.mobi</string>
-    <string name="automatic_email_password">1f2f083cb72927cdb6077f21b200f82d</string>
+	<!-- dont publish this to GITHUB -->
+    <string name="automatic_email_password">19ad20e4291cabb743ae84d6732ce30c</string>
 
     <string name="url_of_hosted_video_is_">URL of  hosted video is  </string>
     <string name="vidiom_automatic_email">Vidiom automatic email</string>
@@ -75,7 +77,7 @@
    <!--  activity titles -->
     <string name="app_name">Vidiom</string>
     <string name="app_description">Your wandering eye.</string>
-    <string name="prefTitle">Vidioum : Preferences</string>
+    <string name="prefTitle">Vidiom : Preferences</string>
 	<string name="libraryTitle">Vidiom : Video gallery</string>
 	<string name="about_this">Vidiom - Video capture and web video publishing tool. VERSION - http://vidiom.net.au \nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au </string>
 	<string name="licenses">Show Licenses</string>
@@ -121,8 +123,10 @@
 	<string name="menu_youtube">Publish to Youtube</string>
 	<string name="menu_import">Scan for Videos</string>
 
-	<string name="client_id">Vidiom</string>
-	<string name="dev_key">AI39si6Zu-rO_UyAE03CFqKoVi_6w-2mueuGU7vvZUJVLDwPNTv1VGgY_Gq68VXwcHOla1Shcdthx8w7Hzvanr26e5oakeGXbg</string>
+	<string name="youtube_client_id">Vidiom</string>
+	<!-- dont publish this to GITHUB -->
+	<string name="youtube_dev_key">AI39si5BL8wZdY-eWOV596cKnPF-hjN6pJZU6-rqR0qHX4ULiLXY9E8yG1wkjDqaUoFg_7dxaFkquZ1xHoOFNsCLivgH1UICCw</string>
+	
 
 	<!--  library menu -->
 	<string name="library_menu_delete">Delete video</string>

@@ -164,17 +164,15 @@ public class PublishingUtils {
 				// Initialising REST API video.upload parameters
 				Bundle params = new Bundle();
 
-				params.putString("method", "facebook.video.upload"
-						);
+				params.putString("method", "facebook.video.upload");
 				params.putString("format", "json");
 				params.putString("title", title);
 				params.putString("description", description);
-				params.putString("call_id", String.valueOf(
-						System.currentTimeMillis()));
+				params.putString("call_id", String.valueOf(System
+						.currentTimeMillis()));
 				params.putString("v", "1.0");
-				params.putString("oauth_token", mFacebook.getAccessToken()
-						);
-				
+				params.putString("oauth_token", mFacebook.getAccessToken());
+
 				// Reading input file
 				try {
 					File videoFile = new File(path);
@@ -228,7 +226,7 @@ public class PublishingUtils {
 											.getString(R.string.upload_to_facebook_failed_));
 						}
 					}, 0);
-					
+
 					return;
 				}
 
@@ -284,29 +282,27 @@ public class PublishingUtils {
 							}
 						}, 0);
 					}
-					
+
 				} else {
-						
-						//an error -- fb_response is NULL.
-					
-						handler.postDelayed(new Runnable() {
-							public void run() {
-								// Update UI
 
-								// Indicate back to calling activity the result!
-								// update uploadInProgress state also.
+					// an error -- fb_response is NULL.
 
-								((VidiomActivity) activity)
-										.finishedUploading(false);
-								((VidiomActivity) activity)
-										.createNotification(res
-												.getString(R.string.upload_to_facebook_failed_));
-							}
-						}, 0);
-						
+					handler.postDelayed(new Runnable() {
+						public void run() {
+							// Update UI
+
+							// Indicate back to calling activity the result!
+							// update uploadInProgress state also.
+
+							((VidiomActivity) activity)
+									.finishedUploading(false);
+							((VidiomActivity) activity)
+									.createNotification(res
+											.getString(R.string.upload_to_facebook_failed_));
+						}
+					}, 0);
+
 				}
-
-				
 
 				if (emailAddress != null && fb_response != null
 						&& hosted_url != null) {
@@ -1085,26 +1081,20 @@ public class PublishingUtils {
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
-					bundle.putString("error", e.getMessage());
-					handler.sendMessage(msg);
+					Log.e(TAG, "AsyncYouTubeUpload ERROR - finishing");
 					return;
 				} catch (YouTubeAccountException e) {
 					e.printStackTrace();
-					bundle.putString("error", e.getMessage());
-					handler.sendMessage(msg);
+					Log.e(TAG, "AsyncYouTubeUpload ERROR - finishing");
 					return;
 				} catch (SAXException e) {
 					e.printStackTrace();
-					bundle.putString("error", e.getMessage());
-					handler.sendMessage(msg);
+					Log.e(TAG, "AsyncYouTubeUpload ERROR - finishing");
 				} catch (ParserConfigurationException e) {
 					e.printStackTrace();
-					bundle.putString("error", e.getMessage());
-					handler.sendMessage(msg);
+					Log.e(TAG, "AsyncYouTubeUpload ERROR - finishing");
 				}
 
-				bundle.putString("videoId", videoId);
-				handler.sendMessage(msg);
 			}
 		}).start();
 	}
@@ -1168,7 +1158,7 @@ public class PublishingUtils {
 				fileSize -= uploadChunk;
 				start = end + 1;
 				this.numberOfRetries = 0; // clear this counter as we had a
-				// succesfull upload
+				// successful upload
 			} catch (IOException e) {
 				Log.d(TAG, "Error during upload : " + e.getMessage());
 				ResumeInfo resumeInfo = null;
@@ -1202,7 +1192,7 @@ public class PublishingUtils {
 					this.totalBytesUploaded = nextByteToUpload; // possibly
 					// rolling back
 					// the
-					// previosuly
+					// previously
 					// saved value
 					fileSize = this.currentFileSize - nextByteToUpload;
 					start = nextByteToUpload;
@@ -1214,7 +1204,7 @@ public class PublishingUtils {
 
 			if (emailAddress != null) {
 
-				// EmailSender through IR controlled gmail system.
+				// EmailSender through IR controlled mail system.
 				SSLEmailSender sender = new SSLEmailSender(activity
 						.getString(R.string.automatic_email_username), activity
 						.getString(R.string.automatic_email_password)); // consider
@@ -1288,12 +1278,50 @@ public class PublishingUtils {
 		atomData = String.format(template, title, description, category,
 				this.tags);
 
-		OutputStreamWriter outStreamWriter = new OutputStreamWriter(
-				urlConnection.getOutputStream());
-		outStreamWriter.write(atomData);
-		outStreamWriter.close();
+		OutputStreamWriter outStreamWriter = null;
+		int responseCode = -1;
+		
+		try {
+			outStreamWriter = new OutputStreamWriter(urlConnection
+					.getOutputStream());
+			outStreamWriter.write(atomData);
+			outStreamWriter.close();
+			
+			responseCode = urlConnection.getResponseCode();
+			
+		} catch (IOException e) {
+			//
+			//Catch IO Exceptions here, like UnknownHostException, so we can detect network failures, and send a notification
+			//
+			Log.d(TAG, " Error occured in uploadMetaData! ");
+			e.printStackTrace();
+			responseCode = -1;
+			outStreamWriter = null;
+			
+			
+			// Use the handler to execute a Runnable on the
+			// main thread in order to have access to the
+			// UI elements.
+			handler.postDelayed(new Runnable() {
+				public void run() {
+					// Update UI
 
-		int responseCode = urlConnection.getResponseCode();
+					// Indicate back to calling activity the result!
+					// update uploadInProgress state also.
+
+					((VidiomActivity) activity).finishedUploading(false);
+					((VidiomActivity) activity)
+							.createNotification(res
+									.getString(R.string.upload_to_youtube_host_failed_));
+
+				}
+			}, 0);
+
+			//forward it on!
+			throw e;
+		}
+		
+
 		if (responseCode < 200 || responseCode >= 300) {
 			// The response code is 40X
 			if ((responseCode + "").startsWith("4") && retry) {
@@ -1319,7 +1347,7 @@ public class PublishingUtils {
 						// Indicate back to calling activity the result!
 						// update uploadInProgress state also.
 
-						((VidiomActivity) activity).finishedUploading(true);
+						((VidiomActivity) activity).finishedUploading(false);
 						((VidiomActivity) activity)
 								.createNotification(res
 										.getString(R.string.upload_to_youtube_host_failed_));
@@ -1327,10 +1355,12 @@ public class PublishingUtils {
 					}
 				}, 0);
 
+				
 				throw new IOException(String.format(
 						"response code='%s' (code %d)" + " for %s",
 						urlConnection.getResponseMessage(), responseCode,
 						urlConnection.getURL()));
+				
 
 			}
 		}
@@ -1579,10 +1609,10 @@ public class PublishingUtils {
 		connection.setRequestProperty("Authorization", String.format(
 				"GoogleLogin auth=\"%s\"", clientLoginToken));
 		connection.setRequestProperty("GData-Version", "2");
-		connection.setRequestProperty("X-GData-Client", res
-				.getString(R.string.client_id));
+		// connection.setRequestProperty("X-GData-Client", res
+		// .getString(R.string.client_id));
 		connection.setRequestProperty("X-GData-Key", String.format("key=%s",
-				res.getString(R.string.dev_key)));
+				res.getString(R.string.youtube_dev_key)));
 		return connection;
 	}
 
