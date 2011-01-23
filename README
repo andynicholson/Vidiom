@@ -36,10 +36,16 @@ Code modified from Facebook SDK for Android - https://github.com/facebook/facebo
 Copyright (c) 2007-2011, Yusuke Yamamoto 
 Code modified from Twitter4J - http://twitter4j.org/en/index.html & available under the BSD license http://twitter4j.org/en/index.html#license
 
+Copyright 2011 Matthias Käppler
+Code included from Signpost - http://code.google.com/p/oauth-signpost/ & available under the license http://www.apache.org/licenses/LICENSE-2.0.html
 ----------------------------------------------------------------------
 
 
 RELEASE LOG
+
+v0.6.9 - Released to Android Market on January XXX 2011 (Yogyakarta, Indonesia)
+	( Twitter integration and more library options incl. viewing hosted video URL and tweeting, Youtube publishing fixes )
+
 v0.6.8 - Released to Android Market on January 21st 2011 (Yogyakarta, Indonesia)
 	(Importing from sdcard fix, and UI recording time display)
 
