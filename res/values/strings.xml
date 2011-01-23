@@ -15,6 +15,8 @@
 -->
 
 <resources>
+    <string name="launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_">Launching Twitter authorisation. Come back and tweet after you have done this.</string>
+    <string name="video_is_not_uploaded_yet_no_hosted_url_available_">Video is not uploaded yet. No hosted URL available.</string>
 	<!-- dont publish this to GITHUB -->
 	<string name="automatic_email_username">vidiom</string>
 	<string name="automatic_email_from">noreply@vidiom.mobi</string>
@@ -47,10 +49,10 @@
     
  
     
-    <string name="maxFilesizePreferenceDefault">1024</string>
+    <string name="maxFilesizePreferenceDefault">10240</string>
     <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes. Zero for unlimited.</string>
     <string name="maxFilesizePreferenceTitle">Video filesize</string>
-    <string name="maxDurationPreferenceDefault">40</string>
+    <string name="maxDurationPreferenceDefault">150</string>
     <string name="maxDurationPreferenceSummary">Maximum duration for a recorded video in seconds. Zero for unlimited.</string>
     <string name="maxDurationPreferenceTitle">Recording Duration</string>
     <string name="defaultFTPpasswordPreferenceTitle">FTP host password</string>
@@ -67,6 +69,8 @@
     <string name="facebookPreferenceTitle">Facebook</string>
     <string name="youtubePreferenceSummary">Automatically publish video to youtube.com?</string>
     <string name="youtubePreferenceTitle">Youtube</string>
+    <string name="twitterPreferenceSummary">Automatically publish hosted video URL on twitter.com?</string>
+    <string name="twitterPreferenceTitle">Twitter</string>
     <string name="ftpPreferenceSummary">Automatically send video via FTP to server?</string>
     <string name="ftpPreferenceTitle">FTP video</string>
     <string name="autoEmailPreferenceSummary">Automatically launch email application with recorded video as attachment?</string>
@@ -79,6 +83,8 @@
     <string name="app_description">Your wandering eye.</string>
     <string name="prefTitle">Vidiom : Preferences</string>
 	<string name="libraryTitle">Vidiom : Video gallery</string>
+	<string name="twitterTitle">Vidiom : Authorise Twitter integration</string>
+	<string name="twitter_auth">Authorise twitter</string>
 	<string name="about_this">Vidiom - Video capture and web video publishing tool. VERSION - http://vidiom.net.au \nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au </string>
 	<string name="licenses">Show Licenses</string>
 	<string name="third_party_licenses">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses\n\n\nVidiom contains third-party code under separate copyrights:\nCopyright 2010 Google Inc.\nCode modified from ytd-android - http://code.google.com/p/youtube-direct &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Stickman studio Contributers.\nCode modified from stickman-android - http://code.google.com/p/stickman-android &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Facebook Inc.\nCode modified from Facebook SDK for Android - https://github.com/facebook/facebook-android-sdk &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright (c) 2007-2011, Yusuke Yamamoto\nCode modified from Twitter4J - http://twitter4j.org/en/index.html &amp; available under the BSD license http://twitter4j.org/en/index.html#license</string>
@@ -136,6 +142,8 @@
 	<string name="rename_video">Title/Description</string>
 	
 	<string name="menu_send_hosted_url_via_email">Email Hosted URL</string>
+	<string name="menu_launch_hosted_url">View Hosted URL</string>
+	<string name="menu_tweet">Tweet video URL</string>
 	<string name="no_email_account_for_youtube">Please set up a google.com email account with which to log into YouTube.</string>
 	
 	<!--  Library list item  -->

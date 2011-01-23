@@ -15,6 +15,7 @@
 <CheckBoxPreference android:title="@string/videobinPreferenceTitle" android:summary="@string/videobinPreferenceSummary" android:key="videobinPreference"></CheckBoxPreference>
 <CheckBoxPreference android:title="@string/facebookPreferenceTitle" android:summary="@string/facebookPreferenceSummary" android:key="facebookPreference"></CheckBoxPreference>
 <CheckBoxPreference android:title="@string/youtubePreferenceTitle" android:summary="@string/youtubePreferenceSummary" android:key="youtubePreference"></CheckBoxPreference>
+<CheckBoxPreference android:title="@string/twitterPreferenceTitle" android:summary="@string/twitterPreferenceSummary" android:key="twitterPreference"></CheckBoxPreference>
 
 <CheckBoxPreference android:title="@string/ftpPreferenceTitle" android:summary="@string/ftpPreferenceSummary" android:key="ftpPreference"></CheckBoxPreference>
 

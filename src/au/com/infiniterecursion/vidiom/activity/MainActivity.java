@@ -7,6 +7,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.http.AccessToken;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -116,6 +121,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private boolean videobinPreference;
 	private boolean facebookPreference;
 	private boolean youtubePreference;
+	private boolean twitterPreference;
+	
 	private String emailPreference;
 	private String filenameConventionPrefence;
 	private String maxDurationPreference;
@@ -329,7 +336,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		facebookPreference = prefs.getBoolean("facebookPreference", false);
 		emailPreference = prefs.getString("emailPreference", null);
 		youtubePreference = prefs.getBoolean("youtubePreference", false);
-
+		twitterPreference = prefs.getBoolean("twitterPreference", false);
+		
 		// Filename style, duration, max filesize
 
 		filenameConventionPrefence = prefs.getString(
@@ -823,7 +831,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 								latestVideoFile_absolutepath,
 								latestVideoFile_filename,
 								(int) ((endTimeinMillis - startTimeinMillis) / 1000),
-								"h263;samr", title, description);
+								//XXX hardcoded vid & audio codecs
+								"h263;amr-nb", title, description);
 
 				// If ID > 0, then new record in DB was successfully created
 				if (latestsdrecord_id > 0) {
@@ -939,8 +948,42 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		}
 
-		// XXX add in vimeo, when done.
+		//Auto twittering.
 
+		if (twitterPreference) {
+			
+			//Check there is a hosted URL for a start..
+			String hosted_url_to_tweet = db_utils.getHostedURLFromID(new String[] { Long
+					.toString(latestsdrecord_id) });
+			
+			if (hosted_url_to_tweet != null) { 
+				
+				//Check there is a valid twitter OAuth tokens.
+				String twitterToken = prefs.getString("twitterToken",null);
+				String twitterTokenSecret = prefs.getString("twitterTokenSecret",null);
+				
+				if (twitterToken != null && twitterTokenSecret != null) {
+					
+					//Ok, now we can tweet this URL
+					AccessToken a = new AccessToken(twitterToken, twitterTokenSecret);
+					Twitter twitter = new TwitterFactory().getInstance();
+					twitter.setOAuthConsumer(TwitterOAuthActivity.consumerKey, TwitterOAuthActivity.consumerSecret);
+					twitter.setOAuthAccessToken(a);
+					
+					String status = "New video:"+hosted_url_to_tweet;
+					try {
+						twitter.updateStatus(status);
+					} catch (TwitterException e) {
+						// 
+						e.printStackTrace();
+						Log.e(TAG, "Auto twittering failed " + e.getMessage());
+					}
+				}
+				
+			}
+		}
+		
+		
 		// Leave as last
 		if (autoEmailPreference) {
 			pu.launchEmailIntentWithCurrentVideo(this,

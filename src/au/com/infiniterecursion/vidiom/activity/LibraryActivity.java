@@ -3,6 +3,11 @@ package au.com.infiniterecursion.vidiom.activity;
 import java.io.File;
 import java.util.ArrayList;
 
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.http.AccessToken;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
@@ -18,6 +23,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -37,6 +43,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.facebook.LoginButton;
@@ -77,8 +84,15 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
 	private static final int MENU_ITEM_8 = MENU_ITEM_7 + 1;
 	private static final int MENU_ITEM_9 = MENU_ITEM_8 + 1;
+	
+	
 	// options MENU
 	private static final int MENU_ITEM_10 = MENU_ITEM_9 + 1;
+	private static final int MENU_ITEM_11 = MENU_ITEM_10 + 1;
+	
+	//Context MENU 
+	private static final int MENU_ITEM_12 = MENU_ITEM_11 + 1;
+	private static final int MENU_ITEM_13 = MENU_ITEM_12 + 1;
 	
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
@@ -410,22 +424,31 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenu.ContextMenuInfo menuInfo) {
 
+		//PLAY
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
 
+		//TITLE / DESCRIPTION
 		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
 
+		//PUBLISHING OPTIONS
 		menu.add(0, MENU_ITEM_3, 0, R.string.menu_publish_to_videobin);
 
 		menu.add(0, MENU_ITEM_5, 0, R.string.menu_publish_to_facebook);
 
 		menu.add(0, MENU_ITEM_7, 0, R.string.menu_youtube);
-
+		
 		menu.add(0, MENU_ITEM_6, 0, R.string.menu_ftp);
+		
+		// WORKING WITH VIDEO + HOSTED URL OPTIONS
+		menu.add(0, MENU_ITEM_13, 0, R.string.menu_tweet);
 
 		menu.add(0, MENU_ITEM_4, 0, R.string.menu_send_via_email);
 
 		menu.add(0, MENU_ITEM_9, 0, R.string.menu_send_hosted_url_via_email);
+		
+		menu.add(0, MENU_ITEM_12, 0, R.string.menu_launch_hosted_url);
 
+		//DELETE
 		menu.add(0, MENU_ITEM_2, 0, R.string.library_menu_delete);
 
 	}
@@ -576,14 +599,72 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		case MENU_ITEM_9:
 			// Email the HOSTED URL field of the currently selected video
 
-			Intent i = new Intent(Intent.ACTION_SEND);
-			i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			i.setType("message/rfc822");
-			i.putExtra(Intent.EXTRA_TEXT, hosted_url);
-			this.startActivity(i);
+			if (hosted_url != null && hosted_url.length() > 0) {
+				Intent i = new Intent(Intent.ACTION_SEND);
+				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				i.setType("message/rfc822");
+				i.putExtra(Intent.EXTRA_TEXT, hosted_url);
+				this.startActivity(i);
+			} else {
+				Toast.makeText(this, R.string.video_is_not_uploaded_yet_no_hosted_url_available_ , Toast.LENGTH_LONG).show();
+			}
 
 			break;
+			
+		case MENU_ITEM_12:
+			// View the HOSTED URL field of the currently selected video in a web browser.
 
+			if (hosted_url != null && hosted_url.length() > 0) {
+				Intent i2 = new Intent(Intent.ACTION_VIEW);
+				i2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				i2.setData(Uri.parse(hosted_url));
+				this.startActivity(i2);
+			} else {
+				Toast.makeText(this, R.string.video_is_not_uploaded_yet_no_hosted_url_available_ , Toast.LENGTH_LONG).show();
+			}
+			break;
+
+		case MENU_ITEM_13:
+			// Tweet the video hosted URL
+
+			if (hosted_url != null && hosted_url.length() > 0) {
+				
+				//Check there is a valid twitter OAuth tokens.
+				String twitterToken = prefs.getString("twitterToken",null);
+				String twitterTokenSecret = prefs.getString("twitterTokenSecret",null);
+				
+				if (twitterToken != null && twitterTokenSecret != null) {
+					
+					//Ok, now we can tweet this URL
+					AccessToken a = new AccessToken(twitterToken, twitterTokenSecret);
+					Twitter twitter = new TwitterFactory().getInstance();
+					twitter.setOAuthConsumer(TwitterOAuthActivity.consumerKey, TwitterOAuthActivity.consumerSecret);
+					twitter.setOAuthAccessToken(a);
+					
+					String status = "New video:"+hosted_url;
+					try {
+						twitter.updateStatus(status);
+					} catch (TwitterException e) {
+						// 
+						e.printStackTrace();
+						Log.e(TAG, "Twittering failed " + e.getMessage());
+					}
+				} else {
+					
+					Toast.makeText(this, R.string.launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_ , Toast.LENGTH_LONG).show();
+					
+					// Launch Twitter Authorisation
+					Intent intent2 = new Intent().setClass(this, TwitterOAuthActivity.class);
+					this.startActivityForResult(intent2, 0);
+					
+				}	
+			} else {
+				Toast.makeText(this, R.string.video_is_not_uploaded_yet_no_hosted_url_available_ , Toast.LENGTH_LONG).show();
+			}
+			
+			break;
+	
+			
 		}
 
 		return true;
@@ -764,7 +845,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu.add(0, MENU_ITEM_10, 0, R.string.menu_import);
+		//XXX get some different icon
 		menu_about.setIcon(R.drawable.wizard48);
+		
+		MenuItem menu_twitter = menu.add(0, MENU_ITEM_11, 0, R.string.twitter_auth);
+		//XXX get some different icon
+		menu_twitter.setIcon(R.drawable.wizard48);
+		
 	}
 
 	@Override
@@ -780,6 +867,16 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			ImporterThread importer = new ImporterThread();
 			importer.run();
 			break;
+			
+		//Authorising Twitter.
+		case MENU_ITEM_11:
+
+			Intent intent2 = new Intent().setClass(this, TwitterOAuthActivity.class);
+			this.startActivityForResult(intent2, 0);
+
+			break;
+
+			
 		}
 		return true;
 	}

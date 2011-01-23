@@ -38,10 +38,26 @@
     <activity android:name=".activity.LibraryActivity"
           android:label="@string/libraryTitle">
     <intent-filter>
-         <action android:name="au.com.infiniterecursion.intent.action.Preferences" />
         <category android:name="android.intent.category.LAUNCHER" />
     </intent-filter>
 	</activity>
+    
+     <activity android:name=".activity.TwitterOAuthActivity"
+          android:label="@string/twitterTitle" android:launchMode="singleInstance">
+
+    <intent-filter>
+		<action android:name="android.intent.action.MAIN"/>
+		<category android:name="android.intent.category.LAUNCHER"/>
+	</intent-filter>
+	<intent-filter>
+		<action android:name="android.intent.action.VIEW"/>
+		<category android:name="android.intent.category.DEFAULT"/>
+		<category android:name="android.intent.category.BROWSABLE"/>
+		<data android:scheme="vidiom" android:host="TwitterOAuthActivityCallback"/>
+	</intent-filter>
+
+	</activity>
+    
     
     </application>
     

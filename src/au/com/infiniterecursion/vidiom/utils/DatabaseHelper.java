@@ -23,9 +23,9 @@ import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-	public static final String AUTHORITY = "au.com.infiniterecursion.roboticeye";
-	public static final String CONTENT_TYPE_BASE = "vnd.android.cursor.dir/vnd.au.com.infiniterecursion.roboticeye";
-	public static final String CONTENT_ITEM_TYPE_BASE = "vnd.android.cursor.item/vnd.au.com.infiniterecursion.roboticeye";
+	public static final String AUTHORITY = "au.com.infiniterecursion.vidiom";
+	public static final String CONTENT_TYPE_BASE = "vnd.android.cursor.dir/vnd.au.com.infiniterecursion.vidiom";
+	public static final String CONTENT_ITEM_TYPE_BASE = "vnd.android.cursor.item/vnd.au.com.infiniterecursion.vidiom";
 	
 	private static final String DB_FILENAME = "roboticeye.db";
 	private static final int DB_VERSION = 5;

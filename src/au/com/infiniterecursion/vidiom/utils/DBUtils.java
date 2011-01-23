@@ -197,6 +197,26 @@ public class DBUtils {
 		return rez;
 	}
 	
+	public String getHostedURLFromID(String[] sdrecord_id) {
+		String rez = null;
+		
+		genericWriteOpen();
+		
+		Cursor strs = generic_write_db.rawQuery("SELECT  " + DatabaseHelper.HostDetails.HOST_VIDEO_URL 
+				+ " FROM " + DatabaseHelper.HOST_TABLE_NAME + " h, " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " s WHERE " 
+				+ "h." + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + "=s."+DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+		
+		if (strs.moveToFirst() )  {
+			rez = strs.getString(0);
+		} 
+		
+		strs.close();
+		close();
+		
+		return rez;
+	}
+	
+	
 	/*
 	 * Returns the ID of the new record, or -1 if error
 	 */
