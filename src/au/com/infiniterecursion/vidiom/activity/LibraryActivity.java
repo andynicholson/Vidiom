@@ -633,7 +633,14 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		case MENU_ITEM_13:
 			// Tweet the video hosted URL
-
+			runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(LibraryActivity.this,
+							R.string.tweeting_starting,
+							Toast.LENGTH_LONG).show();
+				}
+			});
+			
 			new Thread(new Runnable() {
 				public void run() {
 					if (hosted_url != null && hosted_url.length() > 0) {

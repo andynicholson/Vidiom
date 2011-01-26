@@ -15,9 +15,14 @@
 -->
 
 <resources>
+    <string name="auto_publishing_to_youtube_com">Auto publishing to youtube.com</string>
+    <string name="auto_publishing_to_facebook_com">Auto publishing to facebook.com</string>
+    <string name="auto_publishing_to_ftp_server">Auto publishing to FTP server</string>
+    <string name="auto_publishing_to_videobin_org">Auto publishing to videobin.org</string>
     <string name="launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_">Launching Twitter authorisation. Come back and tweet after you have done this.</string>
     <string name="video_is_not_uploaded_yet_no_hosted_url_available_">Video is not uploaded yet. No hosted URL available.</string>
 	<string name="tweeted_ok">Tweeted video URL successfully</string>
+	<string name="tweeting_starting">Contacting twitter.com</string>
 
 	<!-- dont publish this to GITHUB -->
 	<string name="automatic_email_username">vidiom</string>

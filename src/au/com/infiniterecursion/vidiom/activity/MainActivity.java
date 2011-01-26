@@ -899,6 +899,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 						.toString(latestsdrecord_id) });
 
 		if (videobinPreference) {
+			
+			runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(MainActivity.this,
+							R.string.auto_publishing_to_videobin_org,
+							Toast.LENGTH_LONG).show();
+				}
+			});
+			
 			threadVB = pu.videoUploadToVideoBin(this, handler,
 					latestVideoFile_absolutepath, strs[0], strs[1] + "\n"
 							+ getString(R.string.uploaded_by_),
@@ -906,6 +915,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 
 		if (fTPPreference) {
+			
+			
+			runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(MainActivity.this,
+							R.string.auto_publishing_to_ftp_server,
+							Toast.LENGTH_LONG).show();
+				}
+			});
+			
 			threadFTP = pu.videoUploadToFTPserver(this, handler,
 					latestVideoFile_filename, latestVideoFile_absolutepath,
 					emailPreference, latestsdrecord_id);
@@ -913,9 +932,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// facebook auto publishing
 		if (facebookPreference) {
+			
+			
 			// get title and description for video upload to FB
 			if (mainapp.getFacebook() != null
 					&& mainapp.getFacebook().isSessionValid()) {
+				
+				runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(MainActivity.this,
+								R.string.auto_publishing_to_facebook_com,
+								Toast.LENGTH_LONG).show();
+					}
+				});
+				
 				threadFB = pu.videoUploadToFacebook(this, handler, mainapp
 						.getFacebook(), latestVideoFile_absolutepath, strs[0],
 						strs[1] + "\n" + getString(R.string.uploaded_by_),
@@ -941,6 +971,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				Log.d(TAG, "Using account name for youtube upload .. "
 						+ possibleEmail);
 				// This launches the youtube upload process
+				
+				runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(MainActivity.this,
+								R.string.auto_publishing_to_youtube_com,
+								Toast.LENGTH_LONG).show();
+					}
+				});
+				
 				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
 						possibleEmail, latestVideoFile_absolutepath, handler,
 						emailPreference, latestsdrecord_id);
@@ -948,9 +987,34 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		}
 
-		//Auto twittering.
 
-		if (twitterPreference) {
+		
+		// Leave as last
+		if (autoEmailPreference) {
+			pu.launchEmailIntentWithCurrentVideo(this,
+					latestVideoFile_absolutepath);
+		}
+
+	}
+
+	public boolean isUploading() {
+		// are we?
+		return mainapp.isUploading();
+	}
+
+	public void startedUploading() {
+		this.createNotification(res.getString(R.string.starting_upload) + " "
+				+ latestVideoFile_filename);
+		// flip the switch
+		mainapp.setUploading();
+	}
+
+	public void finishedUploading(boolean success) {
+		// not uploading anymore.
+
+		//Auto twittering.
+		//  
+		if (twitterPreference && success) {
 			
 			new Thread(new Runnable() {
 				public void run() {
@@ -997,31 +1061,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			}).start();
 			
 		}
+				
 		
-		
-		// Leave as last
-		if (autoEmailPreference) {
-			pu.launchEmailIntentWithCurrentVideo(this,
-					latestVideoFile_absolutepath);
-		}
-
-	}
-
-	public boolean isUploading() {
-		// are we?
-		return mainapp.isUploading();
-	}
-
-	public void startedUploading() {
-		this.createNotification(res.getString(R.string.starting_upload) + " "
-				+ latestVideoFile_filename);
-		// flip the switch
-		mainapp.setUploading();
-	}
-
-	public void finishedUploading(boolean success) {
-		// not uploading.
-
 		mainapp.setNotUploading();
 	}
 
