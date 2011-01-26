@@ -17,6 +17,8 @@
 <resources>
     <string name="launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_">Launching Twitter authorisation. Come back and tweet after you have done this.</string>
     <string name="video_is_not_uploaded_yet_no_hosted_url_available_">Video is not uploaded yet. No hosted URL available.</string>
+	<string name="tweeted_ok">Tweeted video URL successfully</string>
+
 	<!-- dont publish this to GITHUB -->
 	<string name="automatic_email_username">vidiom</string>
 	<string name="automatic_email_from">noreply@vidiom.mobi</string>

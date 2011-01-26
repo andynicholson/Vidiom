@@ -204,7 +204,7 @@ public class DBUtils {
 		
 		Cursor strs = generic_write_db.rawQuery("SELECT  " + DatabaseHelper.HostDetails.HOST_VIDEO_URL 
 				+ " FROM " + DatabaseHelper.HOST_TABLE_NAME + " h, " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " s WHERE " 
-				+ "h." + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + "=s."+DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+				+ "h." + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + "=s."+DatabaseHelper.SDFileRecord._ID + " AND " + "s." + DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
 		
 		if (strs.moveToFirst() )  {
 			rez = strs.getString(0);

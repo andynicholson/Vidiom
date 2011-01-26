@@ -952,35 +952,50 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		if (twitterPreference) {
 			
-			//Check there is a hosted URL for a start..
-			String hosted_url_to_tweet = db_utils.getHostedURLFromID(new String[] { Long
-					.toString(latestsdrecord_id) });
-			
-			if (hosted_url_to_tweet != null) { 
-				
-				//Check there is a valid twitter OAuth tokens.
-				String twitterToken = prefs.getString("twitterToken",null);
-				String twitterTokenSecret = prefs.getString("twitterTokenSecret",null);
-				
-				if (twitterToken != null && twitterTokenSecret != null) {
+			new Thread(new Runnable() {
+				public void run() {
 					
-					//Ok, now we can tweet this URL
-					AccessToken a = new AccessToken(twitterToken, twitterTokenSecret);
-					Twitter twitter = new TwitterFactory().getInstance();
-					twitter.setOAuthConsumer(TwitterOAuthActivity.consumerKey, TwitterOAuthActivity.consumerSecret);
-					twitter.setOAuthAccessToken(a);
+					//Check there is a hosted URL for a start..
+					String hosted_url_to_tweet = db_utils.getHostedURLFromID(new String[] { Long
+							.toString(latestsdrecord_id) });
+					Log.d(TAG, " checking " + hosted_url_to_tweet + " in auto twitter publishing");
 					
-					String status = "New video:"+hosted_url_to_tweet;
-					try {
-						twitter.updateStatus(status);
-					} catch (TwitterException e) {
-						// 
-						e.printStackTrace();
-						Log.e(TAG, "Auto twittering failed " + e.getMessage());
+					if (hosted_url_to_tweet != null) { 
+						
+						//Check there is a valid twitter OAuth tokens.
+						String twitterToken = prefs.getString("twitterToken",null);
+						String twitterTokenSecret = prefs.getString("twitterTokenSecret",null);
+						
+						if (twitterToken != null && twitterTokenSecret != null) {
+							
+							//Ok, now we can tweet this URL
+							AccessToken a = new AccessToken(twitterToken, twitterTokenSecret);
+							Twitter twitter = new TwitterFactory().getInstance();
+							twitter.setOAuthConsumer(TwitterOAuthActivity.consumerKey, TwitterOAuthActivity.consumerSecret);
+							twitter.setOAuthAccessToken(a);
+							
+							String status = "New video:"+hosted_url_to_tweet;
+							try {
+								twitter.updateStatus(status);
+								runOnUiThread(new Runnable() {
+									public void run() {
+										Toast.makeText(MainActivity.this,
+												R.string.tweeted_ok,
+												Toast.LENGTH_LONG).show();
+									}
+								});
+							} catch (TwitterException e) {
+								// 
+								e.printStackTrace();
+								Log.e(TAG, "Auto twittering failed " + e.getMessage());
+							}
+						}
+						
 					}
+					
 				}
-				
-			}
+			}).start();
+			
 		}
 		
 		
