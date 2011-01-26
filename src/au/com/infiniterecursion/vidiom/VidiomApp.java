@@ -24,8 +24,6 @@ import com.facebook.android.Facebook;
 public class VidiomApp extends Application {
 	
 	private static final String FACEBOOK_APP_ID = "175287182490445";
-	private static final String FACEBOOK_APP_KEY = "2841286527d46765c6823bc9b08fdad9";
-	private static final String FACEBOOK_APP_SECRET = "ed97e81ca8b2327aaaa9291979f0e8cb";
 	public static final String[] FB_LOGIN_PERMISSIONS = new String[] {"publish_stream", "read_stream", "video_upload"};
 	private static String TAG ="RoboticEye-MainApp";
 		
@@ -69,15 +67,6 @@ public class VidiomApp extends Application {
     	return mAsyncRunner;
     	
     }
-    
-   public static String getFacebookAPIkey () {
-	   return FACEBOOK_APP_KEY;
-   }
-
-   public static String getFacebookAPIsecret() {
-	// 
-	return FACEBOOK_APP_SECRET;
-   }
 
    public boolean isUploading() {
 	   return isUploading;

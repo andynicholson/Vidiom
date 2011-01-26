@@ -26,7 +26,10 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -1268,6 +1271,7 @@ public class PublishingUtils {
 		urlConnection.setDoOutput(true);
 		urlConnection
 				.setRequestProperty("Content-Type", "application/atom+xml");
+		// urlConnection.setRequestProperty("Content-Length", newValue);
 		urlConnection.setRequestProperty("Slug", filePath);
 		String atomData = null;
 
@@ -1275,30 +1279,71 @@ public class PublishingUtils {
 		this.tags = DEFAULT_VIDEO_TAGS;
 
 		String template = readFile(activity, R.raw.gdata).toString();
+
+		// Workarounds for corner cases. Youtube doesnt like empty titles
+		if (title == null || title.length() == 0) {
+			title = "Untitled";
+		}
+		if (description == null || description.length() == 0) {
+			description = "No description";
+		}
+
 		atomData = String.format(template, title, description, category,
 				this.tags);
 
 		OutputStreamWriter outStreamWriter = null;
 		int responseCode = -1;
-		
+
 		try {
 			outStreamWriter = new OutputStreamWriter(urlConnection
 					.getOutputStream());
 			outStreamWriter.write(atomData);
 			outStreamWriter.close();
-			
+
+			/*
+			 * urlConnection.connect(); InputStream is =
+			 * urlConnection.getInputStream(); BufferedReader in = new
+			 * BufferedReader(new InputStreamReader(is)); String inputLine;
+			 * 
+			 * while ((inputLine = in.readLine()) != null) {
+			 * Log.d(TAG,inputLine); } in.close();
+			 */
+
 			responseCode = urlConnection.getResponseCode();
-			
+
+			//ERROR LOGGING
+			InputStream is = urlConnection.getErrorStream();
+			if (is != null) {
+				Log.e(TAG, " Error stream from Youtube available!");
+				BufferedReader in = new BufferedReader(
+						new InputStreamReader(is));
+				String inputLine;
+
+				while ((inputLine = in.readLine()) != null) {
+					Log.d(TAG, inputLine);
+				}
+				in.close();
+
+				Map<String, List<String>> hfs = urlConnection.getHeaderFields();
+				for (Entry<String, List<String>> hf : hfs.entrySet()) {
+					Log.d(TAG, " entry : " + hf.getKey());
+					List<String> vals = hf.getValue();
+					for (String s : vals) {
+						Log.d(TAG, "vals:" + s);
+					}
+				}
+			}
+
 		} catch (IOException e) {
 			//
-			//Catch IO Exceptions here, like UnknownHostException, so we can detect network failures, and send a notification
+			// Catch IO Exceptions here, like UnknownHostException, so we can
+			// detect network failures, and send a notification
 			//
 			Log.d(TAG, " Error occured in uploadMetaData! ");
 			e.printStackTrace();
 			responseCode = -1;
 			outStreamWriter = null;
-			
-			
+
 			// Use the handler to execute a Runnable on the
 			// main thread in order to have access to the
 			// UI elements.
@@ -1317,10 +1362,9 @@ public class PublishingUtils {
 				}
 			}, 0);
 
-			//forward it on!
+			// forward it on!
 			throw e;
 		}
-		
 
 		if (responseCode < 200 || responseCode >= 300) {
 			// The response code is 40X
@@ -1355,12 +1399,10 @@ public class PublishingUtils {
 					}
 				}, 0);
 
-				
 				throw new IOException(String.format(
 						"response code='%s' (code %d)" + " for %s",
 						urlConnection.getResponseMessage(), responseCode,
 						urlConnection.getURL()));
-				
 
 			}
 		}
@@ -1609,8 +1651,6 @@ public class PublishingUtils {
 		connection.setRequestProperty("Authorization", String.format(
 				"GoogleLogin auth=\"%s\"", clientLoginToken));
 		connection.setRequestProperty("GData-Version", "2");
-		// connection.setRequestProperty("X-GData-Client", res
-		// .getString(R.string.client_id));
 		connection.setRequestProperty("X-GData-Key", String.format("key=%s",
 				res.getString(R.string.youtube_dev_key)));
 		return connection;

@@ -129,7 +129,7 @@
 	<string name="menu_youtube">Publish to Youtube</string>
 	<string name="menu_import">Scan for Videos</string>
 
-	<string name="youtube_client_id">Vidiom</string>
+	<string name="youtube_client_id">Vidiom - your wandering eye</string>
 	<!-- dont publish this to GITHUB -->
 	<string name="youtube_dev_key">AI39si5BL8wZdY-eWOV596cKnPF-hjN6pJZU6-rqR0qHX4ULiLXY9E8yG1wkjDqaUoFg_7dxaFkquZ1xHoOFNsCLivgH1UICCw</string>
 	

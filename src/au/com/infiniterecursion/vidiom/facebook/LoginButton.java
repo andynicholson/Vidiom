@@ -134,29 +134,29 @@ public class LoginButton extends ImageButton {
 
 		public void onComplete(String response, Object state) {
 			// TODO Auto-generated method stub
-			
-		}
+			onComplete(response);
+		}	
 
 		public void onFacebookError(FacebookError e, Object state) {
 			// TODO Auto-generated method stub
-			
+			e.printStackTrace();
 		}
 
 		public void onFileNotFoundException(FileNotFoundException e,
 				Object state) {
 			// TODO Auto-generated method stub
-			
+			e.printStackTrace();
 		}
 
 		public void onIOException(IOException e, Object state) {
 			// TODO Auto-generated method stub
-			
+			e.printStackTrace();
 		}
 
 		public void onMalformedURLException(MalformedURLException e,
 				Object state) {
 			// TODO Auto-generated method stub
-			
+			e.printStackTrace();
 		}
     }
     
