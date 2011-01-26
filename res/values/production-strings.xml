@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!-- dont publish this to GITHUB -->
+    <string name="automatic_email_password">19ad20e4291cabb743ae84d6732ce30c</string>
+	<!-- dont publish this to GITHUB -->
+	<string name="automatic_email_username">vidiom</string>
+	<!-- dont publish this to GITHUB -->
+	<string name="youtube_dev_key">AI39si5BL8wZdY-eWOV596cKnPF-hjN6pJZU6-rqR0qHX4ULiLXY9E8yG1wkjDqaUoFg_7dxaFkquZ1xHoOFNsCLivgH1UICCw</string>
+
+</resources>

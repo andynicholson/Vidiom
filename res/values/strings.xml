@@ -15,23 +15,21 @@
 -->
 
 <resources>
-    <string name="auto_publishing_to_youtube_com">Auto publishing to youtube.com</string>
-    <string name="auto_publishing_to_facebook_com">Auto publishing to facebook.com</string>
-    <string name="auto_publishing_to_ftp_server">Auto publishing to FTP server</string>
-    <string name="auto_publishing_to_videobin_org">Auto publishing to videobin.org</string>
+ 	<!--  Twitter strings -->
     <string name="launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_">Launching Twitter authorisation. Come back and tweet after you have done this.</string>
     <string name="video_is_not_uploaded_yet_no_hosted_url_available_">Video is not uploaded yet. No hosted URL available.</string>
 	<string name="tweeted_ok">Tweeted video URL successfully</string>
 	<string name="tweeting_starting">Contacting twitter.com</string>
 
-	<!-- dont publish this to GITHUB -->
-	<string name="automatic_email_username">vidiom</string>
+	<!--  Email strings -->
 	<string name="automatic_email_from">noreply@vidiom.mobi</string>
-	<!-- dont publish this to GITHUB -->
-    <string name="automatic_email_password">19ad20e4291cabb743ae84d6732ce30c</string>
+	<string name="vidiom_automatic_email">Vidiom automatic email</string>
+	
+	
 
+	<!--  Notification words -->
+	
     <string name="url_of_hosted_video_is_">URL of  hosted video is  </string>
-    <string name="vidiom_automatic_email">Vidiom automatic email</string>
     <string name="uploaded_by_">Uploaded by Vidiom - your wandering eye : http://vidiom.net.au/ </string>
     <string name="upload_to_facebook_failed_">Upload to Facebook failed.</string>
     <string name="upload_to_facebook_succeeded_">Upload to Facebook succeeded.</string>
@@ -41,13 +39,17 @@
     <string name="upload_to_ftp_host_failed_">Upload to FTP host failed.</string>
     <string name="upload_to_youtube_host_succeeded_">Upload to Youtube succeeded.</string>
     <string name="upload_to_youtube_host_failed_">Upload to Youtube failed.</string>
-    
+    <string name="auto_publishing_to_youtube_com">Auto publishing to youtube.com</string>
+    <string name="auto_publishing_to_facebook_com">Auto publishing to facebook.com</string>
+    <string name="auto_publishing_to_ftp_server">Auto publishing to FTP server</string>
+    <string name="auto_publishing_to_videobin_org">Auto publishing to videobin.org</string>
 	<string name="starting_upload">Starting upload of</string>
 
+	<!--  SD card file paths and file names -->
 	<string name="rootSDcardFolder">/Vidiom</string>
 	<string name="defaultVideoFilenamePrefix">video</string>
 	
-
+	<!--  videobin.org details -->
     <string name="video_bin_API_api">api</string>
     <string name="video_bin_API_title">title</string>
     <string name="video_bin_API_description">description</string>
@@ -117,7 +119,7 @@
 	<string name="limits_reached">Either the maximum filesize for video, or maximum recording duration, was reached. You can set these in Preferences.</string>
 	 
 	<string name="uploadprogresstext">Uploading video in progress.</string>
-	<string name="no_videos_in_library">You have no videos in the library.</string>
+
 	
 	<string name="welcome">Welcome to Vidiom!\nUse the Menu key to start and stop video recording, set your Preferences and go to the Gallery.\nPlease set your email address in the Preferences menu to receive email notifications of your uploaded videos.</string>
 	<string name="welcome2">Please note, the video camera captures MP4 (H263/AMR-NB) video in Landscape orientation. To upload to Youtube, you must associate your google account with Youtube at http://youtube.com/.\nGet support at http://vidiom.mobi/</string>
@@ -136,10 +138,10 @@
 	<string name="menu_youtube">Publish to Youtube</string>
 	<string name="menu_import">Scan for Videos</string>
 
+	<!--  Youtube strings -->
 	<string name="youtube_client_id">Vidiom - your wandering eye</string>
-	<!-- dont publish this to GITHUB -->
-	<string name="youtube_dev_key">AI39si5BL8wZdY-eWOV596cKnPF-hjN6pJZU6-rqR0qHX4ULiLXY9E8yG1wkjDqaUoFg_7dxaFkquZ1xHoOFNsCLivgH1UICCw</string>
-	
+	<string name="no_email_account_for_youtube">Please set up a google.com email account with which to log into YouTube.</string>
+		
 
 	<!--  library menu -->
 	<string name="library_menu_delete">Delete video</string>
@@ -147,11 +149,11 @@
 	<string name="library_menu_play">Play video</string>
 	<string name="cant_show_video">Can not launch video player, sorry!.</string>
 	<string name="rename_video">Title/Description</string>
-	
 	<string name="menu_send_hosted_url_via_email">Email Hosted URL</string>
 	<string name="menu_launch_hosted_url">View Hosted URL</string>
 	<string name="menu_tweet">Tweet video URL</string>
-	<string name="no_email_account_for_youtube">Please set up a google.com email account with which to log into YouTube.</string>
+	
+	<string name="no_videos_in_library">You have no videos in the library.</string>
 	
 	<!--  Library list item  -->
 	<string name="text1intro">Filename : </string>
