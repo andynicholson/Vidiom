@@ -1,4 +1,4 @@
-Vidiom 0.6.8 - 21st January 2011
+Vidiom 0.6.9 - 26th January 2011 
 Video capture and web video publishing for Android devices.
 Author: Andrew Nicholson
 Copyright (C) 2011 Infinite Recursion Pty Ltd
@@ -43,8 +43,8 @@ Code included from Signpost - http://code.google.com/p/oauth-signpost/ & availab
 
 RELEASE LOG
 
-v0.6.9 - Released to Android Market on January XXX 2011 (Yogyakarta, Indonesia)
-	( Twitter integration and more library options incl. viewing hosted video URL and tweeting, Youtube publishing fixes )
+v0.6.9 - Released to Android Market on January 26th 2011 (Yogyakarta, Indonesia)
+	( Twitter integration and more library options incl. viewing hosted video URL and tweeting URL, Youtube publishing fixes )
 
 v0.6.8 - Released to Android Market on January 21st 2011 (Yogyakarta, Indonesia)
 	(Importing from sdcard fix, and UI recording time display)
