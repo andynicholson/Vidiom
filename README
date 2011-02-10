@@ -42,6 +42,8 @@ Code included from Signpost - http://code.google.com/p/oauth-signpost/ & availab
 
 
 RELEASE LOG
+v0.6.10 - Released to Android Market on Febuary 10th 2011 (Sydney, Australia)
+	( Minor fixes for camera handling )
 
 v0.6.9 - Released to Android Market on January 26th 2011 (Yogyakarta, Indonesia)
 	( Twitter integration and more library options incl. viewing hosted video URL and tweeting URL, Youtube publishing fixes )
