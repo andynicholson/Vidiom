@@ -583,7 +583,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		//
+		Log.d(TAG, "surfaceChanged");
+		//Check camera isnt null for some reason
+		if (camera == null) {
+			Log.e(TAG, "surfaceChanged: camera is null!");
+			return;
+		}
+		
 		if (previewRunning) {
 			camera.stopPreview();
 		}
@@ -622,7 +628,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-		//
+		//Create camera object
 		Log.d(TAG, "surfaceCreated!");
 		try {
 			camera = Camera.open();
@@ -650,7 +656,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	private void tryToStartRecording() {
-		if (canAccessSDCard && startRecording()) {
+		//If all the stars are aligned.. 
+		if (canAccessSDCard && previewRunning && startRecording()) {
 
 			recordingInMotion = true;
 
@@ -679,6 +686,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	public boolean startRecording() {
 
+		if (camera == null) {
+			Log.e(TAG, "startRecording: camera is null!");
+			return false;
+		}
+		
 		camera.unlock();
 
 		statusIndicator.setText("REC 00:00");
