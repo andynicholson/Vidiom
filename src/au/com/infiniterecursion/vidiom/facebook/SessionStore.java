@@ -17,16 +17,16 @@
 package au.com.infiniterecursion.vidiom.facebook;
 
 /*
- * Main Nibble Activity 
+ * Vidiom
  * 
  * AUTHORS:
  * 
  * Andy Nicholson
- * Andy Eager
+ 
  * 
  * 
- * 2010
- * Copyright NAK Factory Pty Ltd.
+ * 2011
+ * Copyright Infinite Recursion Pty Ltd
  */
 
 

@@ -141,6 +141,19 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
+	@Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.i(TAG," got result , calling into facebook authoriseCallback");
+        mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
+        
+        //show facebook dialog again
+        
+        showFacebookOptionsMenu();
+    }
+
+	
 	private class ImporterThread implements Runnable {
 
 		public void run() {
@@ -541,7 +554,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 						this);
 			}
 			// This launches the facebook upload , via a dialog.
-			askFacebookLogin();
+			showFacebookOptionsMenu();
 			break;
 
 		case MENU_ITEM_6:
@@ -836,7 +849,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
-	private void askFacebookLogin() {
+	private void showFacebookOptionsMenu() {
 
 		fb_dialog = new AlertDialog.Builder(this).setMessage(
 				R.string.request_facebook_login).setView(lb).setPositiveButton(
@@ -879,6 +892,12 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		.show();
 
+		//set the POST video button according to the session
+		fb_dialog.getButton(fb_dialog.BUTTON_POSITIVE).setEnabled(mainapp.getFacebook().isSessionValid());
+		
+		//set the logout button similarily, ie also needs to be logged in, to logout out.
+		fb_dialog.getButton(fb_dialog.BUTTON_NEGATIVE).setEnabled(mainapp.getFacebook().isSessionValid());
+		
 	}
 
 	@Override

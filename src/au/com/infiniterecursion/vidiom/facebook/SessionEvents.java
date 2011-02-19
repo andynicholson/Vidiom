@@ -17,16 +17,16 @@
 package au.com.infiniterecursion.vidiom.facebook;
 
 /*
- * Main Nibble Activity 
+ * Vidiom
  * 
  * AUTHORS:
  * 
  * Andy Nicholson
- * Andy Eager
+ 
  * 
  * 
- * 2010
- * Copyright NAK Factory Pty Ltd.
+ * 2011
+ * Copyright Infinite Recursion Pty Ltd
  */
 
 
@@ -39,6 +39,16 @@ public class SessionEvents {
     private static LinkedList<LogoutListener> mLogoutListeners = 
         new LinkedList<LogoutListener>();
 
+    /**
+	 * Clear all internal linked lists of their listeners.
+	 */
+	public static void resetListeners()  {
+		
+		mAuthListeners.clear();
+		mLogoutListeners.clear();
+		
+	}
+    
     /**
      * Associate the given listener with this Facebook object. The listener's
      * callback interface will be invoked when authentication events occur.

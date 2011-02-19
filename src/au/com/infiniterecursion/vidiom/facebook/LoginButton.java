@@ -25,6 +25,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
 import au.com.infiniterecursion.vidiom.facebook.SessionEvents.AuthListener;
 import au.com.infiniterecursion.vidiom.facebook.SessionEvents.LogoutListener;
@@ -72,6 +73,10 @@ public class LoginButton extends ImageButton {
                          R.drawable.login_button);
         drawableStateChanged();
         
+     
+      //initialise Session Events listeners
+		SessionEvents.resetListeners();
+		
         SessionEvents.addAuthListener(mSessionListener);
         SessionEvents.addLogoutListener(mSessionListener);
         
@@ -166,6 +171,13 @@ public class LoginButton extends ImageButton {
             setImageResource(R.drawable.logout_button);
             SessionStore.save(mFb, getContext());
             Log.d(TAG, "Logged into FB successfully, saving session.");
+            
+            mAuth_activity.runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(mAuth_activity, "Logged into Facebook successfully", Toast.LENGTH_LONG).show();
+				}
+				
+			});
         }
 
         public void onAuthFail(String error) {
@@ -179,6 +191,12 @@ public class LoginButton extends ImageButton {
             SessionStore.clear(getContext());
             setImageResource(R.drawable.login_button);
             Log.d(TAG, "Logged out of FB successfully, clearing session.");
+            mAuth_activity.runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(mAuth_activity, "Logged out of Facebook successfully", Toast.LENGTH_LONG).show();
+				}
+				
+			});
         }
     }
     

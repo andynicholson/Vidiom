@@ -49,7 +49,10 @@ public class VidiomApp extends Application {
         mFacebook = new Facebook(FACEBOOK_APP_ID);
         mAsyncRunner = new AsyncFacebookRunner(mFacebook);
 		
-		SessionStore.restore(mFacebook, this);
+        boolean session_valid = SessionStore.restore(mFacebook, this);
+        Log.i(TAG, "Session for facebook restored . Is valid ?" + session_valid);
+ 
+        
 		isUploading = false;
     }
 
