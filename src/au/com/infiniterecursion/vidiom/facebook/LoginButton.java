@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiom.activity.LibraryActivity;
 import au.com.infiniterecursion.vidiom.facebook.SessionEvents.AuthListener;
 import au.com.infiniterecursion.vidiom.facebook.SessionEvents.LogoutListener;
 
@@ -43,7 +44,7 @@ public class LoginButton extends ImageButton {
     private SessionListener mSessionListener = new SessionListener();
     private String[] mPermissions;
     private static String TAG ="RoboticEye-Facebook";
-    private Activity mAuth_activity;
+    private LibraryActivity mAuth_activity;
     
     
     public LoginButton(Context context) {
@@ -64,7 +65,7 @@ public class LoginButton extends ImageButton {
         mFb = fb;
         mPermissions = permissions;
         mHandler = new Handler();
-        mAuth_activity = auth_activity;
+        mAuth_activity = (LibraryActivity) auth_activity;
         
         setBackgroundColor(Color.TRANSPARENT);
         setAdjustViewBounds(true);
@@ -178,6 +179,7 @@ public class LoginButton extends ImageButton {
 				}
 				
 			});
+        	mAuth_activity.resetFacebookMenuButtons();
         }
 
         public void onAuthFail(String error) {
@@ -197,6 +199,7 @@ public class LoginButton extends ImageButton {
 				}
 				
 			});
+            mAuth_activity.resetFacebookMenuButtons();
         }
     }
     

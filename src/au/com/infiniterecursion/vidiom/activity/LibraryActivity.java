@@ -122,6 +122,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private Resources res;
 
 	private boolean importPreference;
+	private boolean got_facebook_sso_callback;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -139,18 +140,24 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		thread_ftp = null;
 		thread_youtube = null;
 
+		got_facebook_sso_callback = false;
 	}
 
+	/**
+	 * 
+	 * We get this callback after the facebook SSO 
+	 * 
+	 */
+	
 	@Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        
         Log.i(TAG," got result , calling into facebook authoriseCallback");
         mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
-        
-        //show facebook dialog again
-        
-        showFacebookOptionsMenu();
+        got_facebook_sso_callback = true;
+      
     }
 
 	
@@ -275,6 +282,17 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			ImporterThread importer = new ImporterThread();
 			importer.run();
 		}
+		
+		if (got_facebook_sso_callback) {
+			got_facebook_sso_callback = false;
+			//show facebook dialog again
+	        Log.d(TAG,"We have been called back by fb sso, showing dialog");
+	        showFacebookOptionsMenu();
+	        
+		}
+		
+		
+		
 	}
 
 	private void makeCursorAndAdapter() {
@@ -850,7 +868,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	}
 
 	private void showFacebookOptionsMenu() {
-
+		Log.d(TAG,"Showing facebook menu alert dialog");
 		fb_dialog = new AlertDialog.Builder(this).setMessage(
 				R.string.request_facebook_login).setView(lb).setPositiveButton(
 				R.string.videopost_ok, new DialogInterface.OnClickListener() {
@@ -892,14 +910,20 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		.show();
 
-		//set the POST video button according to the session
-		fb_dialog.getButton(fb_dialog.BUTTON_POSITIVE).setEnabled(mainapp.getFacebook().isSessionValid());
-		
-		//set the logout button similarily, ie also needs to be logged in, to logout out.
-		fb_dialog.getButton(fb_dialog.BUTTON_NEGATIVE).setEnabled(mainapp.getFacebook().isSessionValid());
+		resetFacebookMenuButtons();
 		
 	}
 
+	public void resetFacebookMenuButtons() {
+		if (fb_dialog != null && mainapp.getFacebook() != null) {
+			//set the POST video button according to the session
+			fb_dialog.getButton(fb_dialog.BUTTON_POSITIVE).setEnabled(mainapp.getFacebook().isSessionValid());
+		
+			//set the logout button similarily, ie also needs to be logged in, to logout out.
+			fb_dialog.getButton(fb_dialog.BUTTON_NEGATIVE).setEnabled(mainapp.getFacebook().isSessionValid());
+		}
+	}
+	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		super.onPrepareOptionsMenu(menu);
