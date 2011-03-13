@@ -72,7 +72,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		VidiomActivity, MediaRecorder.OnInfoListener {
 
 	private static final String TAG = "RoboticEye";
-	private static final String VERSION = "0.6.11";
+	private static final String VERSION = "0.6.12";
 
 	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;
@@ -650,9 +650,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		//
 		Log.d(TAG, "surfaceDestroyed!");
-		camera.stopPreview();
 		previewRunning = false;
-		camera.release();
+		if (camera != null) {
+			camera.stopPreview();
+			camera.release();
+		} else {
+			Log.e(TAG, "surfaceDestroyed: camera is null!");
+		}
 	}
 
 	private void tryToStartRecording() {
@@ -665,14 +669,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			new AlertDialog.Builder(MainActivity.this).setMessage(
 					R.string.camera_failed).setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
-
-						}
-					})
-
-			.setNegativeButton(R.string.cancel,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,
 								int whichButton) {
@@ -691,7 +687,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 		
-		camera.unlock();
+		try {
+			camera.unlock();
+		} catch(RuntimeException e) {
+			e.printStackTrace();
+			camera = null;
+			Log.e(TAG, "startRecording: unlock failed!");
+			return false;
+		}
+		
+		
 
 		statusIndicator.setText("REC 00:00");
 

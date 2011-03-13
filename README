@@ -42,7 +42,10 @@ Code included from Signpost - http://code.google.com/p/oauth-signpost/ & availab
 
 
 RELEASE LOG
-v0.6.11 - Released to Android Market on Febuary 10th 2011 (Sydney, Australia)
+v0.6.12 - Released to Android Market on March 13th 2011 (Sydney, Australia)
+	( Fixes for camera handling issues, and out of memory conditions )
+
+v0.6.11 - Released to Android Market on Febuary 19th 2011 (Sydney, Australia)
 	( Fixes for Facebook single-sign on )
 
 v0.6.10 - Released to Android Market on Febuary 10th 2011 (Sydney, Australia)

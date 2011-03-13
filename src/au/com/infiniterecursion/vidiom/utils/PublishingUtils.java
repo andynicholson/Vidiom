@@ -162,7 +162,9 @@ public class PublishingUtils {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				// Do background task.
-
+				// Track errors
+				boolean failed = false;
+				
 				Log.i(TAG, "Upload starting");
 				// Initialising REST API video.upload parameters
 				Bundle params = new Bundle();
@@ -179,23 +181,29 @@ public class PublishingUtils {
 				// Reading input file
 				try {
 					File videoFile = new File(path);
-					byte[] data = new byte[(int) videoFile.length()];
-					InputStream is = new FileInputStream(videoFile);
-					is.read(data);
-					params.putByteArray(videoFile.getName(), data);
+					byte[] data = null;
+					try {
+						data = new byte[(int) videoFile.length()];
+					} catch (OutOfMemoryError e) {
+						failed = true;
+					}
+					if (data != null) {
+						InputStream is = new FileInputStream(videoFile);
+						is.read(data);
+						params.putByteArray(videoFile.getName(), data);
+					}
 				} catch (Exception ex) {
 					Log.e(TAG, "Cannot read video file :", ex);
 				}
 
 				// Sending POST request to Facebook
 				String response = null;
-
-				// Track errors
-				boolean failed = false;
 				String url = "https://api-video.facebook.com/restserver.php";
 
 				try {
-					response = Util.openUrl(url, "POST", params);
+					if (!failed) {
+						response = Util.openUrl(url, "POST", params);
+					}
 					// SessionEvents.onUploadComplete(response);
 				} catch (FileNotFoundException e) {
 					// SessionEvents.onFileNotFoundException(e);
@@ -207,6 +215,9 @@ public class PublishingUtils {
 					e.printStackTrace();
 				} catch (IOException e) {
 					// SessionEvents.onIOException(e);
+					failed = true;
+					e.printStackTrace();
+				} catch (OutOfMemoryError e) {
 					failed = true;
 					e.printStackTrace();
 				}
