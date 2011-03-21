@@ -17,3 +17,5 @@ TODO
 6. Show in Gallery, and be able to upload, already recorded 3GP/MP4 files on sdcard. -- DONE
 
 7. Twitter reposting (using URLs from youtube/facebook/videobin.org etc)
+	
+8. Remove twitter app id,secret from source & github, put in unchecked in XML!
