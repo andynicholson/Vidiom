@@ -714,7 +714,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				+ ":" + filenameConventionPrefence + ":"
 				+ maxFilesizePreference);
 
-		Integer user_duration = Integer.parseInt(maxDurationPreference);
+		Integer user_duration = 0;
+		Integer user_filesize = 0;
+		
+		try {
+			user_duration = Integer.parseInt(maxDurationPreference);
+		} catch (NumberFormatException nfe) {
+			//whatever
+			user_duration = 0;
+		}
+			
+		
 		// preferences for user in seconds.
 		maxDurationInMs = user_duration * 1000;
 		mediaRecorder.setMaxDuration(maxDurationInMs);
@@ -735,7 +745,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
 
-		Integer user_filesize = Integer.parseInt(maxFilesizePreference);
+		try {
+			user_filesize = Integer.parseInt(maxFilesizePreference);
+		} catch (NumberFormatException nfe) {
+			//whatever
+			user_filesize = 0;
+		}
+	
 		// preferences for user in KB.
 		maxFileSizeInBytes = user_filesize * 1024;
 		mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
@@ -754,14 +770,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return true;
 			
 		} catch (IllegalStateException e) {
-			Log.e(TAG, "Illegal State Exception" + e.getMessage());
+			Log.e(TAG, "Illegal State Exception:" + e.getMessage());
 			e.printStackTrace();
 			return false;
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "IOException:" + e.getMessage());
 			e.printStackTrace();
 			return false;
+		} catch (RuntimeException re) {
+			Log.e(TAG, "RuntimeException:" + re.getMessage());
+			re.printStackTrace();
+			return false;
 		}
+		
 	}
 
 	public void stopRecording() {
