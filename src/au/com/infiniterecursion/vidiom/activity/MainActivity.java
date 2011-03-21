@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
@@ -72,7 +73,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		VidiomActivity, MediaRecorder.OnInfoListener {
 
 	private static final String TAG = "RoboticEye";
-	private static final String VERSION = "0.6.12";
 
 	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;
@@ -122,7 +122,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private boolean facebookPreference;
 	private boolean youtubePreference;
 	private boolean twitterPreference;
-	
+
 	private String emailPreference;
 	private String filenameConventionPrefence;
 	private String maxDurationPreference;
@@ -132,9 +132,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private Handler handler;
 	// Database
 	private DBUtils db_utils;
-	//Publishing utilities
+	// Publishing utilities
 	private PublishingUtils pu;
-	//Android preferences
+	// Android preferences
 	private SharedPreferences prefs;
 
 	// Uploading threads
@@ -151,30 +151,31 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	protected TextView statusIndicator;
 
 	private Resources res;
-	
-	//UI threaded updater infrastructure
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+	// UI threaded updater infrastructure
+	private final ScheduledExecutorService scheduler = Executors
+			.newScheduledThreadPool(1);
 	private int seconds_recording = 0;
 	ScheduledFuture<?> ui_Incrementer_handler;
-	
-	 final Runnable ui_Incrementer = new Runnable() {
-         public void run() { 
-        	 seconds_recording++;
-        	 Log.d(TAG, " Seconds recording are " + seconds_recording);
-        	 
-        	 int minutes = seconds_recording / 60;
-        	 int seconds = seconds_recording % 60;
-        	 final String time_format = String.format("%02d", minutes) + ":" + String.format("%02d", seconds);
-        	 handler.postDelayed(new Runnable() {
-					public void run() {
-						 statusIndicator.setText("REC " + time_format);
-					}
-        	 },0);
-        	
-         }
-     };
 
-	
+	final Runnable ui_Incrementer = new Runnable() {
+		public void run() {
+			seconds_recording++;
+			Log.d(TAG, " Seconds recording are " + seconds_recording);
+
+			int minutes = seconds_recording / 60;
+			int seconds = seconds_recording % 60;
+			final String time_format = String.format("%02d", minutes) + ":"
+					+ String.format("%02d", seconds);
+			handler.postDelayed(new Runnable() {
+				public void run() {
+					statusIndicator.setText("REC " + time_format);
+				}
+			}, 0);
+
+		}
+	};
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -269,6 +270,28 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
+	public int getVersionCode() {
+		int v = 0;
+		try {
+			v = getPackageManager().getPackageInfo(
+					getApplicationInfo().packageName, 0).versionCode;
+		} catch (NameNotFoundException e) {
+			// Huh? Really?
+		}
+		return v;
+	}
+
+	public String getVersionName() {
+		String name = null;
+		try {
+			name = getPackageManager().getPackageInfo(
+					getApplicationInfo().packageName, 0).versionName;
+		} catch (NameNotFoundException e) {
+			// Huh? Really?
+		}
+		return name;
+	}
+
 	private void checkIfFirstTimeRunAndWelcome() {
 		// 
 		boolean first_time = prefs.getBoolean("firstTimeRun", true);
@@ -337,7 +360,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		emailPreference = prefs.getString("emailPreference", null);
 		youtubePreference = prefs.getBoolean("youtubePreference", false);
 		twitterPreference = prefs.getBoolean("twitterPreference", false);
-		
+
 		// Filename style, duration, max filesize
 
 		filenameConventionPrefence = prefs.getString(
@@ -470,7 +493,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			// ABOUT
 			String mesg = getString(R.string.about_this);
 			// find&replace VERSION
-			mesg = mesg.replace("VERSION", "version " + VERSION);
+			mesg = mesg.replace("VERSION", "version " + getVersionName());
 
 			final SpannableString s = new SpannableString(mesg);
 			Linkify.addLinks(s, Linkify.ALL);
@@ -493,19 +516,25 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 
-									
-									AlertDialog licenses = new AlertDialog.Builder(MainActivity.this).setMessage(
-											s2).setPositiveButton(R.string.yes,
-											new DialogInterface.OnClickListener() {
-												public void onClick(DialogInterface dialog,
-														int whichButton) {
+									AlertDialog licenses = new AlertDialog.Builder(
+											MainActivity.this)
+											.setMessage(s2)
+											.setPositiveButton(
+													R.string.yes,
+													new DialogInterface.OnClickListener() {
+														public void onClick(
+																DialogInterface dialog,
+																int whichButton) {
 
-												}
-											}).show();
-									
-									//makes links work
-									((TextView)licenses.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-									
+														}
+													}).show();
+
+									// makes links work
+									((TextView) licenses
+											.findViewById(android.R.id.message))
+											.setMovementMethod(LinkMovementMethod
+													.getInstance());
+
 								}
 							}).show();
 
@@ -584,22 +613,22 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		Log.d(TAG, "surfaceChanged");
-		//Check camera isnt null for some reason
+		// Check camera isnt null for some reason
 		if (camera == null) {
 			Log.e(TAG, "surfaceChanged: camera is null!");
 			return;
 		}
-		
+
 		if (previewRunning) {
 			camera.stopPreview();
 		}
-		//Set parameters
+		// Set parameters
 		Camera.Parameters p = camera.getParameters();
 		Log.d(TAG, " format width height are : " + format + ":" + width + ":"
 				+ height);
 
-		//XXX should query supported capabilities first.
-		
+		// XXX should query supported capabilities first.
+
 		// 320, 240 seems only possible resolution
 		// and it seems the preview size must be the same as the video size
 		//
@@ -615,8 +644,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			e.printStackTrace();
 			Log.e(TAG, " setParameters failed! " + e.getMessage());
 		}
-			
-		
+
 		try {
 			camera.setPreviewDisplay(holder);
 			camera.startPreview();
@@ -628,15 +656,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-		//Create camera object
+		// Create camera object
 		Log.d(TAG, "surfaceCreated!");
 		try {
 			camera = Camera.open();
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			e.printStackTrace();
 			camera = null;
 		}
-		
+
 		if (camera != null) {
 			Camera.Parameters params = camera.getParameters();
 			camera.setParameters(params);
@@ -660,7 +688,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	private void tryToStartRecording() {
-		//If all the stars are aligned.. 
+		// If all the stars are aligned..
 		if (canAccessSDCard && previewRunning && startRecording()) {
 
 			recordingInMotion = true;
@@ -686,17 +714,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			Log.e(TAG, "startRecording: camera is null!");
 			return false;
 		}
-		
+
 		try {
 			camera.unlock();
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			e.printStackTrace();
 			camera = null;
 			Log.e(TAG, "startRecording: unlock failed!");
 			return false;
 		}
-		
-		
 
 		statusIndicator.setText("REC 00:00");
 
@@ -716,15 +742,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		Integer user_duration = 0;
 		Integer user_filesize = 0;
-		
+
 		try {
 			user_duration = Integer.parseInt(maxDurationPreference);
 		} catch (NumberFormatException nfe) {
-			//whatever
+			// whatever
 			user_duration = 0;
 		}
-			
-		
+
 		// preferences for user in seconds.
 		maxDurationInMs = user_duration * 1000;
 		mediaRecorder.setMaxDuration(maxDurationInMs);
@@ -748,10 +773,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		try {
 			user_filesize = Integer.parseInt(maxFilesizePreference);
 		} catch (NumberFormatException nfe) {
-			//whatever
+			// whatever
 			user_filesize = 0;
 		}
-	
+
 		// preferences for user in KB.
 		maxFileSizeInBytes = user_filesize * 1024;
 		mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
@@ -763,12 +788,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			startTimeinMillis = System.currentTimeMillis();
 
-			//start UI updater thread
+			// start UI updater thread
 			seconds_recording = 0;
-			ui_Incrementer_handler = scheduler.scheduleAtFixedRate(ui_Incrementer, 1, 1, TimeUnit.SECONDS);
+			ui_Incrementer_handler = scheduler.scheduleAtFixedRate(
+					ui_Incrementer, 1, 1, TimeUnit.SECONDS);
 
 			return true;
-			
+
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Illegal State Exception:" + e.getMessage());
 			e.printStackTrace();
@@ -782,7 +808,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			re.printStackTrace();
 			return false;
 		}
-		
+
 	}
 
 	public void stopRecording() {
@@ -793,21 +819,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		endTimeinMillis = System.currentTimeMillis();
 
-		//Shutdown the threads
+		// Shutdown the threads
 		scheduler.schedule(new Runnable() {
-            public void run() { 
-            //cancel UI updater
-            ui_Incrementer_handler.cancel(true);
-            //reset the indicator
-            handler.postDelayed(new Runnable() {
-				public void run() {
-					 statusIndicator.setText("STOP");
-				}
-            },500);
-            
-            } }, 0, TimeUnit.SECONDS);
+			public void run() {
+				// cancel UI updater
+				ui_Incrementer_handler.cancel(true);
+				// reset the indicator
+				handler.postDelayed(new Runnable() {
+					public void run() {
+						statusIndicator.setText("STOP");
+					}
+				}, 500);
 
-		
+			}
+		}, 0, TimeUnit.SECONDS);
+
 		Log.d(TAG, "Recording time of video is "
 				+ ((endTimeinMillis - startTimeinMillis) / 1000)
 				+ " seconds. filename " + latestVideoFile_filename + " : path "
@@ -817,8 +843,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		title = null;
 		description = null;
 
-		
-		
 		showTitleDescriptionDialog();
 
 	}
@@ -847,9 +871,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Button cbutton = (Button) d.findViewById(R.id.button2Cancel);
 		cbutton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				//delete the file
+				// delete the file
 				pu.deleteVideo(latestVideoFile_absolutepath);
-				
+
 				d.dismiss();
 			}
 		});
@@ -869,7 +893,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 								latestVideoFile_absolutepath,
 								latestVideoFile_filename,
 								(int) ((endTimeinMillis - startTimeinMillis) / 1000),
-								//XXX hardcoded vid & audio codecs
+								// XXX hardcoded vid & audio codecs
 								"h263;amr-nb", title, description);
 
 				// If ID > 0, then new record in DB was successfully created
@@ -937,7 +961,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 						.toString(latestsdrecord_id) });
 
 		if (videobinPreference) {
-			
+
 			runOnUiThread(new Runnable() {
 				public void run() {
 					Toast.makeText(MainActivity.this,
@@ -945,7 +969,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 							Toast.LENGTH_LONG).show();
 				}
 			});
-			
+
 			threadVB = pu.videoUploadToVideoBin(this, handler,
 					latestVideoFile_absolutepath, strs[0], strs[1] + "\n"
 							+ getString(R.string.uploaded_by_),
@@ -953,8 +977,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 
 		if (fTPPreference) {
-			
-			
+
 			runOnUiThread(new Runnable() {
 				public void run() {
 					Toast.makeText(MainActivity.this,
@@ -962,7 +985,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 							Toast.LENGTH_LONG).show();
 				}
 			});
-			
+
 			threadFTP = pu.videoUploadToFTPserver(this, handler,
 					latestVideoFile_filename, latestVideoFile_absolutepath,
 					emailPreference, latestsdrecord_id);
@@ -970,12 +993,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// facebook auto publishing
 		if (facebookPreference) {
-			
-			
+
 			// get title and description for video upload to FB
 			if (mainapp.getFacebook() != null
 					&& mainapp.getFacebook().isSessionValid()) {
-				
+
 				runOnUiThread(new Runnable() {
 					public void run() {
 						Toast.makeText(MainActivity.this,
@@ -983,7 +1005,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 								Toast.LENGTH_LONG).show();
 					}
 				});
-				
+
 				threadFB = pu.videoUploadToFacebook(this, handler, mainapp
 						.getFacebook(), latestVideoFile_absolutepath, strs[0],
 						strs[1] + "\n" + getString(R.string.uploaded_by_),
@@ -1009,7 +1031,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				Log.d(TAG, "Using account name for youtube upload .. "
 						+ possibleEmail);
 				// This launches the youtube upload process
-				
+
 				runOnUiThread(new Runnable() {
 					public void run() {
 						Toast.makeText(MainActivity.this,
@@ -1017,7 +1039,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 								Toast.LENGTH_LONG).show();
 					}
 				});
-				
+
 				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
 						possibleEmail, latestVideoFile_absolutepath, handler,
 						emailPreference, latestsdrecord_id);
@@ -1025,8 +1047,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		}
 
-
-		
 		// Leave as last
 		if (autoEmailPreference) {
 			pu.launchEmailIntentWithCurrentVideo(this,
@@ -1050,33 +1070,41 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public void finishedUploading(boolean success) {
 		// not uploading anymore.
 
-		//Auto twittering.
+		// Auto twittering.
 		//  
 		if (twitterPreference && success) {
-			
+
 			new Thread(new Runnable() {
 				public void run() {
-					
-					//Check there is a hosted URL for a start..
-					String hosted_url_to_tweet = db_utils.getHostedURLFromID(new String[] { Long
-							.toString(latestsdrecord_id) });
-					Log.d(TAG, " checking " + hosted_url_to_tweet + " in auto twitter publishing");
-					
-					if (hosted_url_to_tweet != null) { 
-						
-						//Check there is a valid twitter OAuth tokens.
-						String twitterToken = prefs.getString("twitterToken",null);
-						String twitterTokenSecret = prefs.getString("twitterTokenSecret",null);
-						
+
+					// Check there is a hosted URL for a start..
+					String hosted_url_to_tweet = db_utils
+							.getHostedURLFromID(new String[] { Long
+									.toString(latestsdrecord_id) });
+					Log.d(TAG, " checking " + hosted_url_to_tweet
+							+ " in auto twitter publishing");
+
+					if (hosted_url_to_tweet != null) {
+
+						// Check there is a valid twitter OAuth tokens.
+						String twitterToken = prefs.getString("twitterToken",
+								null);
+						String twitterTokenSecret = prefs.getString(
+								"twitterTokenSecret", null);
+
 						if (twitterToken != null && twitterTokenSecret != null) {
-							
-							//Ok, now we can tweet this URL
-							AccessToken a = new AccessToken(twitterToken, twitterTokenSecret);
-							Twitter twitter = new TwitterFactory().getInstance();
-							twitter.setOAuthConsumer(TwitterOAuthActivity.consumerKey, TwitterOAuthActivity.consumerSecret);
+
+							// Ok, now we can tweet this URL
+							AccessToken a = new AccessToken(twitterToken,
+									twitterTokenSecret);
+							Twitter twitter = new TwitterFactory()
+									.getInstance();
+							twitter.setOAuthConsumer(
+									TwitterOAuthActivity.consumerKey,
+									TwitterOAuthActivity.consumerSecret);
 							twitter.setOAuthAccessToken(a);
-							
-							String status = "New video:"+hosted_url_to_tweet;
+
+							String status = "New video:" + hosted_url_to_tweet;
 							try {
 								twitter.updateStatus(status);
 								runOnUiThread(new Runnable() {
@@ -1089,18 +1117,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 							} catch (TwitterException e) {
 								// 
 								e.printStackTrace();
-								Log.e(TAG, "Auto twittering failed " + e.getMessage());
+								Log.e(TAG, "Auto twittering failed "
+										+ e.getMessage());
 							}
 						}
-						
+
 					}
-					
+
 				}
 			}).start();
-			
+
 		}
-				
-		
+
 		mainapp.setNotUploading();
 	}
 
@@ -1126,8 +1154,4 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	}
 
-	
-	
-	
-	
 }
