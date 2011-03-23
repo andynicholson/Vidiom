@@ -88,7 +88,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private static final int MENU_ITEM_5 = MENU_ITEM_4 + 1;
 	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
-	private static final int MENU_ITEM_8 = MENU_ITEM_7 + 1;
 	
 	private static final int NOTIFICATION_ID = 1;
 
@@ -474,10 +473,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
 				R.string.menu_library);
 		menu_library.setIcon(R.drawable.business48);
-		
-		MenuItem menu_vg = menu.add(0, MENU_ITEM_8, 0,
-				R.string.menu_library);
-		menu_vg.setIcon(R.drawable.business48);
 		
 	}
 
