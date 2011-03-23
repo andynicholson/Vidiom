@@ -12,13 +12,13 @@ package au.com.infiniterecursion.vidiom.activity;
  * http://www.infiniterecursion.com.au
  */
 
-public abstract interface VidiomActivity  {
-	
+public abstract interface VidiomActivity {
+
 	public abstract boolean isUploading();
-	
+
 	public abstract void startedUploading();
-	
+
 	public abstract void finishedUploading(boolean success);
-	
+
 	public void createNotification(String notification_text);
 }

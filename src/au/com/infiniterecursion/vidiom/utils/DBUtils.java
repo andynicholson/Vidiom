@@ -76,8 +76,7 @@ public class DBUtils {
 			Log.v(TAG, "getStats : " + count + " sdrecords");
 		}
 
-		count_sql = "SELECT count(*) FROM "
-			+ DatabaseHelper.HOST_TABLE_NAME;
+		count_sql = "SELECT count(*) FROM " + DatabaseHelper.HOST_TABLE_NAME;
 
 		stats_cursor = generic_write_db.rawQuery(count_sql, null);
 
@@ -87,7 +86,6 @@ public class DBUtils {
 			Log.v(TAG, "getStats : " + count + " hosts");
 		}
 
-		
 		stats_cursor.close();
 		close();
 
@@ -132,59 +130,66 @@ public class DBUtils {
 
 	}
 
-	public long updateTitleAndDescription(String title, String description, String[] sdrecord_id) {
+	public long updateTitleAndDescription(String title, String description,
+			String[] sdrecord_id) {
 		genericWriteOpen();
 
-		Log.v(TAG, "updateTitleAndDescription called .. "
-				+ title + ":" + description);
-		
+		Log.v(TAG, "updateTitleAndDescription called .. " + title + ":"
+				+ description);
+
 		ContentValues vals = new ContentValues();
 		vals.put(DatabaseHelper.SDFileRecord.TITLE, title);
 		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION, description);
-		
-		long rez = generic_write_db.update(DatabaseHelper.SDFILERECORD_TABLE_NAME, vals, DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
-		Log.v(TAG, "updateTitleAndDescription returning  "
-				+ rez);
+
+		long rez = generic_write_db.update(
+				DatabaseHelper.SDFILERECORD_TABLE_NAME, vals,
+				DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+		Log.v(TAG, "updateTitleAndDescription returning  " + rez);
 		close();
-		
+
 		return rez;
 	}
-	
+
 	public boolean checkFilePathInDB(String[] filePath) {
-		
+
 		boolean rez = false;
-		
+
 		genericWriteOpen();
-		
-		Cursor strs = generic_write_db.rawQuery("SELECT count(*) FROM " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE " + DatabaseHelper.SDFileRecord.FILEPATH + " = ?", filePath);
-		
-		if (strs.moveToFirst() )  {
+
+		Cursor strs = generic_write_db.rawQuery("SELECT count(*) FROM "
+				+ DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE "
+				+ DatabaseHelper.SDFileRecord.FILEPATH + " = ?", filePath);
+
+		if (strs.moveToFirst()) {
 			int count = strs.getInt(0);
 			if (count > 0) {
 				rez = true;
 			}
-		} 
-		
+		}
+
 		strs.close();
-		
+
 		close();
-		
+
 		return rez;
-		
+
 	}
-	
+
 	public String[] getTitleAndDescriptionFromID(String[] sdrecord_id) {
 		String[] rez = new String[2];
-		
+
 		genericWriteOpen();
-		
-		Cursor strs = generic_write_db.rawQuery("SELECT  " + DatabaseHelper.SDFileRecord.TITLE + " , " 
-				+ DatabaseHelper.SDFileRecord.DESCRIPTION + " FROM " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE " + DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
-		
-		if (strs.moveToFirst() )  {
+
+		Cursor strs = generic_write_db.rawQuery("SELECT  "
+				+ DatabaseHelper.SDFileRecord.TITLE + " , "
+				+ DatabaseHelper.SDFileRecord.DESCRIPTION + " FROM "
+				+ DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE "
+				+ DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+
+		if (strs.moveToFirst()) {
 			String title = strs.getString(0);
 			String descr = strs.getString(1);
-			
+
 			rez[0] = title;
 			rez[1] = descr;
 		} else {
@@ -193,30 +198,33 @@ public class DBUtils {
 		}
 		strs.close();
 		close();
-		
+
 		return rez;
 	}
-	
+
 	public String getHostedURLFromID(String[] sdrecord_id) {
 		String rez = null;
-		
+
 		genericWriteOpen();
-		
-		Cursor strs = generic_write_db.rawQuery("SELECT  " + DatabaseHelper.HostDetails.HOST_VIDEO_URL 
-				+ " FROM " + DatabaseHelper.HOST_TABLE_NAME + " h, " + DatabaseHelper.SDFILERECORD_TABLE_NAME + " s WHERE " 
-				+ "h." + DatabaseHelper.HostDetails.HOST_SDRECORD_ID + "=s."+DatabaseHelper.SDFileRecord._ID + " AND " + "s." + DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
-		
-		if (strs.moveToFirst() )  {
+
+		Cursor strs = generic_write_db.rawQuery("SELECT  "
+				+ DatabaseHelper.HostDetails.HOST_VIDEO_URL + " FROM "
+				+ DatabaseHelper.HOST_TABLE_NAME + " h, "
+				+ DatabaseHelper.SDFILERECORD_TABLE_NAME + " s WHERE " + "h."
+				+ DatabaseHelper.HostDetails.HOST_SDRECORD_ID + "=s."
+				+ DatabaseHelper.SDFileRecord._ID + " AND " + "s."
+				+ DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
+
+		if (strs.moveToFirst()) {
 			rez = strs.getString(0);
-		} 
-		
+		}
+
 		strs.close();
 		close();
-		
+
 		return rez;
 	}
-	
-	
+
 	/*
 	 * Returns the ID of the new record, or -1 if error
 	 */
@@ -236,8 +244,8 @@ public class DBUtils {
 				video_audio_codecstr);
 		vals.put(DatabaseHelper.SDFileRecord.TITLE, title);
 		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION, description);
-		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME,
-				(Long) System.currentTimeMillis());
+		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME, (Long) System
+				.currentTimeMillis());
 
 		long rez = generic_write_db.insert(
 				DatabaseHelper.SDFILERECORD_TABLE_NAME,

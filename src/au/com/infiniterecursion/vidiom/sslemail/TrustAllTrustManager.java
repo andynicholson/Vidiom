@@ -24,8 +24,9 @@ public class TrustAllTrustManager implements X509TrustManager {
 
 	public void checkServerTrusted(X509Certificate[] chain, String authType)
 			throws CertificateException {
-		
-		Log.d(TAG, " in checkServerTrusted! \n " + chain.toString() + " \n " + authType);
-		
+
+		Log.d(TAG, " in checkServerTrusted! \n " + chain.toString() + " \n "
+				+ authType);
+
 	}
 }

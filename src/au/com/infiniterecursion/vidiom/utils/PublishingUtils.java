@@ -164,7 +164,7 @@ public class PublishingUtils {
 				// Do background task.
 				// Track errors
 				boolean failed = false;
-				
+
 				Log.i(TAG, "Upload starting");
 				// Initialising REST API video.upload parameters
 				Bundle params = new Bundle();
@@ -183,11 +183,11 @@ public class PublishingUtils {
 					File videoFile = new File(path);
 					byte[] data = null;
 					try {
-						
-						//XXX 
+
+						// XXX
 						// SPLIT THIS INTO 5K chunks!!
-						//XXX
-						
+						// XXX
+
 						data = new byte[(int) videoFile.length()];
 					} catch (OutOfMemoryError e) {
 						failed = true;
@@ -1327,7 +1327,7 @@ public class PublishingUtils {
 
 			responseCode = urlConnection.getResponseCode();
 
-			//ERROR LOGGING
+			// ERROR LOGGING
 			InputStream is = urlConnection.getErrorStream();
 			if (is != null) {
 				Log.e(TAG, " Error stream from Youtube available!");

@@ -5,7 +5,6 @@ import android.preference.PreferenceActivity;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.R;
 
-
 /*
  * Preferences 
  * 
@@ -18,19 +17,16 @@ import au.com.infiniterecursion.vidiom.R;
  * http://www.infiniterecursion.com.au
  */
 
-
 public class PreferencesActivity extends PreferenceActivity {
 
 	private static final String TAG = "RoboticEye-PreferencesActivity";
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
-		
+
 		Log.d(TAG, " preferences onCreate");
-		
-		
-		
+
 	}
 }
