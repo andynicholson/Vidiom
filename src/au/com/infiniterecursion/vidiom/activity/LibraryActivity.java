@@ -23,11 +23,13 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -40,6 +42,7 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -145,22 +148,20 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	/**
 	 * 
-	 * We get this callback after the facebook SSO 
+	 * We get this callback after the facebook SSO
 	 * 
 	 */
-	
+
 	@Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 
-        
-        Log.i(TAG," got result , calling into facebook authoriseCallback");
-        mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
-        got_facebook_sso_callback = true;
-      
-    }
+		Log.i(TAG, " got result , calling into facebook authoriseCallback");
+		mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
+		got_facebook_sso_callback = true;
 
-	
+	}
+
 	private class ImporterThread implements Runnable {
 
 		public void run() {
@@ -282,17 +283,78 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			ImporterThread importer = new ImporterThread();
 			importer.run();
 		}
-		
+
 		if (got_facebook_sso_callback) {
 			got_facebook_sso_callback = false;
-			//show facebook dialog again
-	        Log.d(TAG,"We have been called back by fb sso, showing dialog");
-	        showFacebookOptionsMenu();
-	        
+			// show facebook dialog again
+			Log.d(TAG, "We have been called back by fb sso, showing dialog");
+			showFacebookOptionsMenu();
+
 		}
-		
-		
-		
+
+	}
+
+	private class VideoFilesSimpleCursorAdapter extends SimpleCursorAdapter {
+
+		public VideoFilesSimpleCursorAdapter(Context context, int layout,
+				Cursor c, String[] from, int[] to) {
+			super(context, layout, c, from, to);
+
+		}
+
+		@Override
+		public void setViewImage(ImageView v, String s) {
+
+			/*
+			 * String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA,
+			 * MediaStore.Video.Thumbnails.VIDEO_ID };
+			 * 
+			 * Cursor thumbCursor = managedQuery(
+			 * MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns,
+			 * MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
+			 */
+			Log.d(TAG, "We have " + s);
+
+			String[] mediaColumns = { MediaStore.Video.Media._ID,
+					MediaStore.Video.Media.DATA, MediaStore.Video.Media.TITLE,
+					MediaStore.Video.Media.MIME_TYPE };
+
+			Cursor thumb_cursor = managedQuery(
+					MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns,
+					MediaStore.Video.Media.DATA + " = ? ", new String[] { s },
+					null);
+
+			if (thumb_cursor.moveToFirst()) {
+				// Found entry for video via file path. Now we have its
+				// video_id, we can check for a cache thumbnail or request to
+				// generate one.
+
+				// XXX Check cache, and load from filepath, using code above.
+				Log
+						.d(
+								TAG,
+								" We have id "
+										+ thumb_cursor
+												.getLong(thumb_cursor
+														.getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
+
+				Bitmap bm = MediaStore.Video.Thumbnails
+						.getThumbnail(
+								getContentResolver(),
+								thumb_cursor
+										.getLong(thumb_cursor
+												.getColumnIndexOrThrow(MediaStore.Video.Media._ID)),
+								MediaStore.Video.Thumbnails.MICRO_KIND, null);
+				if (bm != null && v != null) {
+					v.setImageBitmap(bm);
+				}
+
+			} else {
+				// set default icon
+				v.setImageResource(R.drawable.icon);
+			}
+
+		}
 	}
 
 	private void makeCursorAndAdapter() {
@@ -360,7 +422,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		// Make Cursor Adapter
 
-		String[] from = new String[] { DatabaseHelper.SDFileRecord.FILENAME,
+		String[] from = new String[] {
+				DatabaseHelper.SDFileRecord.FILENAME,
 				DatabaseHelper.SDFileRecord.LENGTH_SECS,
 				DatabaseHelper.SDFileRecord.CREATED_DATETIME,
 
@@ -368,17 +431,37 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				DatabaseHelper.HostDetails.HOST_VIDEO_URL,
 
 				DatabaseHelper.SDFileRecord.TITLE,
-				DatabaseHelper.SDFileRecord.DESCRIPTION, };
+				DatabaseHelper.SDFileRecord.DESCRIPTION,
+				DatabaseHelper.SDFileRecord.FILEPATH, };
 
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
-				R.id.text3, R.id.text4, R.id.text5, R.id.text6 };
+				R.id.text3, R.id.text4, R.id.text5, R.id.text6,
+				R.id.videoThumbnailimageView };
 
-		listAdapter = new SimpleCursorAdapter(this, R.layout.library_list_item,
-				libraryCursor, from, to);
+		listAdapter = new VideoFilesSimpleCursorAdapter(this,
+				R.layout.library_list_item, libraryCursor, from, to);
 
 		listAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
 			public boolean setViewValue(View view, Cursor cursor,
 					int columnIndex) {
+				// Transform the text4 specifically, from a blank entry
+				// repr. into a string saying "not uploaded yet"
+				if (columnIndex == cursor
+						.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL)) {
+					String url = cursor
+							.getString(cursor
+									.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
+					TextView host_details = (TextView) view
+							.findViewById(R.id.text4);
+
+					if ("".equals(url) || url == null || url.length() <= 0) {
+						url = "Not uploaded yet.";
+					}
+					host_details.setText(url);
+
+					return true;
+				}
+
 				// Transform the text3 specifically, from time in millis to text
 				// repr.
 				if (columnIndex == cursor
@@ -667,11 +750,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			runOnUiThread(new Runnable() {
 				public void run() {
 					Toast.makeText(LibraryActivity.this,
-							R.string.tweeting_starting,
-							Toast.LENGTH_LONG).show();
+							R.string.tweeting_starting, Toast.LENGTH_LONG)
+							.show();
 				}
 			});
-			
+
 			new Thread(new Runnable() {
 				public void run() {
 					if (hosted_url != null && hosted_url.length() > 0) {
@@ -696,9 +779,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 							String status = "New video:" + hosted_url;
 							try {
-								//Twitter update
+								// Twitter update
 								twitter.updateStatus(status);
-								//Toast
+								// Toast
 								runOnUiThread(new Runnable() {
 									public void run() {
 										Toast.makeText(LibraryActivity.this,
@@ -707,7 +790,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									}
 								});
 							} catch (TwitterException e) {
-								//XXX Toast ?!
+								// XXX Toast ?!
 								e.printStackTrace();
 								Log.e(TAG, "Twittering failed "
 										+ e.getMessage());
@@ -868,7 +951,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	}
 
 	private void showFacebookOptionsMenu() {
-		Log.d(TAG,"Showing facebook menu alert dialog");
+		Log.d(TAG, "Showing facebook menu alert dialog");
 		fb_dialog = new AlertDialog.Builder(this).setMessage(
 				R.string.request_facebook_login).setView(lb).setPositiveButton(
 				R.string.videopost_ok, new DialogInterface.OnClickListener() {
@@ -911,19 +994,22 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		.show();
 
 		resetFacebookMenuButtons();
-		
+
 	}
 
 	public void resetFacebookMenuButtons() {
 		if (fb_dialog != null && mainapp.getFacebook() != null) {
-			//set the POST video button according to the session
-			fb_dialog.getButton(fb_dialog.BUTTON_POSITIVE).setEnabled(mainapp.getFacebook().isSessionValid());
-		
-			//set the logout button similarily, ie also needs to be logged in, to logout out.
-			fb_dialog.getButton(fb_dialog.BUTTON_NEGATIVE).setEnabled(mainapp.getFacebook().isSessionValid());
+			// set the POST video button according to the session
+			fb_dialog.getButton(fb_dialog.BUTTON_POSITIVE).setEnabled(
+					mainapp.getFacebook().isSessionValid());
+
+			// set the logout button similarily, ie also needs to be logged in,
+			// to logout out.
+			fb_dialog.getButton(fb_dialog.BUTTON_NEGATIVE).setEnabled(
+					mainapp.getFacebook().isSessionValid());
 		}
 	}
-	
+
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		super.onPrepareOptionsMenu(menu);

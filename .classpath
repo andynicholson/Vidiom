@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="lib" path="commons-net-2.0/commons-net-ftp-2.0.jar"/>
-	<classpathentry kind="lib" path="httpcomponents-client-4.0.3/lib/httpmime-4.0.3.jar"/>
-	<classpathentry kind="lib" path="apache-mime4j-0.6/apache-mime4j-0.6.jar"/>
-	<classpathentry kind="lib" path="mailjars/activation.jar"/>
-	<classpathentry kind="lib" path="mailjars/additionnal.jar"/>
-	<classpathentry kind="lib" path="mailjars/mail.jar"/>
-	<classpathentry kind="lib" path="twitter4j/lib/twitter4j-core-2.1.11.jar"/>
-	<classpathentry kind="lib" path="signpost/signpost-commonshttp4-1.2.1.1.jar"/>
-	<classpathentry kind="lib" path="signpost/signpost-core-1.2.1.1.jar"/>
 	<classpathentry kind="lib" path="libs/activation.jar"/>
 	<classpathentry kind="lib" path="libs/additionnal.jar"/>
 	<classpathentry kind="lib" path="libs/apache-mime4j-0.6.jar"/>
-	<classpathentry kind="lib" path="libs/commons-net-2.0.jar"/>
 	<classpathentry kind="lib" path="libs/commons-net-ftp-2.0.jar"/>
 	<classpathentry kind="lib" path="libs/httpmime-4.0.3.jar"/>
 	<classpathentry kind="lib" path="libs/mail.jar"/>

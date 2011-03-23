@@ -183,6 +183,11 @@ public class PublishingUtils {
 					File videoFile = new File(path);
 					byte[] data = null;
 					try {
+						
+						//XXX 
+						// SPLIT THIS INTO 5K chunks!!
+						//XXX
+						
 						data = new byte[(int) videoFile.length()];
 					} catch (OutOfMemoryError e) {
 						failed = true;

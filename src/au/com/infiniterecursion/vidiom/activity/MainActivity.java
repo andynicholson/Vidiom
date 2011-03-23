@@ -1,7 +1,10 @@
 package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -20,6 +23,7 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,10 +34,12 @@ import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
@@ -82,7 +88,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private static final int MENU_ITEM_5 = MENU_ITEM_4 + 1;
 	private static final int MENU_ITEM_6 = MENU_ITEM_5 + 1;
 	private static final int MENU_ITEM_7 = MENU_ITEM_6 + 1;
-
+	private static final int MENU_ITEM_8 = MENU_ITEM_7 + 1;
+	
 	private static final int NOTIFICATION_ID = 1;
 
 	// Camera objects
@@ -467,6 +474,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
 				R.string.menu_library);
 		menu_library.setIcon(R.drawable.business48);
+		
+		MenuItem menu_vg = menu.add(0, MENU_ITEM_8, 0,
+				R.string.menu_library);
+		menu_vg.setIcon(R.drawable.business48);
+		
 	}
 
 	@Override
@@ -565,7 +577,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			this.startActivityForResult(intent2, 0);
 
 			break;
-
+			
 		default:
 			return super.onOptionsItemSelected(menuitem);
 		}
@@ -902,6 +914,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					Log.d(TAG,
 							"Valid DB Record - can send video file - sdrecord id  is "
 									+ latestsdrecord_id);
+
+					//Send the info to the inbuilt Android Media Scanner
+					
+					 // Save the name and description of a video in a ContentValues map.  
+			        ContentValues values = new ContentValues(2);
+			        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+			        values.put(MediaStore.Video.Media.DATA, latestVideoFile_absolutepath); 
+
+			        // Add a new record (identified by uri), but with the values just set.
+			        Uri uri = getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+
+			        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 
 					// launch auto complete actions - make sure its AFTER
 					// latestsdrecord_id is set.
