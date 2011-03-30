@@ -126,6 +126,8 @@ public class TwitterOAuthActivity extends Activity {
 		} catch (Exception e) {
 
 			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+			
+			finish();
 		}
 
 	}
