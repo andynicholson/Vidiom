@@ -94,7 +94,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	// Context MENU
 	private static final int MENU_ITEM_12 = MENU_ITEM_11 + 1;
 	private static final int MENU_ITEM_13 = MENU_ITEM_12 + 1;
-
+	// options MENU
+	private static final int MENU_ITEM_14 = MENU_ITEM_13 + 1;
+	
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
 
@@ -125,6 +127,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private boolean importPreference;
 	private boolean got_facebook_sso_callback;
+	
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -143,6 +146,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		thread_youtube = null;
 
 		got_facebook_sso_callback = false;
+	
 	}
 
 	/**
@@ -154,11 +158,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-
-		Log.i(TAG, " got result , calling into facebook authoriseCallback");
-		mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
-		got_facebook_sso_callback = true;
-
+		
+			Log.i(TAG, " got result , calling into facebook authoriseCallback");
+			mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
+			got_facebook_sso_callback = true;
+		
 	}
 
 	private class ImporterThread implements Runnable {
@@ -312,7 +316,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			 * MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns,
 			 * MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
 			 */
-			Log.d(TAG, "We have " + s);
+			//Log.d(TAG, "We have " + s);
 
 			String[] mediaColumns = { MediaStore.Video.Media._ID,
 					MediaStore.Video.Media.DATA, MediaStore.Video.Media.TITLE,
@@ -329,6 +333,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// generate one.
 
 				// XXX Check cache, and load from filepath, using code above.
+				/*
 				Log
 						.d(
 								TAG,
@@ -336,7 +341,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 										+ thumb_cursor
 												.getLong(thumb_cursor
 														.getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
-
+				 */
 				Bitmap bm = MediaStore.Video.Thumbnails
 						.getThumbnail(
 								getContentResolver(),
@@ -795,6 +800,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 										+ e.getMessage());
 							}
 						} else {
+							
+							//Need to authorise.
 							runOnUiThread(new Runnable() {
 								public void run() {
 									Toast
@@ -810,11 +817,12 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							Intent intent2 = new Intent().setClass(
 									LibraryActivity.this,
 									TwitterOAuthActivity.class);
-							LibraryActivity.this.startActivityForResult(
-									intent2, 0);
+							LibraryActivity.this.startActivity(
+									intent2);
 
 						}
 					} else {
+						// No URL available to tweet anyway..
 						// Toast on UI thread.
 						runOnUiThread(new Runnable() {
 							public void run() {
@@ -1034,6 +1042,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// XXX get some different icon
 		menu_twitter.setIcon(R.drawable.wizard48);
 
+		MenuItem menu_twitter_deauth = menu.add(0, MENU_ITEM_14, 0,
+				R.string.twitter_deauth);
+		// XXX get some different icon
+		menu_twitter_deauth.setIcon(R.drawable.wizard48);
 	}
 
 	@Override
@@ -1052,13 +1064,45 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		// Authorising Twitter.
 		case MENU_ITEM_11:
+			// Tweet the video hosted URL
+			runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(LibraryActivity.this,
+							R.string.tweeting_starting, Toast.LENGTH_LONG)
+							.show();
+				}
+			});
 
+			
 			Intent intent2 = new Intent().setClass(this,
 					TwitterOAuthActivity.class);
-			this.startActivityForResult(intent2, 0);
-
+			//this.startActivityForResult(intent2, 0);
+			this.startActivity(intent2);
+			
 			break;
 
+			// De-Authorising Twitter.
+		case MENU_ITEM_14:
+			// Tweet the video hosted URL
+			runOnUiThread(new Runnable() {
+				public void run() {
+					Toast.makeText(LibraryActivity.this,
+							R.string.tweeting_deauth, Toast.LENGTH_LONG)
+							.show();
+				}
+			});
+
+
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(getBaseContext());
+			Editor editor = prefs.edit();
+			editor.putString("twitterToken", null);
+			editor.putString("twitterTokenSecret", null);
+			editor.commit();
+			
+			break;
+	
+			
 		}
 		return true;
 	}

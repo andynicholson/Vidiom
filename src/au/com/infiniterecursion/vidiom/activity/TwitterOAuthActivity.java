@@ -12,7 +12,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
+import au.com.infiniterecursion.vidiom.R;
 
 /**
  * Inspiration -
@@ -32,12 +36,34 @@ public class TwitterOAuthActivity extends Activity {
 	public final static String consumerSecret = "cUYWl7GLlNydB6YPKPr9zrGEfGpjKuU4L2KaR6JyU";
 	private final String CALLBACKURL = "vidiom://TwitterOAuthActivityCallback";
 
-	// private Twitter twitter;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.twitter_oauth_browser);
+
 		doOauth();
+
+	}
+
+	private class TwitterOAuthWebViewClient extends WebViewClient {
+		public boolean shouldOverrideUrlLoading(WebView v, String url) {
+			Log.d(TAG, " Url is " + url);
+
+			if (url != null && url.startsWith(CALLBACKURL)) {
+
+				parseUri(url);
+				
+				Toast.makeText(TwitterOAuthActivity.this, R.string.twitter_authorisation_successfully, Toast.LENGTH_LONG).show();
+				
+				finish();
+				
+				return true;
+			}
+
+			return false;
+		}
+
 	}
 
 	/**
@@ -46,6 +72,7 @@ public class TwitterOAuthActivity extends Activity {
 	 */
 
 	private void doOauth() {
+
 		try {
 			httpOauthConsumer = new CommonsHttpOAuthConsumer(consumerKey,
 					consumerSecret);
@@ -56,8 +83,11 @@ public class TwitterOAuthActivity extends Activity {
 			String authUrl = httpOauthprovider.retrieveRequestToken(
 					httpOauthConsumer, CALLBACKURL);
 
-			this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-					.parse(authUrl)));
+			WebView webv = (WebView) findViewById(R.id.webkitWebView1);
+			webv.setWebViewClient(new TwitterOAuthWebViewClient());
+
+			webv.loadUrl(authUrl);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.d(TAG, " doOauth errored " + e.getMessage());
@@ -67,57 +97,37 @@ public class TwitterOAuthActivity extends Activity {
 	}
 
 	/**
-	 * After use authorizes this is the function where we get back callbac with
-	 * user specific token and secret token. You might want to store this token
-	 * for future use.
+	 * After user authorizes this is the function where we get called back, with
+	 * user specific token and secret token. We store this token for future use.
 	 */
 
-	@Override
-	protected void onNewIntent(Intent intent) {
+	protected void parseUri(String url) {
 
-		super.onNewIntent(intent);
-		Uri uri = intent.getData();
+		Uri uri = Uri.parse(url);
 
-		if (uri != null) {
-			Log.d(TAG, " onNewIntent got " + uri.toString());
+		String verifier = uri
+				.getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
+
+		try {
+			// this will populate token and token_secret in consumer
+
+			httpOauthprovider.retrieveAccessToken(httpOauthConsumer, verifier);
+
+			AccessToken a = new AccessToken(httpOauthConsumer.getToken(),
+					httpOauthConsumer.getTokenSecret());
+
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(getBaseContext());
+			Editor editor = prefs.edit();
+			editor.putString("twitterToken", a.getToken());
+			editor.putString("twitterTokenSecret", a.getTokenSecret());
+			editor.commit();
+
+		} catch (Exception e) {
+
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 		}
 
-		if (uri != null && uri.toString().startsWith(CALLBACKURL)) {
-
-			String verifier = uri
-					.getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
-
-			try {
-				// this will populate token and token_secret in consumer
-
-				httpOauthprovider.retrieveAccessToken(httpOauthConsumer,
-						verifier);
-
-				AccessToken a = new AccessToken(httpOauthConsumer.getToken(),
-						httpOauthConsumer.getTokenSecret());
-
-				SharedPreferences prefs = PreferenceManager
-						.getDefaultSharedPreferences(getBaseContext());
-				Editor editor = prefs.edit();
-				editor.putString("twitterToken", a.getToken());
-				editor.putString("twitterTokenSecret", a.getTokenSecret());
-				editor.commit();
-
-				// initialize Twitter4J
-				/*
-				 * twitter = new TwitterFactory().getInstance();
-				 * twitter.setOAuthConsumer(consumerKey, consumerSecret);
-				 * twitter.setOAuthAccessToken(a);
-				 */
-				// we have finished here.
-				finish();
-
-			} catch (Exception e) {
-
-				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			}
-
-		}
 	}
 
 }
