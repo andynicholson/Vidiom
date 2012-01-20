@@ -6,8 +6,8 @@ import java.net.MalformedURLException;
 
 import android.util.Log;
 
-import com.facebook.android.FacebookError;
 import com.facebook.android.AsyncFacebookRunner.RequestListener;
+import com.facebook.android.FacebookError;
 
 /**
  * Skeleton base class for RequestListeners, providing default error handling.

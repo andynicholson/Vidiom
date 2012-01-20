@@ -75,7 +75,8 @@ public class DBUtils {
 			int count = stats_cursor.getInt(0);
 			Log.v(TAG, "getStats : " + count + " sdrecords");
 		}
-
+		stats_cursor.close();
+		
 		count_sql = "SELECT count(*) FROM " + DatabaseHelper.HOST_TABLE_NAME;
 
 		stats_cursor = generic_write_db.rawQuery(count_sql, null);

@@ -33,8 +33,8 @@ import au.com.infiniterecursion.vidiom.facebook.SessionEvents.LogoutListener;
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
-import com.facebook.android.FacebookError;
 import com.facebook.android.Facebook.DialogListener;
+import com.facebook.android.FacebookError;
 
 public class LoginButton extends ImageButton {
 

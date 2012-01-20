@@ -23,6 +23,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -35,9 +36,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -96,6 +97,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private static final int MENU_ITEM_13 = MENU_ITEM_12 + 1;
 	// options MENU
 	private static final int MENU_ITEM_14 = MENU_ITEM_13 + 1;
+	//edit
+	private static final int MENU_ITEM_15 = MENU_ITEM_14 + 1;
 	
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
@@ -245,10 +248,33 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							// If not, insert a record into the DB
 							if (!alreadyInDB) {
 								String filename = f.getName();
+								
+								
+								MediaMetadataRetriever thumber = new MediaMetadataRetriever();
+								String audio_video_codec = "unknown";
+								String title = "Untitled";
+								long duration_millis = 0;
+								
+								try {
+									thumber.setDataSource(fp[0]);
+									String duration = thumber
+									.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+									Log.d(TAG, "Filepath has duration " + duration);
+									duration_millis = Long.parseLong(duration);
+									audio_video_codec = thumber.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
+									title = thumber.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+							
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+
+								
+								
+								
 								dbutils
 										.createSDFileRecordwithNewVideoRecording(
 												f.getAbsolutePath(), filename,
-												0, "unknown", "", "");
+												(int) (duration_millis/1000), audio_video_codec, title, "");
 							}
 						}
 
@@ -543,6 +569,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// PLAY
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
 
+		//EDIT
+		menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
+		
 		// TITLE / DESCRIPTION
 		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
 
@@ -595,6 +624,15 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			pu.launchVideoPlayer(this, movieurl);
 			break;
 
+		case MENU_ITEM_15:
+			//edit
+			//shuffle off to a new Activity
+			Intent intent2 = new Intent().setClass(this, EditorActivity.class);
+			intent2.putExtra(getString(R.string.EditorActivityFilenameKey), movieurl);
+			
+			this.startActivity(intent2);
+			break;
+			
 		case MENU_ITEM_2:
 			// delete
 
