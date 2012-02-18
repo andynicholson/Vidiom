@@ -76,8 +76,14 @@ public class EditorActivity extends Activity {
 		String duration = thumber
 				.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 		Log.d(TAG, "Filepath has duration " + duration);
-		duration_millis = Long.parseLong(duration);
-
+		try {
+		
+			duration_millis = Long.parseLong(duration);
+		} catch(NumberFormatException npe) {
+			npe.printStackTrace();
+			duration_millis = 0;
+		}
+		
 		grid_main.setSelected(true);
 		// grid_main.setSelection(0);
 

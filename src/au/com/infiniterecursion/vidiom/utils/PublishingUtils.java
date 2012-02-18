@@ -94,7 +94,6 @@ public class PublishingUtils {
 
 	private static final String TAG = "RoboticEye-PublishingUtils";
 
-	private File folder;
 	private Resources res;
 	private DBUtils dbutils;
 
@@ -119,8 +118,6 @@ public class PublishingUtils {
 
 		this.res = res;
 		this.dbutils = dbutils;
-		folder = new File(Environment.getExternalStorageDirectory()
-				+ res.getString(R.string.rootSDcardFolder));
 
 	}
 
@@ -1012,7 +1009,7 @@ public class PublishingUtils {
 
 	}
 
-	public File selectFilenameAndCreateFile(String filenameConventionPrefence) {
+	public File selectFilenameAndCreateFile(String filenameConventionPrefence, File base_folder) {
 		// Video file name selection process
 		String new_videofile_name = res
 				.getString(R.string.defaultVideoFilenamePrefix);
@@ -1041,7 +1038,7 @@ public class PublishingUtils {
 
 		}
 
-		File tempFile = new File(folder.getAbsolutePath(), new_videofile_name);
+		File tempFile = new File(base_folder.getAbsolutePath(), new_videofile_name);
 		return tempFile;
 	}
 

@@ -88,7 +88,10 @@
     <string name="autoEmailPreferenceTitle">Email video</string>
     <string name="emailPreferenceSummary">Enter your email to receive notifications of video publishing</string>
     <string name="emailTitle">Email Address</string>
+    <string name="defaultVideosFolderTitle">Change Videos Folder</string>
+    <string name="customVideoFolderPreference">customVideoFolderPreference</string> 
    
+    
    <!--  activity titles -->
     <string name="app_name">Vidiom</string>
     <string name="app_description">Your wandering eye.</string>
@@ -102,7 +105,7 @@
 	
 	<string name="about_this">Vidiom - Video capture and web video publishing tool. VERSION - http://vidiom.net.au \nAuthor: Andy Nicholson.\nCopyright 2011 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au </string>
 	<string name="licenses">Show Licenses</string>
-	<string name="third_party_licenses">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses\n\n\nVidiom contains third-party code under separate copyrights:\nCopyright 2010 Google Inc.\nCode modified from ytd-android - http://code.google.com/p/youtube-direct &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Stickman studio Contributers.\nCode modified from stickman-android - http://code.google.com/p/stickman-android &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Facebook Inc.\nCode modified from Facebook SDK for Android - https://github.com/facebook/facebook-android-sdk &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright (c) 2007-2011, Yusuke Yamamoto\nCode modified from Twitter4J - http://twitter4j.org/en/index.html &amp; available under the BSD license http://twitter4j.org/en/index.html#license\n\nCopyright 2011 Matthias Käppler\nCode included from Signpost - http://code.google.com/p/oauth-signpost/ &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html</string>
+	<string name="third_party_licenses">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses\n\n\n\nVidiom source code available at https://github.com/andycat/Vidiom\n\nVidiom contains third-party code under separate copyright licenses:\nCopyright 2010 Google Inc.\nCode modified from ytd-android - http://code.google.com/p/youtube-direct &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Stickman studio Contributers.\nCode modified from stickman-android - http://code.google.com/p/stickman-android &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Facebook Inc.\nCode modified from Facebook SDK for Android - https://github.com/facebook/facebook-android-sdk &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright (c) 2007-2011, Yusuke Yamamoto\nCode modified from Twitter4J - http://twitter4j.org/en/index.html &amp; available under the BSD license http://twitter4j.org/en/index.html#license\n\nCopyright 2011 Matthias Käppler\nCode included from Signpost - http://code.google.com/p/oauth-signpost/ &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html</string>
 	 
 	 
 	<string name="notification_title">Vidiom</string>
@@ -187,4 +190,15 @@
 		
 	<string name="EditorActivityFilenameKey">EditorActivityFilenameKey</string>
 
+	<!--  filedialogactivity -->
+	<string name="location">Location</string>
+    <string name="cant_read_folder">Folder can\'t be read!</string>
+    <string name="error">Error</string>
+    <string name="nnew">New</string>
+    <string name="select">Select</string>
+    <string name="file_name">File name:</string>
+    <string name="create">Save</string>
+    <string name="no_data">No Data</string>
+	<color name="gray">#ffff0000</color>
+	
 </resources>

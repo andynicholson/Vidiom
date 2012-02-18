@@ -373,6 +373,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		maxFilesizePreference = prefs.getString("maxFilesizePreference", res
 				.getString(R.string.maxFilesizePreferenceDefault));
 
+		//set the videos folder, either the default or a set user preference.
+		findVideosFolder();
+		
 		Log.d(TAG, "behaviour preferences are " + autoEmailPreference + ":"
 				+ fTPPreference + ":" + videobinPreference + ":"
 				+ emailPreference);
@@ -380,15 +383,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Log.d(TAG, "video recording preferences are "
 				+ filenameConventionPrefence + ":" + maxDurationPreference
 				+ ":" + maxFilesizePreference);
+		
 	}
 
 	private void checkInstallDirandCreateIfMissing() {
-		// android.os.Environment.getExternalStorageDirectory().getPath()
-
-		folder = new File(Environment.getExternalStorageDirectory()
-				+ res.getString(R.string.rootSDcardFolder));
+		//set the videos folder, either the default or a set user preference.
+		findVideosFolder();
+		
+		// it is writeable?
 		boolean success;
-		Log.d(TAG, "Base Folder:" + folder.getAbsolutePath());
+		
 		if (!folder.exists()) {
 
 			Log.d(TAG, " Folder doesnt exit ... attempting to make it");
@@ -422,6 +426,25 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			Log.d(TAG, " Folder already exists...");
 			canAccessSDCard = true;
 		}
+	}
+
+	private void findVideosFolder() {
+		// android.os.Environment.getExternalStorageDirectory().getPath()
+
+		//DEFAULT videos folder
+		folder = new File(Environment.getExternalStorageDirectory()
+				+ res.getString(R.string.rootSDcardFolder));
+		Log.d(TAG, "Base Folder:" + folder.getAbsolutePath());
+		//Check for a set preference, if there is one, use that instead.
+		String customVideoFolder  = prefs.getString(res.getString(R.string.customVideoFolderPreference), "");
+		Log.d(TAG, "Custom Base Folder:" + customVideoFolder);
+		
+		if (customVideoFolder.length() > 0) {
+			//Use the custom set path.
+			folder = new File(customVideoFolder);
+		}
+		
+		Log.d(TAG, "Using Folder:" + folder.getAbsolutePath());
 	}
 
 	@Override
@@ -758,7 +781,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		mediaRecorder.setMaxDuration(maxDurationInMs);
 
 		File tempFile = pu
-				.selectFilenameAndCreateFile(filenameConventionPrefence);
+				.selectFilenameAndCreateFile(filenameConventionPrefence, folder);
 		latestVideoFile_filename = tempFile.getName();
 		latestVideoFile_absolutepath = tempFile.getAbsolutePath();
 		mediaRecorder.setOutputFile(tempFile.getAbsolutePath());

@@ -17,6 +17,25 @@
       package="au.com.infiniterecursion.vidiom"
       android:versionName="0.6.15" android:versionCode="24">
       
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:anyDensity="true" />
+    
+    <uses-sdk android:minSdkVersion="7" />
+    
+    <uses-feature android:name="android.hardware.camera"/>
+	
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<uses-permission android:name="android.permission.CAMERA" />	
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
+	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
+	<uses-permission android:name="android.permission.MANAGE_ACCOUNTS" /> 
+     
     <application android:name=".VidiomApp" android:icon="@drawable/icon" android:label="@string/app_name" 
     	android:debuggable="false" android:description="@string/app_description" android:allowBackup="true">
         <activity android:name=".activity.MainActivity"
@@ -38,6 +57,7 @@
     <activity android:name=".activity.LibraryActivity"
           android:label="@string/libraryTitle" android:screenOrientation="portrait">
     <intent-filter>
+       
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
 	</activity>
@@ -53,29 +73,19 @@
 	</intent-filter>
 
 	</activity>
-     <activity android:name=".activity.EditorActivity" android:screenOrientation="portrait"></activity>
+     
+    <activity android:name=".activity.EditorActivity" android:screenOrientation="portrait">
+        
+    </activity>
     
-    
+    <activity android:name=".activity.FileDialogActivity"
+          android:label="@string/defaultVideosFolderTitle" android:screenOrientation="portrait">
+    	<intent-filter>
+    	     <action android:name="au.com.infiniterecursion.vidiom.activity.FileDialogActivity" />
+        	<category android:name="android.intent.category.DEFAULT" />
+    	</intent-filter>
+	</activity>
+     
     </application>
-    
-
-	<supports-screens
-        android:smallScreens="true"
-        android:normalScreens="true"
-        android:largeScreens="true"
-        android:anyDensity="true" />
-    
-    <uses-sdk android:minSdkVersion="7" />
-    
-	<uses-feature android:name="android.hardware.camera"/>
-	
-	<uses-permission android:name="android.permission.RECORD_AUDIO" />
-	<uses-permission android:name="android.permission.CAMERA" />	
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
-	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
-	<uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-		
+   
 </manifest> 
