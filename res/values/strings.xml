@@ -191,11 +191,11 @@
 	<string name="EditorActivityFilenameKey">EditorActivityFilenameKey</string>
 
 	<!--  filedialogactivity -->
-	<string name="location">Location</string>
+	<string name="location">Set Videos Folder to </string>
     <string name="cant_read_folder">Folder can\'t be read!</string>
     <string name="error">Error</string>
-    <string name="nnew">New</string>
-    <string name="select">Select</string>
+    <string name="nnew">New Folder</string>
+    <string name="select">Set Video Folder</string>
     <string name="file_name">File name:</string>
     <string name="create">Save</string>
     <string name="no_data">No Data</string>

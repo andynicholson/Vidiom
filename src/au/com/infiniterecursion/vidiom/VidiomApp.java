@@ -31,6 +31,8 @@ public class VidiomApp extends Application {
 
 	private boolean isUploading;
 
+	private String current_path;
+	
 	/*
 	 * On application startup, get the home position from the preferences.
 	 * 
@@ -78,5 +80,13 @@ public class VidiomApp extends Application {
 
 	public void setNotUploading() {
 		isUploading = false;
+	}
+	
+	public String getCurrentPath() {
+		return current_path;
+	}
+	
+	public void setCurrentPath(String path) {
+		this.current_path = path;
 	}
 }

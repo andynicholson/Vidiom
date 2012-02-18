@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.prefs.Preferences;
 
 import android.app.ListActivity;
 import android.content.SharedPreferences;
@@ -29,6 +28,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiom.VidiomApp;
 
 /**
  * Activity para escolha de arquivos/diretorios.
@@ -113,6 +113,9 @@ public class FileDialogActivity extends ListActivity {
 	private File selectedFile;
 	private HashMap<String, Integer> lastPositions = new HashMap<String, Integer>();
 
+	private VidiomApp mainapp;
+
+	
 	/**
 	 * Called when the activity is first created. Configura todos os parametros
 	 * de entrada e das VIEWS..
@@ -128,6 +131,8 @@ public class FileDialogActivity extends ListActivity {
 
 		inputManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
+		mainapp = (VidiomApp) getApplication();
+		
 		selectButton = (Button) findViewById(R.id.fdButtonSelect);
 		selectButton.setEnabled(false);
 		selectButton.setOnClickListener(new OnClickListener() {
@@ -147,7 +152,8 @@ public class FileDialogActivity extends ListActivity {
 					Editor editor = prefs.edit();
 					editor.putString(res.getString(R.string.customVideoFolderPreference), selectedFile.getPath());
 					editor.commit();
-					
+					//update mainapp
+					mainapp.setCurrentPath(selectedFile.getPath());
 					
 					finish();
 					
@@ -220,8 +226,8 @@ public class FileDialogActivity extends ListActivity {
 						Editor editor = prefs.edit();
 						editor.putString(res.getString(R.string.customVideoFolderPreference), new_path);
 						editor.commit();
-						
-						
+						//update main app
+						mainapp.setCurrentPath(new_path);
 					}
 					
 					finish();
@@ -274,7 +280,7 @@ public class FileDialogActivity extends ListActivity {
 			f = new File(currentPath);
 			files = f.listFiles();
 		}
-		myPath.setText(getText(R.string.location) + ": " + currentPath);
+		myPath.setText(getText(R.string.location) + ": " + currentPath + "\nNew Folder button creates folder in current location and sets that folder as the Video Folder.");
 
 		if (!currentPath.equals(ROOT)) {
 

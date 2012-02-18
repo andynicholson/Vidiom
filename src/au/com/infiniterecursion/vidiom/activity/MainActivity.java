@@ -237,6 +237,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		threadVB = null;
 		threadFTP = null;
 
+		//set path in mainapp
+		mainapp.setCurrentPath(folder.getPath());
 	}
 
 	@Override
