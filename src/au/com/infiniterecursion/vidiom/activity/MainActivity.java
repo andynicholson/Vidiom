@@ -251,7 +251,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	@Override
 	public void onPause() {
 
-		super.onDestroy();
+		super.onPause();
 		Log.d(TAG, "On pause");
 		if (mediaRecorder != null) {
 			if (recordingInMotion) {
@@ -807,8 +807,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// preferences for user in KB.
 		maxFileSizeInBytes = user_filesize * 1024;
-		mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
-
+		try {
+			mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
+		} catch (RuntimeException rte ) {
+			Log.e(TAG, "RuntimeException:" + rte.getMessage());
+			rte.printStackTrace();
+			//keep going -might still work??
+		}
+		
 		try {
 
 			mediaRecorder.prepare();
@@ -841,10 +847,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	public void stopRecording() {
 
-		mediaRecorder.stop();
-		camera.lock();
-		recordingInMotion = false;
+		Boolean show_dialog = true;
+		
+		try {
+			mediaRecorder.stop();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			Log.e(TAG, "stopRecording: stop failed!");			
+			show_dialog = false;
+		}
 
+		try {
+			camera.lock();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			camera = null;
+			Log.e(TAG, "stopRecording: unlock failed!");			
+			show_dialog = false;
+		}
+
+		recordingInMotion = false;
 		endTimeinMillis = System.currentTimeMillis();
 
 		// Shutdown the threads
@@ -871,8 +893,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		title = null;
 		description = null;
 
-		showTitleDescriptionDialog();
-
+		//if mediarecorder and camera stop/locking worked.
+		if (show_dialog) {
+			showTitleDescriptionDialog();
+		}
 	}
 
 	private void showTitleDescriptionDialog() {

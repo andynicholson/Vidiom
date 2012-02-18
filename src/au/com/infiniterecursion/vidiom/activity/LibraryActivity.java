@@ -353,6 +353,14 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					MediaStore.Video.Media.DATA + " = ? ", new String[] { s },
 					null);
 
+			if (thumb_cursor == null ) {
+				// set default icon
+				if (v != null) {
+					v.setImageResource(R.drawable.icon);
+				}
+				return;
+			}
+			
 			if (thumb_cursor.moveToFirst()) {
 				// Found entry for video via file path. Now we have its
 				// video_id, we can check for a cache thumbnail or request to
@@ -405,6 +413,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		libraryCursor = dbutils.generic_write_db.rawQuery(join_sql, null);
 
+		if (libraryCursor==null) {
+			return;
+		}
+		
 		if (libraryCursor.moveToFirst()) {
 			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
