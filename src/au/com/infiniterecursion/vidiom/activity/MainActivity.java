@@ -52,6 +52,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import au.com.infiniterecursion.vidiom.R;
@@ -171,7 +172,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					+ String.format("%02d", seconds);
 			handler.postDelayed(new Runnable() {
 				public void run() {
-					statusIndicator.setText("REC " + time_format);
+					statusIndicator.setText("RECORDING " + time_format);
 				}
 			}, 0);
 
@@ -208,7 +209,22 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		this.addContentView(viewControl, layoutParamsControl);
 
 		statusIndicator = (TextView) findViewById(R.id.overlay);
-
+		//Make the icon and the current text clickable to record/stop
+		LinearLayout overlay = (LinearLayout) findViewById(R.id.cameraOverlay);
+		overlay.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// Toggle the status.
+				if (recordingInMotion) {
+					menuResponseForStopItem();
+				} else {
+					tryToStartRecording();
+				}
+				
+			}
+		});
+		
 		recordingInMotion = false;
 
 		latestVideoFile_absolutepath = "";
@@ -752,7 +768,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 
-		statusIndicator.setText("REC 00:00");
+		statusIndicator.setText("RECORDING 00:00");
 
 		mediaRecorder = new MediaRecorder();
 		mediaRecorder.setOnInfoListener(this);
@@ -877,7 +893,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				// reset the indicator
 				handler.postDelayed(new Runnable() {
 					public void run() {
-						statusIndicator.setText("STOP");
+						statusIndicator.setText("STOPPED");
 					}
 				}, 500);
 

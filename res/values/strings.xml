@@ -57,7 +57,7 @@
     <string name="video_bin_API_description">description</string>
     <string name="video_bin_API_videofile">videoFile</string>
     <string name="http_videobin_org_add">http://videobin.org/add</string>
-    
+    <string name="video_bin_API_good_re">http://videobin.org/.*</string>
  
     
     <string name="maxFilesizePreferenceDefault">10240</string>

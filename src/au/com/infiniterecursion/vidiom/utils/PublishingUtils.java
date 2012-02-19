@@ -451,6 +451,16 @@ public class PublishingUtils {
 
 				client.getConnectionManager().shutdown();
 
+				//CHECK RESPONSE FOR SUCCESS!!
+				if (response.matches(res.getString(R.string.video_bin_API_good_re))) {
+					//We got back HTTP response with valid URL
+					Log.d(TAG, " video bin got back URL " + response);
+					
+				} else {
+					Log.d(TAG, " video bin got eror back:\n" + response);
+					failed = true;
+				}
+				
 				if (failed) {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -474,7 +484,7 @@ public class PublishingUtils {
 					return;
 				}
 
-				Log.d(TAG, " video bin got back " + response);
+				
 
 				// XXX Convert to preference for auto-email on videobin post
 				// XXX ADD EMAIL NOTIF to all other upload methods
