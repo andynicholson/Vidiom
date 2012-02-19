@@ -210,8 +210,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		statusIndicator = (TextView) findViewById(R.id.overlay);
 		//Make the icon and the current text clickable to record/stop
-		LinearLayout overlay = (LinearLayout) findViewById(R.id.cameraOverlay);
-		overlay.setOnClickListener(new OnClickListener() {
+		
+		statusIndicator.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
