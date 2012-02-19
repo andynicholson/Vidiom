@@ -582,7 +582,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
 
 		//EDIT
-		menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
+		//XXX not yet.
+		//menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
 		
 		// TITLE / DESCRIPTION
 		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
