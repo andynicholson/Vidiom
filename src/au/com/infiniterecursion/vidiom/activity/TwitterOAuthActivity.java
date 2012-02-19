@@ -14,7 +14,7 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 
 /**
  * Inspiration -

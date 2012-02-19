@@ -55,7 +55,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.utils.DBUtils;
 import au.com.infiniterecursion.vidiom.utils.PublishingUtils;

@@ -17,7 +17,7 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 
 
 /*

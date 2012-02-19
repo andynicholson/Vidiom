@@ -5,7 +5,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.util.Log;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 
 /*

@@ -14,6 +14,7 @@ package au.com.infiniterecursion.vidiom;
 import android.app.Application;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.facebook.SessionStore;
+import au.com.infiniterecursion.vidiompro.R;
 
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.Facebook;

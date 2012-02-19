@@ -47,7 +47,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.facebook.LoginButton;
 import au.com.infiniterecursion.vidiom.utils.DBUtils;

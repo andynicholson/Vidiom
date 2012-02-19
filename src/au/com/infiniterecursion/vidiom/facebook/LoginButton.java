@@ -25,7 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.activity.LibraryActivity;
 import au.com.infiniterecursion.vidiom.facebook.SessionEvents.AuthListener;
 import au.com.infiniterecursion.vidiom.facebook.SessionEvents.LogoutListener;

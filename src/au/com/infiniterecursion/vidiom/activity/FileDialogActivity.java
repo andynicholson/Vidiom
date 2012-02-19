@@ -27,7 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 
 /**

@@ -70,7 +70,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import au.com.infiniterecursion.vidiom.R;
+import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.activity.VidiomActivity;
 import au.com.infiniterecursion.vidiom.sslemail.SSLEmailSender;
 import au.com.infiniterecursion.vidiom.utils.GoogleAuthoriser.AuthorizationListener;
