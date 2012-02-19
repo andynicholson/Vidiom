@@ -585,6 +585,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 													.getInstance());
 
 								}
+							}).setNeutralButton(R.string.help, new DialogInterface.OnClickListener() {
+								
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									// help
+									AlertDialog help = new AlertDialog.Builder(
+											MainActivity.this)
+											.setMessage(res.getString(R.string.helpText))
+											.setPositiveButton(
+													R.string.yes,
+													new DialogInterface.OnClickListener() {
+														public void onClick(
+																DialogInterface dialog,
+																int whichButton) {
+
+														}
+													}).show();
+								}
 							}).show();
 
 			// makes links work

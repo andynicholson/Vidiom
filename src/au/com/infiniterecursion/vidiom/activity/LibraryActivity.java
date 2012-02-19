@@ -569,10 +569,12 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		super.onListItemClick(l, v, position, id);
 
 		// play this selection.
-		String movieurl = video_absolutepath[(int) position];
-		Log.d(TAG, " operation on " + movieurl);
+		//String movieurl = video_absolutepath[(int) position];
+		//Log.d(TAG, " operation on " + movieurl);
 
-		pu.launchVideoPlayer(this, movieurl);
+		//pu.launchVideoPlayer(this, movieurl);
+		
+		l.showContextMenuForChild(v);
 	}
 
 	public void onCreateContextMenu(ContextMenu menu, View v,
