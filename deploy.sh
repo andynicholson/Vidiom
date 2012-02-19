@@ -1,5 +1,8 @@
 #!/bin/sh
 
+#remove current build
+ant clean
+
 #Make a release
 ant release
 
