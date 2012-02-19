@@ -1,0 +1,11 @@
+v0.6.10 - Minor fixes for the camera.
+
+v0.6.11 - Fixes for Facebook single sign on.
+
+v0.6.12 - Fixes for some camera handling issues, and out of memory conditions.
+
+v0.6.13 - Fixes for Camera recording issues - parse user preferences correctly on recording time and max file size duration, as well as better error traping when the camera wont start recording
+
+v0.6.14 - Fixes for Twitter authorisation, plus added video thumbnails in gallery
+
+v0.6.15 - Added ability to change videos folder, and bugfixes
