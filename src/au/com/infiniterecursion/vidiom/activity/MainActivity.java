@@ -179,6 +179,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	};
 
+	private boolean showing_titledesc = false;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -217,9 +219,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			public void onClick(View v) {
 				// Toggle the status.
 				if (recordingInMotion) {
-					menuResponseForStopItem();
+					stopRecording();
 				} else {
-					tryToStartRecording();
+					//Dont start if we are still showing dialog from stopRecording..
+					if (!showing_titledesc) {
+						tryToStartRecording();
+					}
 				}
 				
 			}
@@ -755,7 +760,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public boolean startRecording() {
 
 		if (camera == null) {
-			Log.e(TAG, "startRecording: camera is null!");
+			Log.e(TAG, "startRecording: camera is null!");	
 			return false;
 		}
 
@@ -832,7 +837,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 		
 		try {
-
+			//Setup media recorder 
+			//
 			mediaRecorder.prepare();
 			mediaRecorder.start();
 
@@ -848,21 +854,49 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Illegal State Exception:" + e.getMessage());
 			e.printStackTrace();
+			
+			startRecordingMediaRecorderExceptionHandler();
+			
 			return false;
 		} catch (IOException e) {
 			Log.e(TAG, "IOException:" + e.getMessage());
 			e.printStackTrace();
+			
+			startRecordingMediaRecorderExceptionHandler();
+			
 			return false;
 		} catch (RuntimeException re) {
 			Log.e(TAG, "RuntimeException:" + re.getMessage());
 			re.printStackTrace();
+			
+			startRecordingMediaRecorderExceptionHandler();
+			
 			return false;
 		}
 
 	}
 
-	public void stopRecording() {
+	private void startRecordingMediaRecorderExceptionHandler() {
+		//Reset the UI 
+		shutdownRecIncrUIThread();
+		
 
+		try {
+			camera.lock();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			camera = null;
+			Log.e(TAG, "startRecording: unlock failed!");			
+		
+		}
+	}
+
+	public void stopRecording() {
+		
+		recordingInMotion = false;
+		endTimeinMillis = System.currentTimeMillis();
+		shutdownRecIncrUIThread();
+		
 		Boolean show_dialog = true;
 		
 		try {
@@ -882,24 +916,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			show_dialog = false;
 		}
 
-		recordingInMotion = false;
-		endTimeinMillis = System.currentTimeMillis();
-
-		// Shutdown the threads
-		scheduler.schedule(new Runnable() {
-			public void run() {
-				// cancel UI updater
-				ui_Incrementer_handler.cancel(true);
-				// reset the indicator
-				handler.postDelayed(new Runnable() {
-					public void run() {
-						statusIndicator.setText("STOPPED");
-					}
-				}, 500);
-
-			}
-		}, 0, TimeUnit.SECONDS);
-
 		Log.d(TAG, "Recording time of video is "
 				+ ((endTimeinMillis - startTimeinMillis) / 1000)
 				+ " seconds. filename " + latestVideoFile_filename + " : path "
@@ -915,8 +931,28 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
+	private void shutdownRecIncrUIThread() {
+		// Shutdown the threads
+		scheduler.schedule(new Runnable() {
+			public void run() {
+				// cancel UI updater
+				ui_Incrementer_handler.cancel(true);
+				// reset the indicator
+				handler.postDelayed(new Runnable() {
+					public void run() {
+						statusIndicator.setText("STOPPED");
+					}
+				}, 500);
+
+			}
+		}, 0, TimeUnit.SECONDS);
+	}
+
 	private void showTitleDescriptionDialog() {
 		// Launch Title/Description Edit View
+		
+		showing_titledesc  = true;
+		
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -942,6 +978,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				// delete the file
 				pu.deleteVideo(latestVideoFile_absolutepath);
 
+				showing_titledesc = false;
 				d.dismiss();
 			}
 		});
@@ -1009,6 +1046,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 									}).show();
 				}
 
+				showing_titledesc = false;
 				d.dismiss();
 			}
 		});
