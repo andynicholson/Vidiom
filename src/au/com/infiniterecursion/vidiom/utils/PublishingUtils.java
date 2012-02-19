@@ -452,7 +452,7 @@ public class PublishingUtils {
 				client.getConnectionManager().shutdown();
 
 				//CHECK RESPONSE FOR SUCCESS!!
-				if (response.matches(res.getString(R.string.video_bin_API_good_re))) {
+				if (!failed && response!=null && response.matches(res.getString(R.string.video_bin_API_good_re))) {
 					//We got back HTTP response with valid URL
 					Log.d(TAG, " video bin got back URL " + response);
 					
