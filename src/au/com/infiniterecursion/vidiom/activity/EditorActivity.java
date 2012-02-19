@@ -65,6 +65,10 @@ public class EditorActivity extends Activity {
 				.getString(getString(R.string.EditorActivityFilenameKey));
 		Log.d(TAG, " Editing " + filepath);
 
+		
+		//API level 10 code here
+		//XXX protect from devices that dont support this !
+		
 		thumber = new MediaMetadataRetriever();
 		try {
 			thumber.setDataSource(filepath);
@@ -249,7 +253,11 @@ public class EditorActivity extends Activity {
 			tv.setText("Time " + time_seconds);
 			ImageView iv = (ImageView) v.findViewById(R.id.icon_image);
 
+			
 			Log.v(TAG, " Thumb at " + timeUs);
+			
+			//API level 10 code here
+			//XXX protect from devices that dont support this !
 			Bitmap outThumbnail = thumber.getFrameAtTime(timeUs);
 
 			iv.setImageBitmap(outThumbnail);

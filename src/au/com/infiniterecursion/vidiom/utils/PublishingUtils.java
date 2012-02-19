@@ -1153,8 +1153,7 @@ public class PublishingUtils {
 						.toString(sdrecord_id) });
 		// add our branding to the description.
 		String uploadUrl = uploadMetaData(activity, handler, file
-				.getAbsolutePath(), strs[0], strs[1] + "\n"
-				+ activity.getString(R.string.uploaded_by_), true);
+				.getAbsolutePath(), strs[0], strs[1] , true);
 
 		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is "
 				+ this.youTubeName);

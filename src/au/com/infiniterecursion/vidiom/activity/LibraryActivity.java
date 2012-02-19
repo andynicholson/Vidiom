@@ -691,8 +691,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							.toString(sdrecord_id) });
 			// grab thread
 			thread_vb = pu.videoUploadToVideoBin(this, handler, movieurl,
-					strs_vb[0], strs_vb[1] + "\n"
-							+ getString(R.string.uploaded_by_),
+					strs_vb[0], strs_vb[1] ,
 					emailPreference, sdrecord_id);
 			break;
 
@@ -1029,8 +1028,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							thread_fb = pu.videoUploadToFacebook(
 									LibraryActivity.this, handler, mainapp
 											.getFacebook(), movieurl, strs[0],
-									strs[1] + "\n"
-											+ getString(R.string.uploaded_by_),
+									strs[1] ,
 									emailPreference, sdrecord_id);
 
 						}

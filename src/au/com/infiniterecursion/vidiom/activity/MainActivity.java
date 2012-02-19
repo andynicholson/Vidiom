@@ -1114,8 +1114,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			});
 
 			threadVB = pu.videoUploadToVideoBin(this, handler,
-					latestVideoFile_absolutepath, strs[0], strs[1] + "\n"
-							+ getString(R.string.uploaded_by_),
+					latestVideoFile_absolutepath, strs[0], strs[1],
 					emailPreference, latestsdrecord_id);
 		}
 
@@ -1151,7 +1150,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 				threadFB = pu.videoUploadToFacebook(this, handler, mainapp
 						.getFacebook(), latestVideoFile_absolutepath, strs[0],
-						strs[1] + "\n" + getString(R.string.uploaded_by_),
+						strs[1] ,
 						emailPreference, latestsdrecord_id);
 			}
 		}
