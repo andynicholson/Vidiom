@@ -1310,8 +1310,19 @@ public class PublishingUtils {
 			description = "No description";
 		}
 
+		//Check user preference to see if YouTube videos should be private by default.
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(activity.getBaseContext());
+		Boolean ytPrivate = prefs.getBoolean(
+				"defaultYouTubePrivatePreference", true);
+		
+		String private_or_not = "<yt:private />";
+		if (!ytPrivate) {
+			private_or_not = "";
+		}
+		
 		atomData = String.format(template, title, description, category,
-				this.tags);
+				this.tags, private_or_not);
 
 		OutputStreamWriter outStreamWriter = null;
 		int responseCode = -1;

@@ -130,7 +130,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private boolean importPreference;
 	private boolean got_facebook_sso_callback;
-	
+	// API 10 ?
+	private Boolean support_v10;
+
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -150,6 +152,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		got_facebook_sso_callback = false;
 	
+		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1){
+		    // API 10 or above yes
+			support_v10 = true;
+		} else{
+		    support_v10 = false;
+		}
 	}
 
 	/**
@@ -584,8 +593,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
 
 		//EDIT
-		//XXX not yet.
-		//menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
+		menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
 		
 		// TITLE / DESCRIPTION
 		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
@@ -642,10 +650,25 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		case MENU_ITEM_15:
 			//edit
 			//shuffle off to a new Activity
-			Intent intent2 = new Intent().setClass(this, EditorActivity.class);
-			intent2.putExtra(getString(R.string.EditorActivityFilenameKey), movieurl);
+			if (support_v10) {
+				Intent intent2 = new Intent().setClass(this, EditorActivity.class);
+				intent2.putExtra(getString(R.string.EditorActivityFilenameKey), movieurl);
 			
-			this.startActivity(intent2);
+				this.startActivity(intent2);
+			} else {
+				//Sorry!!
+				// ask if sure they want to delete ?
+				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)
+						.setMessage("Sorry! Your phone doesnt support this capability. You need to have Android 2.3.3 installed.")
+						.setPositiveButton(R.string.yes,
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int whichButton) {
+
+
+									}
+								}).show();
+			}
 			break;
 			
 		case MENU_ITEM_2:

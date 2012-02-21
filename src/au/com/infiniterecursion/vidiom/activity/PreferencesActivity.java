@@ -37,8 +37,9 @@ public class PreferencesActivity extends PreferenceActivity {
 
 	private void updateFolderLocation() {
 		PreferenceScreen ps = getPreferenceScreen();
-		//XXX use the key?
-		Preference tp = ps.getPreference(0);
+		//find the preference.
+		String key = getResources().getString(R.string.defaultVideosFolder);
+		Preference tp = ps.findPreference(key);
 		tp.setSummary("Current location is " + mainapp.getCurrentPath());
 		Log.d(TAG, " preferences onCreate");
 	}

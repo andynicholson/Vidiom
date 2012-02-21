@@ -5,6 +5,7 @@
 	<media:description type="plain">%s</media:description> 
 	<media:category scheme="http://gdata.youtube.com/schemas/2007/categories.cat">%s</media:category>
 	<media:keywords>%s</media:keywords> 
+	%s
 </media:group> 
 </entry>
 

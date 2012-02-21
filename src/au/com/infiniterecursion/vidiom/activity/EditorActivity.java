@@ -52,6 +52,8 @@ public class EditorActivity extends Activity {
 	int start_selection = 0;
 	int end_selection = (levelquantum * countlevel) - 1;
 
+	
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -67,7 +69,8 @@ public class EditorActivity extends Activity {
 
 		
 		//API level 10 code here
-		//XXX protect from devices that dont support this !
+		// protect from devices that dont support this !
+		// Currently done by LibraryActivity not invoking us if we dont support this level.
 		
 		thumber = new MediaMetadataRetriever();
 		try {
@@ -257,11 +260,16 @@ public class EditorActivity extends Activity {
 			Log.v(TAG, " Thumb at " + timeUs);
 			
 			//API level 10 code here
-			//XXX protect from devices that dont support this !
-			Bitmap outThumbnail = thumber.getFrameAtTime(timeUs);
+			//protect from devices that dont support this !
+			//Currently done by LibraryActivity not invoking us if we dont support this level.
+			Bitmap outThumbnail = thumber.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
 
-			iv.setImageBitmap(outThumbnail);
-
+			if (outThumbnail!=null) {
+				iv.setImageBitmap(outThumbnail);
+			} else {
+				iv.setImageResource(R.drawable.icon);
+			}
+			
 			if (position == start_selection) {
 				TextView tv2 = (TextView) v.findViewById(R.id.icon_text_two);
 				tv2.setText("Start of Trim");

@@ -180,7 +180,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	};
 
 	private boolean showing_titledesc = false;
-
+	
+	
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -260,6 +262,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		//set path in mainapp
 		mainapp.setCurrentPath(folder.getPath());
+
+		
 	}
 
 	@Override

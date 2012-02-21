@@ -2,35 +2,40 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:key="vidiomPreferences">
-  <Preference android:key="defaultVideosFolder" android:title="@string/defaultVideosFolderTitle">
-	<intent 
-		android:action="au.com.infiniterecursion.vidiom.activity.FileDialogActivity" /> 
-</Preference>
+  
 
 <EditTextPreference 
     android:title="@string/emailTitle"
 	android:inputType="textEmailAddress" android:summary="@string/emailPreferenceSummary" android:key="emailPreference">
 </EditTextPreference>
-<ListPreference android:key="filenameConventionPrefence" android:entries="@array/filenameConventionTypes" android:entryValues="@array/filenameConventionTypeIds" android:dialogTitle="@string/filenameConventionPreferenceDialogTitle" android:title="@string/filenameConventionPreferenceTitle" android:summary="@string/filenameConventionPreferenceSummary" android:defaultValue="@string/filenameConventionDefaultPreference"></ListPreference>
 
-<EditTextPreference android:key="maxDurationPreference" android:title="@string/maxDurationPreferenceTitle" android:summary="@string/maxDurationPreferenceSummary" android:defaultValue="@string/maxDurationPreferenceDefault" android:inputType="number" android:dialogMessage="@string/maxDurationPreferenceSummary"></EditTextPreference>
-<EditTextPreference android:key="maxFilesizePreference" android:title="@string/maxFilesizePreferenceTitle" android:defaultValue="@string/maxFilesizePreferenceDefault" android:summary="@string/maxFilesizePreferenceSummary" android:inputType="number" android:dialogMessage="@string/maxFilesizePreferenceSummary"></EditTextPreference>
+<PreferenceScreen android:title="@string/videoRecordingOptionsPreferencesScreenTitle">
+	<Preference android:key="@string/defaultVideosFolder" android:title="@string/defaultVideosFolderTitle">
+		<intent android:action="au.com.infiniterecursion.vidiom.activity.FileDialogActivity" /> 
+	</Preference>
+	<ListPreference android:key="filenameConventionPrefence" android:entries="@array/filenameConventionTypes" android:entryValues="@array/filenameConventionTypeIds" android:dialogTitle="@string/filenameConventionPreferenceDialogTitle" android:title="@string/filenameConventionPreferenceTitle" android:summary="@string/filenameConventionPreferenceSummary" android:defaultValue="@string/filenameConventionDefaultPreference"></ListPreference>
+	<EditTextPreference android:key="maxDurationPreference" android:title="@string/maxDurationPreferenceTitle" android:summary="@string/maxDurationPreferenceSummary" android:defaultValue="@string/maxDurationPreferenceDefault" android:inputType="number" android:dialogMessage="@string/maxDurationPreferenceSummary"></EditTextPreference>
+	<EditTextPreference android:key="maxFilesizePreference" android:title="@string/maxFilesizePreferenceTitle" android:defaultValue="@string/maxFilesizePreferenceDefault" android:summary="@string/maxFilesizePreferenceSummary" android:inputType="number" android:dialogMessage="@string/maxFilesizePreferenceSummary"></EditTextPreference>
+</PreferenceScreen>
 
-<CheckBoxPreference android:title="@string/autoEmailPreferenceTitle" android:summary="@string/autoEmailPreferenceSummary" android:key="autoemailPreference"></CheckBoxPreference>
-<CheckBoxPreference android:title="@string/videobinPreferenceTitle" android:summary="@string/videobinPreferenceSummary" android:key="videobinPreference"></CheckBoxPreference>
-<CheckBoxPreference android:title="@string/facebookPreferenceTitle" android:summary="@string/facebookPreferenceSummary" android:key="facebookPreference"></CheckBoxPreference>
-<CheckBoxPreference android:title="@string/youtubePreferenceTitle" android:summary="@string/youtubePreferenceSummary" android:key="youtubePreference"></CheckBoxPreference>
-<CheckBoxPreference android:title="@string/twitterPreferenceTitle" android:summary="@string/twitterPreferenceSummary" android:key="twitterPreference"></CheckBoxPreference>
+ <PreferenceScreen android:title="@string/automaticPreferencesScreenTitle" >
+   <CheckBoxPreference android:title="@string/autoEmailPreferenceTitle" android:summary="@string/autoEmailPreferenceSummary" android:key="autoemailPreference"></CheckBoxPreference>
+   <CheckBoxPreference android:title="@string/videobinPreferenceTitle" android:summary="@string/videobinPreferenceSummary" android:key="videobinPreference"></CheckBoxPreference>
+   <CheckBoxPreference android:title="@string/facebookPreferenceTitle" android:summary="@string/facebookPreferenceSummary" android:key="facebookPreference"></CheckBoxPreference>
+   <CheckBoxPreference android:title="@string/youtubePreferenceTitle" android:summary="@string/youtubePreferenceSummary" android:key="youtubePreference"></CheckBoxPreference>
+   <CheckBoxPreference android:title="@string/twitterPreferenceTitle" android:summary="@string/twitterPreferenceSummary" android:key="twitterPreference"></CheckBoxPreference>
+   <CheckBoxPreference android:title="@string/ftpPreferenceTitle" android:summary="@string/ftpPreferenceSummary" android:key="ftpPreference"></CheckBoxPreference>
+</PreferenceScreen>
 
-<CheckBoxPreference android:title="@string/ftpPreferenceTitle" android:summary="@string/ftpPreferenceSummary" android:key="ftpPreference"></CheckBoxPreference>
+<PreferenceScreen android:title="@string/ftpPreferencesScreenTitle">
+	<EditTextPreference android:summary="@string/defaultFTPhostPreferenceSummary" android:key="defaultFTPhostPreference" android:title="@string/defaultFTPhostPreferenceTitle" android:inputType="textUri"></EditTextPreference>
+	<EditTextPreference android:key="defaultFTPusernamePreference" android:title="@string/defaultFTPusernamePreferenceTitle"></EditTextPreference>
+	<EditTextPreference android:key="defaultFTPpasswordPreference" android:title="@string/defaultFTPpasswordPreferenceTitle" android:inputType="textPassword"></EditTextPreference>
+</PreferenceScreen>
 
-
-<EditTextPreference android:summary="@string/defaultFTPhostPreferenceSummary" android:key="defaultFTPhostPreference" 
-	android:title="@string/defaultFTPhostPreferenceTitle" android:inputType="textUri"></EditTextPreference>
-<EditTextPreference android:key="defaultFTPusernamePreference" android:title="@string/defaultFTPusernamePreferenceTitle"></EditTextPreference>
-<EditTextPreference android:key="defaultFTPpasswordPreference" android:title="@string/defaultFTPpasswordPreferenceTitle" android:inputType="textPassword"></EditTextPreference>
-
-
-
+<PreferenceScreen android:title="@string/youtubeOptionsPreferencesScreenTitle">
+	<CheckBoxPreference android:defaultValue="true"
+	    android:summary="@string/defaultYouTubePrivatePreferenceSummary" android:key="defaultYouTubePrivatePreference" android:title="@string/defaultYouTubePrivatePreferenceTitle" ></CheckBoxPreference>
+</PreferenceScreen>
 
 </PreferenceScreen>
