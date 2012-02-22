@@ -42,6 +42,9 @@ Code included from Signpost - http://code.google.com/p/oauth-signpost/ & availab
 Copyright 2012 Project contributors
 Code included from android-file-dialog - http://code.google.com/p/android-file-dialog/ & available under the license http://www.opensource.org/licenses/bsd-license.php
 
+Copyright 2012 tittel@kom.e-technik.tu-darmstadt.de
+Code included from range-seek-bar - http://code.google.com/p/range-seek-bar/ & available under the license http://www.apache.org/licenses/LICENSE-2.0 
+
 ----------------------------------------------------------------------
 
 
@@ -49,7 +52,7 @@ RELEASE LOG
 
 v0.6.16 - Released to Android Market on Feb 23rd 2012 (Sydney, Australia)
 	
-	( Added basic video editing capabilities )	
+	( Added basic video editing capabilities, reorganised preferences screen, YouTube videos can be uploaded as private or public. Removed "Uploaded by Vidiom" text on video uploads )	
 
 
 v0.6.15 - Released to Android Market AS PAID APP on Feb 19th 2012 (Sydney, Australia)
