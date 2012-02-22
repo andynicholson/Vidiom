@@ -530,16 +530,28 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, " onDestroy ");
-		libraryCursor.close();
-		dbutils.close();
+		if (libraryCursor!=null) {
+			libraryCursor.close();
+		}
+		if (dbutils!=null) {
+			dbutils.close();
+		}
 	}
 
 	@Override
 	public void onPause() {
 
-		super.onDestroy();
+		super.onPause();
+		
 		Log.d(TAG, "On pause");
 
+		if (libraryCursor!=null) {
+			libraryCursor.close();
+		}
+		if (dbutils!=null) {
+			dbutils.close();
+		}
+		
 		if (thread_vb != null) {
 			Log.d(TAG, "Interrupting videobin thread");
 			thread_vb.interrupt();
@@ -640,28 +652,39 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		case MENU_ITEM_15:
 			// edit
 			// shuffle off to a new Activity
-			if (support_v10) {
+			if (! support_v10) {
+				// Sorry!!
+				//
+				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)
+						.setMessage(
+								"Sorry! Your phone doesn't support obtaining image thumbnails at arbitrary video frames.\nTo support this you need to have Android 2.3.3 or above installed.\nYou can still edit your videos but you cannot see the video thumbnails.")
+						.setPositiveButton(R.string.yes,
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int whichButton) {
 
+										Intent intent2 = new Intent().setClass(LibraryActivity.this,
+												EditorActivity.class);
+										intent2.putExtra(getString(R.string.EditorActivityFilenameKey),
+												movieurl);
+
+										LibraryActivity.this.startActivity(intent2);
+										
+									}
+								}).show();
+			} else {
+				
+				//just run it directly..
 				Intent intent2 = new Intent().setClass(this,
 						EditorActivity.class);
 				intent2.putExtra(getString(R.string.EditorActivityFilenameKey),
 						movieurl);
 
 				this.startActivity(intent2);
-			} else {
-				// Sorry!!
-				//
-				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)
-						.setMessage(
-								"Sorry! Your phone doesnt support this capability. You need to have Android 2.3.3 installed.")
-						.setPositiveButton(R.string.yes,
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int whichButton) {
-
-									}
-								}).show();
 			}
+			
+		
+			
 			break;
 
 		case MENU_ITEM_2:

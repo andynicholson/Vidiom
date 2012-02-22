@@ -237,26 +237,33 @@ public class EditorActivity extends Activity {
 		// Starting position, offset in microseconds.
 		long offset = (long) (start_selection / 100.0 * duration_micros);
 
-		// HOURS set to ZERO!
+		
+		//TimeUnit.MICROSECONDS.toMinutes(offset), >= API 9 
+		long rounded_to_mins = (long) (TimeUnit.MICROSECONDS.toSeconds(offset) / 60.0);
+		long rounded_to_mins_in_seconds =  rounded_to_mins * 60;
+				
+		// NOTA BELLA: HOURS set to ZERO!
 		String offsetstr = String.format(
 				"00:%02d:%02d.%03d",
-				TimeUnit.MICROSECONDS.toMinutes(offset),
+				rounded_to_mins,
 				TimeUnit.MICROSECONDS.toSeconds(offset)
-						- TimeUnit.MINUTES.toSeconds(TimeUnit.MICROSECONDS
-								.toMinutes(offset)),
+						- rounded_to_mins_in_seconds,
 				TimeUnit.MICROSECONDS.toMillis(offset)
 						- TimeUnit.SECONDS.toMillis(TimeUnit.MICROSECONDS
 								.toSeconds(offset)));
 
 		// Duration from starting position
-		// HOURS set to ZERO
 		long duration = (long) ((end_selection - start_selection) / 100.0 * duration_micros);
+		
+		long rounded_to_mins_duration = (long) (TimeUnit.MICROSECONDS.toSeconds(duration)/60.0);      //TimeUnit.MICROSECONDS.toMinutes(duration); >= API 9
+		long rounded_to_mins_duration_in_seconds = rounded_to_mins_duration * 60;
+		
+		// NOTA BELLA : HOURS set to ZERO
 		String durationstr = String.format(
 				"00:%02d:%02d.%03d",
-				TimeUnit.MICROSECONDS.toMinutes(duration),
+				rounded_to_mins_duration,
 				TimeUnit.MICROSECONDS.toSeconds(duration)
-						- TimeUnit.MINUTES.toSeconds(TimeUnit.MICROSECONDS
-								.toMinutes(duration)),
+						- rounded_to_mins_duration_in_seconds,
 				TimeUnit.MICROSECONDS.toMillis(duration)
 						- TimeUnit.SECONDS.toMillis(TimeUnit.MICROSECONDS
 								.toSeconds(duration)));
@@ -401,8 +408,15 @@ public class EditorActivity extends Activity {
 			// protect from devices that dont support this !
 			// Currently done by LibraryActivity not invoking us if we dont
 			// support this level.
-			Bitmap outThumbnail = thumber.getFrameAtTime(timeUs,
-					MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+			Bitmap outThumbnail = null;
+			try {
+				outThumbnail = thumber.getFrameAtTime(timeUs,
+						MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+			} catch (NoSuchMethodError nsm) {
+				//nsm.printStackTrace();
+				//Log.e(TAG, " Probably have Android 2.2 ");
+			}
+			
 
 			if (outThumbnail != null) {
 				Log.v(TAG, " bitmap size is " + outThumbnail.getWidth() + "x"
