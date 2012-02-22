@@ -3,6 +3,7 @@ package au.com.infiniterecursion.vidiom.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.LayerDrawable;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,12 +12,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import au.com.infiniterecursion.vidiom.utils.RangeSeekBar;
+import au.com.infiniterecursion.vidiom.utils.RangeSeekBar.OnRangeSeekBarChangeListener;
 import au.com.infiniterecursion.vidiompro.R;
 
 
@@ -47,10 +54,13 @@ public class EditorActivity extends Activity {
 	String filepath;
 	long duration_millis;
 	ImageAdapter adapterVideoThumbs;
-	int levelquantum = 3;
-	int countlevel = 4;
+	
+	int number_of_thumbnails = 12;
+	
 	int start_selection = 0;
-	int end_selection = (levelquantum * countlevel) - 1;
+	int end_selection = 100;
+
+	private long duration_micros;
 
 	
 	
@@ -67,6 +77,45 @@ public class EditorActivity extends Activity {
 				.getString(getString(R.string.EditorActivityFilenameKey));
 		Log.d(TAG, " Editing " + filepath);
 
+		
+		final RangeSeekBar<Integer> seekBar = new RangeSeekBar<Integer>(0, 100, getBaseContext());
+		seekBar.setOnRangeSeekBarChangeListener(new OnRangeSeekBarChangeListener<Integer>() {
+		        @Override
+		        public void rangeSeekBarValuesChanged(Integer minValue, Integer maxValue) {
+		                // handle changed range values
+		                Log.i(TAG, "User selected new range values: MIN=" + minValue + ", MAX=" + maxValue);
+		                
+		                start_selection = minValue;
+		                end_selection = maxValue;
+		                
+		                adapterVideoThumbs.notifyDataSetChanged();
+		        }
+		});
+
+		// add RangeSeekBar to pre-defined layout
+		final LinearLayout layout = (LinearLayout) findViewById(R.id.editorLayout);
+		layout.addView(seekBar);
+		
+		ViewTreeObserver vto = layout.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+            	
+            	//adjust size of editor to seek bar height.
+        		int height_editor = layout.getHeight() - seekBar.getHeight();
+        		Log.d(TAG, " editor height is " + grid_main.getHeight() + " layout height " + layout.getHeight() + " seekBar " + seekBar.getHeight());
+        		Log.d(TAG, " editor height becoming " + height_editor);
+        		
+        		grid_main.setLayoutParams(new LinearLayout.LayoutParams(grid_main.getWidth(), height_editor));
+        		
+            	//remove, so it works once only.
+                ViewTreeObserver obs = layout.getViewTreeObserver();
+                obs.removeGlobalOnLayoutListener(this);
+            }
+        });
+
+		
+		
 		
 		//API level 10 code here
 		// protect from devices that dont support this !
@@ -91,53 +140,18 @@ public class EditorActivity extends Activity {
 			duration_millis = 0;
 		}
 		
+		duration_micros = duration_millis * 1000;
+		
 		grid_main.setSelected(true);
-		// grid_main.setSelection(0);
 
 		grid_main.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 					int position, long id) {
 
-				int position_position = ((adapterVideoThumbs.getCount() -1) / 2) ;
-
-				int dist_to_start = Math.abs(position - start_selection); 
-				int dist_to_end = Math.abs(end_selection - position);
-				
-				if (dist_to_end > dist_to_start) {
-					start_selection = position;
-					adapterVideoThumbs.notifyDataSetChanged();
-					return;
-				}
-				
-				if (dist_to_end < dist_to_start) {
-					end_selection = position;
-					adapterVideoThumbs.notifyDataSetChanged();
-					return;
-				}
-				
-				// Is an start selection?
-				if (position <= position_position) {
-					start_selection = position;
-					adapterVideoThumbs.notifyDataSetChanged();
-					return;
-				}
-
-				// Is an end selection?
-				if (position > position_position) {
-
-					end_selection = position;
-					adapterVideoThumbs.notifyDataSetChanged();
-					return;
-				}
-
+				// nothing.
 			}
 		});
 
-	}
-
-	public void resetSelections() {
-		start_selection = 0;
-		end_selection = adapterVideoThumbs.getCount() - 1;
 	}
 
 	@Override
@@ -155,12 +169,12 @@ public class EditorActivity extends Activity {
 
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
-		MenuItem menu_zoom_in = menu.add(0, MENU_ITEM_1, 0, R.string.menu_zoom);
+		//MenuItem menu_zoom_in = menu.add(0, MENU_ITEM_1, 0, R.string.menu_zoom);
 		//
 		// menu_zoom_in.setIcon(R.drawable.wizard48);
 
-		MenuItem menu_zoom_out = menu.add(0, MENU_ITEM_2, 0,
-				R.string.menu_unzoom);
+		//MenuItem menu_zoom_out = menu.add(0, MENU_ITEM_2, 0,
+		//		R.string.menu_unzoom);
 		//
 		// menu_zoom_out.setIcon(R.drawable.wizard48);
 
@@ -179,16 +193,12 @@ public class EditorActivity extends Activity {
 
 		//
 		case MENU_ITEM_1:
-			adapterVideoThumbs.zoom();
-			resetSelections();
-			adapterVideoThumbs.notifyDataSetChanged();
+			
 			break;
 
 		//
 		case MENU_ITEM_2:
-			adapterVideoThumbs.unzoom();
-			resetSelections();
-			adapterVideoThumbs.notifyDataSetChanged();
+			
 			break;
 
 		//
@@ -207,42 +217,31 @@ public class EditorActivity extends Activity {
 			mContext = c;
 		}
 
-		public int getCount() {
-			// ALWAYS a multiple of
-			return levelquantum * countlevel;
-
-		}
-
-		public void reset_zoom() {
-			countlevel = 4;
-
-		}
-
-		public void zoom() {
-			countlevel++;
-			// shouldn't be able to go above number of actual frames...
-			//
-			// XXX
-		}
-
-		public void unzoom() {
-			if (countlevel > 0) {
-				countlevel--;
-			}
-
-		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
 			//
 			// TimeUs (in microseconds) is
 
 			// duration_millis * 1000 * position/ getCount()
-			long duration_micros = duration_millis * 1000;
+			
 
-			long timeUs = duration_micros * position / getCount();
+			// Based on a modified version of duration_micros
+			// depending on start_selection, end_selection
+			
+			// offset = start_selection * duration_micros / 100
+			// +
+			// position * (end_start_selection-start_selection)/100  * duration_micros / getCount()
+			
+			long offset = (long) (start_selection / 100.0 * duration_micros);
+			long position_val = (long) (position * (end_selection-start_selection)/100.0  * duration_micros / getCount());
+			//final timeUs for the wanted thumbnail
+			long timeUs = offset + position_val;
+			
 			String time_seconds = String.valueOf(timeUs / 1000000.0);
 			View v;
 
+			Log.v(TAG, " position " + position + " : " + end_selection + " to " + start_selection + " offset " + offset + " position_val " + position_val);
+			
 			if (convertView == null) {
 				LayoutInflater li = getLayoutInflater();
 				v = li.inflate(R.layout.thumbnail_gridview, null);
@@ -252,6 +251,9 @@ public class EditorActivity extends Activity {
 
 			}
 
+			//set total layout (row) width and height
+			//v.setLayoutParams(new LinearLayout.LayoutParams(v.getWidth(), 40));
+			
 			TextView tv = (TextView) v.findViewById(R.id.icon_text);
 			tv.setText("Time " + time_seconds);
 			ImageView iv = (ImageView) v.findViewById(R.id.icon_image);
@@ -264,12 +266,18 @@ public class EditorActivity extends Activity {
 			//Currently done by LibraryActivity not invoking us if we dont support this level.
 			Bitmap outThumbnail = thumber.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
 
+			
+			
 			if (outThumbnail!=null) {
+				Log.v(TAG, " bitmap size is " + outThumbnail.getWidth() + "x" +  outThumbnail.getHeight() );
 				iv.setImageBitmap(outThumbnail);
+				
 			} else {
 				iv.setImageResource(R.drawable.icon);
 			}
+			Log.v(TAG, " imagaview size is " + iv.getWidth() + "x" +  iv.getHeight() );
 			
+			/*
 			if (position == start_selection) {
 				TextView tv2 = (TextView) v.findViewById(R.id.icon_text_two);
 				tv2.setText("Start of Trim");
@@ -281,7 +289,7 @@ public class EditorActivity extends Activity {
 				TextView tv2 = (TextView) v.findViewById(R.id.icon_text_two);
 				tv2.setText("");
 			}
-			
+			*/
 
 			return v;
 		}
@@ -294,6 +302,13 @@ public class EditorActivity extends Activity {
 		public long getItemId(int position) {
 			// TODO Auto-generated method stub
 			return 0;
+		}
+
+
+		@Override
+		public int getCount() {
+			// number of views ie thumbnails
+			return number_of_thumbnails;
 		}
 	}
 }

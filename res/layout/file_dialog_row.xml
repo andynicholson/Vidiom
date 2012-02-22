@@ -9,7 +9,7 @@
 	<TextView android:text="@+id/fdrowtext" android:layout_width="wrap_content"
 		android:id="@+id/fdrowtext" android:layout_toRightOf="@+id/fdrowimage"
 		android:layout_alignTop="@+id/fdrowimage" android:layout_alignBottom="@+id/fdrowimage"
-		android:gravity="center_vertical" android:layout_height="35dp"
+		android:gravity="center_vertical" android:layout_height="25dp"
 		android:textSize="23dp"></TextView> 
 
 </RelativeLayout>
