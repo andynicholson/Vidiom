@@ -45,6 +45,11 @@ Code included from android-file-dialog - http://code.google.com/p/android-file-d
 Copyright 2012 tittel@kom.e-technik.tu-darmstadt.de
 Code included from range-seek-bar - http://code.google.com/p/range-seek-bar/ & available under the license http://www.apache.org/licenses/LICENSE-2.0 
 
+Copyright 2012 Nick Howes
+Code included from android-ffmpeg-x64 - https://github.com/andycat/android-ffmpeg-x264  (Vidiom branch of build system)
+This code includes FFmpeg, x264 built using the Android NDK - see http://ffmpeg.org/ - FFmpeg available under the GPL license http://ffmpeg.org/legal.html
+
+
 ----------------------------------------------------------------------
 
 

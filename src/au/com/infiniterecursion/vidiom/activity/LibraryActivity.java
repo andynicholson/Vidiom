@@ -657,7 +657,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				this.startActivity(intent2);
 			} else {
 				//Sorry!!
-				// ask if sure they want to delete ?
+				// 
 				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)
 						.setMessage("Sorry! Your phone doesnt support this capability. You need to have Android 2.3.3 installed.")
 						.setPositiveButton(R.string.yes,

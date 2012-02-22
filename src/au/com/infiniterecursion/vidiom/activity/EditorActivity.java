@@ -1,18 +1,26 @@
 package au.com.infiniterecursion.vidiom.activity;
 
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import uk.co.halfninja.videokit.Videokit;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.LayerDrawable;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
@@ -22,6 +30,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import au.com.infiniterecursion.vidiom.utils.DBUtils;
 import au.com.infiniterecursion.vidiom.utils.RangeSeekBar;
 import au.com.infiniterecursion.vidiom.utils.RangeSeekBar.OnRangeSeekBarChangeListener;
 import au.com.infiniterecursion.vidiompro.R;
@@ -61,8 +70,8 @@ public class EditorActivity extends Activity {
 	int end_selection = 100;
 
 	private long duration_micros;
-
 	
+	Videokit vk = new Videokit();
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -204,10 +213,138 @@ public class EditorActivity extends Activity {
 		//
 		case MENU_ITEM_3:
 
+			trimVideo();
+			
 			break;
 
 		}
 		return true;
+	}
+
+	private void trimVideo() {
+		// Lets trim the video
+		
+		Log.v(TAG, " Starting to trim video");
+	
+		Log.i("Test", "Let's set input to " + filepath);
+		// 
+		// RENAME TO 3GP - ffmpeg wont use the amrnb codec inside MP4
+		String output = filepath.replace(".mp4", "-transcoded.3gp");
+		Log.i("Test", "Let's set output to " + output);
+		
+		//Starting position, offset in microseconds.
+		long offset = (long) (start_selection / 100.0 * duration_micros);
+		
+		//HOURS set to ZERO!
+		String offsetstr = String.format("00:%02d:%02d.%03d", 
+			    TimeUnit.MICROSECONDS.toMinutes(offset),
+			    TimeUnit.MICROSECONDS.toSeconds(offset) - TimeUnit.MINUTES.toSeconds(TimeUnit.MICROSECONDS.toMinutes(offset)),
+			    TimeUnit.MICROSECONDS.toMillis(offset) - TimeUnit.SECONDS.toMillis(TimeUnit.MICROSECONDS.toSeconds(offset))
+			);
+
+		//Duration from starting position
+		//HOURS set to ZERO
+		long duration = (long) ((end_selection-start_selection)/100.0  * duration_micros);
+		String durationstr = String.format("00:%02d:%02d.%03d", 
+			    TimeUnit.MICROSECONDS.toMinutes(duration),
+			    TimeUnit.MICROSECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MICROSECONDS.toMinutes(duration)),
+			    TimeUnit.MICROSECONDS.toMillis(duration) - TimeUnit.SECONDS.toMillis(TimeUnit.MICROSECONDS.toSeconds(duration))
+			);
+
+		Log.d(TAG, " skip to " + offsetstr + " duration " + durationstr);
+		
+		//INVOKE FFMPEG ;-D
+		vk.run(new String[]{
+				"ffmpeg",
+				"-i", filepath, 				
+				"-ss", offsetstr
+				,"-t" , durationstr
+				,"-vcodec", "copy" 
+				,"-acodec" ,"copy"
+				, "-y",  output
+		});
+		
+	
+		
+		//Check file size
+		File new_file = new File(output);
+		//Check the new transcoded copy
+		if (new_file.exists() && new_file.length() > 0) {
+			
+			DBUtils db_utils = new DBUtils(getBaseContext());
+			//Add this to our library!
+			long latestsdrecord_id = db_utils
+					.createSDFileRecordwithNewVideoRecording(
+							output,
+							new_file.getName(),
+							(int) (duration / 1000000),
+							// XXX hardcoded vid & audio codecs
+							"h263;amr-nb", "Untitled Copy", "Transcoded version");
+
+			// If ID > 0, then new record in DB was successfully created
+			if (latestsdrecord_id > 0) {
+
+				Log.d(TAG,
+						"Valid DB Record - made transcoded video file - sdrecord id  is "
+								+ latestsdrecord_id);
+
+				// Send the info to the inbuilt Android Media Scanner
+
+				// Save the name and description of a video in a
+				// ContentValues map.
+				ContentValues values = new ContentValues(2);
+				values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+				values.put(MediaStore.Video.Media.DATA,
+						output);
+
+				// Add a new record (identified by uri), but with the values
+				// just set.
+				Uri uri = getContentResolver()
+						.insert(
+								MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+								values);
+
+				sendBroadcast(new Intent(
+						Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+
+				// Video recording finished dialog!
+				new AlertDialog.Builder(this).setMessage(
+						getResources().getString(R.string.file_transcoded) + " "
+								+ new_file.getName() + '\n'
+								+ getResources().getString(R.string.posts_in_gallery))
+						.setPositiveButton(R.string.yes,
+								new DialogInterface.OnClickListener() {
+									public void onClick(
+											DialogInterface dialog,
+											int whichButton) {
+
+										
+										//Finish at this point.
+										finish();
+										
+									}
+								}).show();
+			}
+			
+			
+		} else  {
+			
+			//sorry!
+			AlertDialog ffmpeg_zero_out = new AlertDialog.Builder(this)
+			.setMessage("Sorry! Transcoding failed.")
+			.setPositiveButton(R.string.yes,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+
+
+						}
+					}).show();
+			
+		}
+			
+		
+		
 	}
 
 	public class ImageAdapter extends BaseAdapter {
