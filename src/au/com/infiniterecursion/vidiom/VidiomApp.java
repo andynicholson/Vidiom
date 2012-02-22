@@ -14,7 +14,6 @@ package au.com.infiniterecursion.vidiom;
 import android.app.Application;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.facebook.SessionStore;
-import au.com.infiniterecursion.vidiompro.R;
 
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.Facebook;
@@ -33,7 +32,7 @@ public class VidiomApp extends Application {
 	private boolean isUploading;
 
 	private String current_path;
-	
+
 	/*
 	 * On application startup, get the home position from the preferences.
 	 * 
@@ -50,9 +49,7 @@ public class VidiomApp extends Application {
 		mAsyncRunner = new AsyncFacebookRunner(mFacebook);
 
 		boolean session_valid = SessionStore.restore(mFacebook, this);
-		Log
-				.i(TAG, "Session for facebook restored . Is valid ?"
-						+ session_valid);
+		Log.i(TAG, "Session for facebook restored . Is valid ?" + session_valid);
 
 		isUploading = false;
 	}
@@ -82,11 +79,11 @@ public class VidiomApp extends Application {
 	public void setNotUploading() {
 		isUploading = false;
 	}
-	
+
 	public String getCurrentPath() {
 		return current_path;
 	}
-	
+
 	public void setCurrentPath(String path) {
 		this.current_path = path;
 	}

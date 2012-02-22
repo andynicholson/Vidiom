@@ -51,9 +51,9 @@ public class TwitterOAuthActivity extends Activity {
 			if (url != null && url.startsWith(CALLBACKURL)) {
 
 				parseUri(url);
-								
+
 				finish();
-				
+
 				return true;
 			}
 
@@ -119,12 +119,14 @@ public class TwitterOAuthActivity extends Activity {
 			editor.putString("twitterTokenSecret", a.getTokenSecret());
 			editor.commit();
 
-			Toast.makeText(TwitterOAuthActivity.this, R.string.twitter_authorisation_successfully, Toast.LENGTH_LONG).show();
-			
+			Toast.makeText(TwitterOAuthActivity.this,
+					R.string.twitter_authorisation_successfully,
+					Toast.LENGTH_LONG).show();
+
 		} catch (Exception e) {
 
 			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			
+
 		}
 
 	}

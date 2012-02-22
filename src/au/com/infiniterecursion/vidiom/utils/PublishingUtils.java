@@ -65,15 +65,14 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.activity.VidiomActivity;
 import au.com.infiniterecursion.vidiom.sslemail.SSLEmailSender;
 import au.com.infiniterecursion.vidiom.utils.GoogleAuthoriser.AuthorizationListener;
+import au.com.infiniterecursion.vidiompro.R;
 
 import com.facebook.android.Facebook;
 import com.facebook.android.Util;
@@ -142,7 +141,7 @@ public class PublishingUtils {
 	// videoUploadToFacebook modified from
 	// http://code.google.com/p/stickman-android/source/browse/trunk/src/org/hackday/stickman/upload/FacebookHelper.java?spec=svn31&r=31
 	// http://www.apache.org/licenses/LICENSE-2.0
-	// 
+	//
 	// Changed by Andy Nicholson
 	//
 	// Facebook uploading
@@ -170,8 +169,8 @@ public class PublishingUtils {
 				params.putString("format", "json");
 				params.putString("title", title);
 				params.putString("description", description);
-				params.putString("call_id", String.valueOf(System
-						.currentTimeMillis()));
+				params.putString("call_id",
+						String.valueOf(System.currentTimeMillis()));
 				params.putString("v", "1.0");
 				params.putString("oauth_token", mFacebook.getAccessToken());
 
@@ -237,9 +236,8 @@ public class PublishingUtils {
 
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_facebook_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_facebook_failed_));
 						}
 					}, 0);
 
@@ -291,9 +289,8 @@ public class PublishingUtils {
 
 								((VidiomActivity) activity)
 										.finishedUploading(true);
-								((VidiomActivity) activity)
-										.createNotification(res
-												.getString(R.string.upload_to_facebook_succeeded_));
+								((VidiomActivity) activity).createNotification(res
+										.getString(R.string.upload_to_facebook_succeeded_));
 
 							}
 						}, 0);
@@ -312,9 +309,8 @@ public class PublishingUtils {
 
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_facebook_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_facebook_failed_));
 						}
 					}, 0);
 
@@ -325,25 +321,19 @@ public class PublishingUtils {
 
 					// EmailSender through IR controlled gmail system.
 					SSLEmailSender sender = new SSLEmailSender(
-							activity
-									.getString(R.string.automatic_email_username),
-							activity
-									.getString(R.string.automatic_email_password)); // consider
+							activity.getString(R.string.automatic_email_username),
+							activity.getString(R.string.automatic_email_password)); // consider
 					// this
 					// public
 					// knowledge.
 					try {
-						sender
-								.sendMail(
-										activity
-												.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-										activity
-												.getString(R.string.url_of_hosted_video_is_)
-												+ " " + hosted_url, // body.getText().toString(),
-										activity
-												.getString(R.string.automatic_email_from), // from.getText().toString(),
-										emailAddress // to.getText().toString()
-								);
+						sender.sendMail(
+								activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+								activity.getString(R.string.url_of_hosted_video_is_)
+										+ " " + hosted_url, // body.getText().toString(),
+								activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+								emailAddress // to.getText().toString()
+						);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
@@ -398,18 +388,20 @@ public class PublishingUtils {
 						new FileBody(file));
 
 				try {
-					entity.addPart(res.getString(R.string.video_bin_API_api),
+					entity.addPart(
+							res.getString(R.string.video_bin_API_api),
 							new StringBody("1", "text/plain", Charset
 									.forName("UTF-8")));
 
 					// title
-					entity.addPart(res.getString(R.string.video_bin_API_title),
+					entity.addPart(
+							res.getString(R.string.video_bin_API_title),
 							new StringBody(title, "text/plain", Charset
 									.forName("UTF-8")));
 
 					// description
-					entity.addPart(res
-							.getString(R.string.video_bin_API_description),
+					entity.addPart(
+							res.getString(R.string.video_bin_API_description),
 							new StringBody(description, "text/plain", Charset
 									.forName("UTF-8")));
 
@@ -451,16 +443,19 @@ public class PublishingUtils {
 
 				client.getConnectionManager().shutdown();
 
-				//CHECK RESPONSE FOR SUCCESS!!
-				if (!failed && response!=null && response.matches(res.getString(R.string.video_bin_API_good_re))) {
-					//We got back HTTP response with valid URL
+				// CHECK RESPONSE FOR SUCCESS!!
+				if (!failed
+						&& response != null
+						&& response.matches(res
+								.getString(R.string.video_bin_API_good_re))) {
+					// We got back HTTP response with valid URL
 					Log.d(TAG, " video bin got back URL " + response);
-					
+
 				} else {
 					Log.d(TAG, " video bin got eror back:\n" + response);
 					failed = true;
 				}
-				
+
 				if (failed) {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -475,16 +470,13 @@ public class PublishingUtils {
 							((VidiomActivity) activity)
 									.finishedUploading(false);
 
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_videobin_org_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_videobin_org_failed_));
 						}
 					}, 0);
 
 					return;
 				}
-
-				
 
 				// XXX Convert to preference for auto-email on videobin post
 				// XXX ADD EMAIL NOTIF to all other upload methods
@@ -494,25 +486,19 @@ public class PublishingUtils {
 
 					// EmailSender through IR controlled gmail system.
 					SSLEmailSender sender = new SSLEmailSender(
-							activity
-									.getString(R.string.automatic_email_username),
-							activity
-									.getString(R.string.automatic_email_password)); // consider
+							activity.getString(R.string.automatic_email_username),
+							activity.getString(R.string.automatic_email_password)); // consider
 					// this
 					// public
 					// knowledge.
 					try {
-						sender
-								.sendMail(
-										activity
-												.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-										activity
-												.getString(R.string.url_of_hosted_video_is_)
-												+ " " + response, // body.getText().toString(),
-										activity
-												.getString(R.string.automatic_email_from), // from.getText().toString(),
-										emailAddress // to.getText().toString()
-								);
+						sender.sendMail(
+								activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+								activity.getString(R.string.url_of_hosted_video_is_)
+										+ " " + response, // body.getText().toString(),
+								activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+								emailAddress // to.getText().toString()
+						);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
@@ -534,9 +520,8 @@ public class PublishingUtils {
 						// update uploadInProgress state also.
 
 						((VidiomActivity) activity).finishedUploading(true);
-						((VidiomActivity) activity)
-								.createNotification(res
-										.getString(R.string.upload_to_videobin_org_succeeded_));
+						((VidiomActivity) activity).createNotification(res
+								.getString(R.string.upload_to_videobin_org_succeeded_));
 
 					}
 				}, 0);
@@ -606,9 +591,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 							new AlertDialog.Builder(activity)
 									.setMessage(R.string.cant_find_upload_host)
@@ -670,9 +654,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 							new AlertDialog.Builder(activity)
 									.setMessage(R.string.cant_login_upload_host)
@@ -709,9 +692,8 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log
-							.e(TAG,
-									" got exception on ftp.login - video uploading failed.");
+					Log.e(TAG,
+							" got exception on ftp.login - video uploading failed.");
 				}
 
 				// check the reply code here
@@ -734,9 +716,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 							new AlertDialog.Builder(activity)
 									.setMessage(R.string.cant_login_upload_host)
@@ -777,9 +758,8 @@ public class PublishingUtils {
 				} catch (FileNotFoundException e) {
 					//
 					e.printStackTrace();
-					Log
-							.e(TAG,
-									" got exception on local video file - video uploading failed.");
+					Log.e(TAG,
+							" got exception on local video file - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -791,9 +771,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -811,9 +790,8 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log
-							.e(TAG,
-									" got exception on storeFile - video uploading failed.");
+					Log.e(TAG,
+							" got exception on storeFile - video uploading failed.");
 
 					// This is a bad error, lets abort.
 					// user dialog ?! shouldnt happen, but still...
@@ -827,9 +805,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -840,9 +817,8 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log
-							.e(TAG,
-									" got exception on buff.close - video uploading failed.");
+					Log.e(TAG,
+							" got exception on buff.close - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -854,9 +830,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -867,9 +842,8 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log
-							.e(TAG,
-									" got exception on ftp logout - video uploading failed.");
+					Log.e(TAG,
+							" got exception on ftp logout - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -881,9 +855,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -894,9 +867,8 @@ public class PublishingUtils {
 				} catch (IOException e) {
 					//
 					e.printStackTrace();
-					Log
-							.e(TAG,
-									" got exception on ftp disconnect - video uploading failed.");
+					Log.e(TAG,
+							" got exception on ftp disconnect - video uploading failed.");
 
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
@@ -908,9 +880,8 @@ public class PublishingUtils {
 							// Hide the progress bar
 							((VidiomActivity) activity)
 									.finishedUploading(false);
-							((VidiomActivity) activity)
-									.createNotification(res
-											.getString(R.string.upload_to_ftp_host_failed_));
+							((VidiomActivity) activity).createNotification(res
+									.getString(R.string.upload_to_ftp_host_failed_));
 
 						}
 					}, 0);
@@ -921,25 +892,19 @@ public class PublishingUtils {
 
 					// EmailSender through IR controlled gmail system.
 					SSLEmailSender sender = new SSLEmailSender(
-							activity
-									.getString(R.string.automatic_email_username),
-							activity
-									.getString(R.string.automatic_email_password)); // consider
+							activity.getString(R.string.automatic_email_username),
+							activity.getString(R.string.automatic_email_password)); // consider
 					// this
 					// public
 					// knowledge.
 					try {
-						sender
-								.sendMail(
-										activity
-												.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-										activity
-												.getString(R.string.url_of_hosted_video_is_)
-												+ " " + ftpHostName, // body.getText().toString(),
-										activity
-												.getString(R.string.automatic_email_from), // from.getText().toString(),
-										emailAddress // to.getText().toString()
-								);
+						sender.sendMail(
+								activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+								activity.getString(R.string.url_of_hosted_video_is_)
+										+ " " + ftpHostName, // body.getText().toString(),
+								activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+								emailAddress // to.getText().toString()
+						);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
@@ -960,9 +925,8 @@ public class PublishingUtils {
 						// update uploadInProgress state also.
 
 						((VidiomActivity) activity).finishedUploading(true);
-						((VidiomActivity) activity)
-								.createNotification(res
-										.getString(R.string.upload_to_ftp_host_succeeded_));
+						((VidiomActivity) activity).createNotification(res
+								.getString(R.string.upload_to_ftp_host_succeeded_));
 
 					}
 				}, 0);
@@ -983,8 +947,8 @@ public class PublishingUtils {
 		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		// XXX hardcoded video mimetype
 		i.setType("video/mp4");
-		i.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"
-				+ latestVideoFile_absolutepath));
+		i.putExtra(Intent.EXTRA_STREAM,
+				Uri.parse("file://" + latestVideoFile_absolutepath));
 		activity.startActivity(i);
 	}
 
@@ -997,29 +961,31 @@ public class PublishingUtils {
 		} catch (android.content.ActivityNotFoundException e) {
 			Log.e(TAG, " Cant start activity to show video!");
 
-			new AlertDialog.Builder(activity).setMessage(
-					R.string.cant_show_video).setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+			new AlertDialog.Builder(activity)
+					.setMessage(R.string.cant_show_video)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-						}
-					})
+								}
+							})
 
-			.setNegativeButton(R.string.cancel,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+					.setNegativeButton(R.string.cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-						}
-					}).show();
+								}
+							}).show();
 
 			return;
 		}
 
 	}
 
-	public File selectFilenameAndCreateFile(String filenameConventionPrefence, File base_folder) {
+	public File selectFilenameAndCreateFile(String filenameConventionPrefence,
+			File base_folder) {
 		// Video file name selection process
 		String new_videofile_name = res
 				.getString(R.string.defaultVideoFilenamePrefix);
@@ -1048,7 +1014,8 @@ public class PublishingUtils {
 
 		}
 
-		File tempFile = new File(base_folder.getAbsolutePath(), new_videofile_name);
+		File tempFile = new File(base_folder.getAbsolutePath(),
+				new_videofile_name);
 		return tempFile;
 	}
 
@@ -1066,7 +1033,7 @@ public class PublishingUtils {
 	// http://code.google.com/p/ytd-android/source/browse/trunk/src/com/google/ytd/SubmitActivity.java
 	// http://www.apache.org/licenses/LICENSE-2.0
 	// Copyright 2010 Google License Apache
-	// 
+	//
 	// Changed by Andy Nicholson
 
 	public void asyncYouTubeUpload(final Activity activity, final File file,
@@ -1152,8 +1119,8 @@ public class PublishingUtils {
 				.getTitleAndDescriptionFromID(new String[] { Long
 						.toString(sdrecord_id) });
 		// add our branding to the description.
-		String uploadUrl = uploadMetaData(activity, handler, file
-				.getAbsolutePath(), strs[0], strs[1] , true);
+		String uploadUrl = uploadMetaData(activity, handler,
+				file.getAbsolutePath(), strs[0], strs[1], true);
 
 		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is "
 				+ this.youTubeName);
@@ -1176,8 +1143,9 @@ public class PublishingUtils {
 			} else {
 				end = start + (int) fileSize - 1;
 			}
-			Log.d(TAG, String.format("start=%s end=%s total=%s", start, end,
-					file.length()));
+			Log.d(TAG,
+					String.format("start=%s end=%s total=%s", start, end,
+							file.length()));
 			try {
 				videoId = gdataUpload(file, uploadUrl, start, end);
 				fileSize -= uploadChunk;
@@ -1230,26 +1198,20 @@ public class PublishingUtils {
 			if (emailAddress != null) {
 
 				// EmailSender through IR controlled mail system.
-				SSLEmailSender sender = new SSLEmailSender(activity
-						.getString(R.string.automatic_email_username), activity
-						.getString(R.string.automatic_email_password)); // consider
+				SSLEmailSender sender = new SSLEmailSender(
+						activity.getString(R.string.automatic_email_username),
+						activity.getString(R.string.automatic_email_password)); // consider
 				// this
 				// public
 				// knowledge.
 				try {
-					sender
-							.sendMail(
-									activity
-											.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
-									activity
-											.getString(R.string.url_of_hosted_video_is_)
-											+ " "
-											+ YOUTUBE_PLAYER_URL
-											+ videoId, // body.getText().toString(),
-									activity
-											.getString(R.string.automatic_email_from), // from.getText().toString(),
-									emailAddress // to.getText().toString()
-							);
+					sender.sendMail(
+							activity.getString(R.string.vidiom_automatic_email), // subject.getText().toString(),
+							activity.getString(R.string.url_of_hosted_video_is_)
+									+ " " + YOUTUBE_PLAYER_URL + videoId, // body.getText().toString(),
+							activity.getString(R.string.automatic_email_from), // from.getText().toString(),
+							emailAddress // to.getText().toString()
+					);
 				} catch (Exception e) {
 					Log.e(TAG, e.getMessage(), e);
 				}
@@ -1270,9 +1232,8 @@ public class PublishingUtils {
 					// update uploadInProgress state also.
 
 					((VidiomActivity) activity).finishedUploading(true);
-					((VidiomActivity) activity)
-							.createNotification(res
-									.getString(R.string.upload_to_youtube_host_succeeded_));
+					((VidiomActivity) activity).createNotification(res
+							.getString(R.string.upload_to_youtube_host_succeeded_));
 
 				}
 			}, 0);
@@ -1310,17 +1271,18 @@ public class PublishingUtils {
 			description = "No description";
 		}
 
-		//Check user preference to see if YouTube videos should be private by default.
+		// Check user preference to see if YouTube videos should be private by
+		// default.
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(activity.getBaseContext());
-		Boolean ytPrivate = prefs.getBoolean(
-				"defaultYouTubePrivatePreference", true);
-		
+		Boolean ytPrivate = prefs.getBoolean("defaultYouTubePrivatePreference",
+				true);
+
 		String private_or_not = "<yt:private />";
 		if (!ytPrivate) {
 			private_or_not = "";
 		}
-		
+
 		atomData = String.format(template, title, description, category,
 				this.tags, private_or_not);
 
@@ -1328,8 +1290,8 @@ public class PublishingUtils {
 		int responseCode = -1;
 
 		try {
-			outStreamWriter = new OutputStreamWriter(urlConnection
-					.getOutputStream());
+			outStreamWriter = new OutputStreamWriter(
+					urlConnection.getOutputStream());
 			outStreamWriter.write(atomData);
 			outStreamWriter.close();
 
@@ -1388,9 +1350,8 @@ public class PublishingUtils {
 					// update uploadInProgress state also.
 
 					((VidiomActivity) activity).finishedUploading(false);
-					((VidiomActivity) activity)
-							.createNotification(res
-									.getString(R.string.upload_to_youtube_host_failed_));
+					((VidiomActivity) activity).createNotification(res
+							.getString(R.string.upload_to_youtube_host_failed_));
 
 				}
 			}, 0);
@@ -1425,9 +1386,8 @@ public class PublishingUtils {
 						// update uploadInProgress state also.
 
 						((VidiomActivity) activity).finishedUploading(false);
-						((VidiomActivity) activity)
-								.createNotification(res
-										.getString(R.string.upload_to_youtube_host_failed_));
+						((VidiomActivity) activity).createNotification(res
+								.getString(R.string.upload_to_youtube_host_failed_));
 
 					}
 				}, 0);
@@ -1461,20 +1421,17 @@ public class PublishingUtils {
 		} else {
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setRequestProperty("X-HTTP-Method-Override", "PUT");
-			Log
-					.d(
-							TAG,
-							String
-									.format(
-											"Uploaded %d bytes so far, using POST with X-HTTP-Method-Override PUT method.",
-											(int) totalBytesUploaded));
+			Log.d(TAG,
+					String.format(
+							"Uploaded %d bytes so far, using POST with X-HTTP-Method-Override PUT method.",
+							(int) totalBytesUploaded));
 		}
 		urlConnection.setDoOutput(true);
 		urlConnection.setFixedLengthStreamingMode(chunk);
 		// /XXX hardcoded video mimetype
 		urlConnection.setRequestProperty("Content-Type", "video/mp4");
-		urlConnection.setRequestProperty("Content-Range", String.format(
-				"bytes %d-%d/%d", start, end, file.length()));
+		urlConnection.setRequestProperty("Content-Range",
+				String.format("bytes %d-%d/%d", start, end, file.length()));
 		Log.d(TAG, urlConnection.getRequestProperty("Content-Range"));
 
 		OutputStream outStreamWriter = urlConnection.getOutputStream();
@@ -1531,11 +1488,10 @@ public class PublishingUtils {
 				}
 				Log.w(TAG, "Received 200 response during resumable uploading");
 				throw new IOException(
-						String
-								.format(
-										"Unexpected response code : responseCode=%d responseMessage=%s",
-										responseCode, urlConnection
-												.getResponseMessage()));
+						String.format(
+								"Unexpected response code : responseCode=%d responseMessage=%s",
+								responseCode,
+								urlConnection.getResponseMessage()));
 			} else {
 				if ((responseCode + "").startsWith("5")) {
 					String error = String.format(
@@ -1555,16 +1511,12 @@ public class PublishingUtils {
 							urlConnection.getResponseMessage()));
 				} else {
 					// TODO - this case is not handled properly yet
-					Log
-							.w(
-									TAG,
-									String
-											.format(
-													"Unexpected return code : %d %s while uploading :%s",
-													responseCode,
-													urlConnection
-															.getResponseMessage(),
-													uploadUrl));
+					Log.w(TAG,
+							String.format(
+									"Unexpected return code : %d %s while uploading :%s",
+									responseCode,
+									urlConnection.getResponseMessage(),
+									uploadUrl));
 				}
 			}
 		} catch (ParserConfigurationException e) {
@@ -1616,15 +1568,15 @@ public class PublishingUtils {
 		} else if (responseCode == 500) {
 			// TODO this is a workaround for current problems with resuming
 			// uploads while switching transport (Wifi->EDGE)
-			throw new Internal500ResumeException(String
-					.format("Unexpected response for PUT to %s: %s "
-							+ "(code %d)", uploadUrl, urlConnection
-							.getResponseMessage(), responseCode));
+			throw new Internal500ResumeException(
+					String.format("Unexpected response for PUT to %s: %s "
+							+ "(code %d)", uploadUrl,
+							urlConnection.getResponseMessage(), responseCode));
 		} else {
-			throw new IOException(String
-					.format("Unexpected response for PUT to %s: %s "
-							+ "(code %d)", uploadUrl, urlConnection
-							.getResponseMessage(), responseCode));
+			throw new IOException(
+					String.format("Unexpected response for PUT to %s: %s "
+							+ "(code %d)", uploadUrl,
+							urlConnection.getResponseMessage(), responseCode));
 		}
 	}
 
@@ -1632,7 +1584,7 @@ public class PublishingUtils {
 	// This process fetches a google-youtube auth token, linked from a google
 	// email account
 	// if successfully, it launches the async upload.
-	// 
+	//
 
 	private boolean shouldResume() {
 		this.numberOfRetries++;
@@ -1681,8 +1633,8 @@ public class PublishingUtils {
 			throws IOException {
 		URL url = new URL(urlString);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestProperty("Authorization", String.format(
-				"GoogleLogin auth=\"%s\"", clientLoginToken));
+		connection.setRequestProperty("Authorization",
+				String.format("GoogleLogin auth=\"%s\"", clientLoginToken));
 		connection.setRequestProperty("GData-Version", "2");
 		connection.setRequestProperty("X-GData-Key", String.format("key=%s",
 				res.getString(R.string.youtube_dev_key)));
@@ -1726,9 +1678,8 @@ public class PublishingUtils {
 
 								((VidiomActivity) activity)
 										.finishedUploading(false);
-								((VidiomActivity) activity)
-										.createNotification(res
-												.getString(R.string.upload_to_youtube_host_failed_));
+								((VidiomActivity) activity).createNotification(res
+										.getString(R.string.upload_to_youtube_host_failed_));
 
 							}
 						}, 0);

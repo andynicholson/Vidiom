@@ -49,7 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		// 
+		//
 		// create the tables
 
 		db.execSQL("CREATE TABLE " + FILENAME_TABLE_NAME + " ("
@@ -80,7 +80,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// 
+		//
 		Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
 				+ newVersion + ", which will destroy all old data");
 		db.execSQL("DROP TABLE IF EXISTS " + FILENAME_TABLE_NAME);

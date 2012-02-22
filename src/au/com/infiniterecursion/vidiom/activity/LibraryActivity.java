@@ -47,12 +47,12 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.facebook.LoginButton;
 import au.com.infiniterecursion.vidiom.utils.DBUtils;
 import au.com.infiniterecursion.vidiom.utils.DatabaseHelper;
 import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
+import au.com.infiniterecursion.vidiompro.R;
 
 /*
  * Vidiom Library Activity 
@@ -97,9 +97,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private static final int MENU_ITEM_13 = MENU_ITEM_12 + 1;
 	// options MENU
 	private static final int MENU_ITEM_14 = MENU_ITEM_13 + 1;
-	//edit
+	// edit
 	private static final int MENU_ITEM_15 = MENU_ITEM_14 + 1;
-	
+
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
 
@@ -133,7 +133,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	// API 10 ?
 	private Boolean support_v10;
 
-
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		res = getResources();
@@ -151,13 +150,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		thread_youtube = null;
 
 		got_facebook_sso_callback = false;
-	
+
 		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1){
-		    // API 10 or above yes
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
+			// API 10 or above yes
 			support_v10 = true;
-		} else{
-		    support_v10 = false;
+		} else {
+			support_v10 = false;
 		}
 	}
 
@@ -170,11 +169,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		
-			Log.i(TAG, " got result , calling into facebook authoriseCallback");
-			mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
-			got_facebook_sso_callback = true;
-		
+
+		Log.i(TAG, " got result , calling into facebook authoriseCallback");
+		mainapp.getFacebook().authorizeCallback(requestCode, resultCode, data);
+		got_facebook_sso_callback = true;
+
 	}
 
 	private class ImporterThread implements Runnable {
@@ -208,10 +207,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 			// OK, start
 			if (mExternalStorageAvailable) {
-				Log.d(TAG, "Starting import. OUR Directory path is : "
-						+ Environment.getExternalStorageDirectory()
-								.getAbsolutePath()
-						+ res.getString(R.string.rootSDcardFolder));
+				Log.d(TAG,
+						"Starting import. OUR Directory path is : "
+								+ Environment.getExternalStorageDirectory()
+										.getAbsolutePath()
+								+ res.getString(R.string.rootSDcardFolder));
 				directoryScanRecurse(rootfolder);
 			}
 
@@ -257,33 +257,32 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							// If not, insert a record into the DB
 							if (!alreadyInDB) {
 								String filename = f.getName();
-								
-								
+
 								MediaMetadataRetriever thumber = new MediaMetadataRetriever();
 								String audio_video_codec = "unknown";
 								String title = "Untitled";
 								long duration_millis = 0;
-								
+
 								try {
 									thumber.setDataSource(fp[0]);
 									String duration = thumber
-									.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-									Log.d(TAG, "Filepath has duration " + duration);
+											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+									Log.d(TAG, "Filepath has duration "
+											+ duration);
 									duration_millis = Long.parseLong(duration);
-									audio_video_codec = thumber.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
-									title = thumber.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-							
+									audio_video_codec = thumber
+											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
+									title = thumber
+											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
 
-								
-								
-								
-								dbutils
-										.createSDFileRecordwithNewVideoRecording(
-												f.getAbsolutePath(), filename,
-												(int) (duration_millis/1000), audio_video_codec, title, "");
+								dbutils.createSDFileRecordwithNewVideoRecording(
+										f.getAbsolutePath(), filename,
+										(int) (duration_millis / 1000),
+										audio_video_codec, title, "");
 							}
 						}
 
@@ -351,7 +350,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			 * MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns,
 			 * MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
 			 */
-			//Log.d(TAG, "We have " + s);
+			// Log.d(TAG, "We have " + s);
 
 			String[] mediaColumns = { MediaStore.Video.Media._ID,
 					MediaStore.Video.Media.DATA, MediaStore.Video.Media.TITLE,
@@ -362,14 +361,14 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					MediaStore.Video.Media.DATA + " = ? ", new String[] { s },
 					null);
 
-			if (thumb_cursor == null ) {
+			if (thumb_cursor == null) {
 				// set default icon
 				if (v != null) {
 					v.setImageResource(R.drawable.icon);
 				}
 				return;
 			}
-			
+
 			if (thumb_cursor.moveToFirst()) {
 				// Found entry for video via file path. Now we have its
 				// video_id, we can check for a cache thumbnail or request to
@@ -377,20 +376,15 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				// XXX Check cache, and load from filepath, using code above.
 				/*
-				Log
-						.d(
-								TAG,
-								" We have id "
-										+ thumb_cursor
-												.getLong(thumb_cursor
-														.getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
+				 * Log .d( TAG, " We have id " + thumb_cursor
+				 * .getLong(thumb_cursor
+				 * .getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
 				 */
 				Bitmap bm = MediaStore.Video.Thumbnails
 						.getThumbnail(
 								getContentResolver(),
-								thumb_cursor
-										.getLong(thumb_cursor
-												.getColumnIndexOrThrow(MediaStore.Video.Media._ID)),
+								thumb_cursor.getLong(thumb_cursor
+										.getColumnIndexOrThrow(MediaStore.Video.Media._ID)),
 								MediaStore.Video.Thumbnails.MICRO_KIND, null);
 				if (bm != null && v != null) {
 					v.setImageBitmap(bm);
@@ -422,10 +416,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		libraryCursor = dbutils.generic_write_db.rawQuery(join_sql, null);
 
-		if (libraryCursor==null) {
+		if (libraryCursor == null) {
 			return;
 		}
-		
+
 		if (libraryCursor.moveToFirst()) {
 			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
@@ -499,9 +493,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// repr. into a string saying "not uploaded yet"
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL)) {
-					String url = cursor
-							.getString(cursor
-									.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
+					String url = cursor.getString(cursor
+							.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
 					TextView host_details = (TextView) view
 							.findViewById(R.id.text4);
 
@@ -517,9 +510,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// repr.
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
-					long time_in_mills = cursor
-							.getLong(cursor
-									.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME));
+					long time_in_mills = cursor.getLong(cursor
+							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME));
 					TextView datetime = (TextView) view
 							.findViewById(R.id.text3);
 					datetime.setText(PublishingUtils.showDate(time_in_mills));
@@ -578,11 +570,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		super.onListItemClick(l, v, position, id);
 
 		// play this selection.
-		//String movieurl = video_absolutepath[(int) position];
-		//Log.d(TAG, " operation on " + movieurl);
+		// String movieurl = video_absolutepath[(int) position];
+		// Log.d(TAG, " operation on " + movieurl);
 
-		//pu.launchVideoPlayer(this, movieurl);
-		
+		// pu.launchVideoPlayer(this, movieurl);
+
 		l.showContextMenuForChild(v);
 	}
 
@@ -592,9 +584,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// PLAY
 		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
 
-		//EDIT
+		// EDIT
 		menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
-		
+
 		// TITLE / DESCRIPTION
 		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
 
@@ -625,9 +617,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
 				.getMenuInfo();
-		Log
-				.d(TAG, " got " + item.getItemId() + " at position "
-						+ info.position);
+		Log.d(TAG, " got " + item.getItemId() + " at position " + info.position);
 
 		if (!videos_available) {
 			return true;
@@ -648,29 +638,32 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			break;
 
 		case MENU_ITEM_15:
-			//edit
-			//shuffle off to a new Activity
+			// edit
+			// shuffle off to a new Activity
 			if (support_v10) {
-				Intent intent2 = new Intent().setClass(this, EditorActivity.class);
-				intent2.putExtra(getString(R.string.EditorActivityFilenameKey), movieurl);
-			
+
+				Intent intent2 = new Intent().setClass(this,
+						EditorActivity.class);
+				intent2.putExtra(getString(R.string.EditorActivityFilenameKey),
+						movieurl);
+
 				this.startActivity(intent2);
 			} else {
-				//Sorry!!
-				// 
+				// Sorry!!
+				//
 				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)
-						.setMessage("Sorry! Your phone doesnt support this capability. You need to have Android 2.3.3 installed.")
+						.setMessage(
+								"Sorry! Your phone doesnt support this capability. You need to have Android 2.3.3 installed.")
 						.setPositiveButton(R.string.yes,
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int whichButton) {
 
-
 									}
 								}).show();
 			}
 			break;
-			
+
 		case MENU_ITEM_2:
 			// delete
 
@@ -697,7 +690,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									reloadList();
 
 								}
-							}).setNegativeButton(R.string.cancel,
+							})
+					.setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -714,8 +708,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							.toString(sdrecord_id) });
 			// grab thread
 			thread_vb = pu.videoUploadToVideoBin(this, handler, movieurl,
-					strs_vb[0], strs_vb[1] ,
-					emailPreference, sdrecord_id);
+					strs_vb[0], strs_vb[1], emailPreference, sdrecord_id);
 			break;
 
 		case MENU_ITEM_4:
@@ -797,11 +790,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				i.putExtra(Intent.EXTRA_TEXT, hosted_url);
 				this.startActivity(i);
 			} else {
-				Toast
-						.makeText(
-								this,
-								R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
-								Toast.LENGTH_LONG).show();
+				Toast.makeText(
+						this,
+						R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
+						Toast.LENGTH_LONG).show();
 			}
 
 			break;
@@ -816,11 +808,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				i2.setData(Uri.parse(hosted_url));
 				this.startActivity(i2);
 			} else {
-				Toast
-						.makeText(
-								this,
-								R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
-								Toast.LENGTH_LONG).show();
+				Toast.makeText(
+						this,
+						R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
+						Toast.LENGTH_LONG).show();
 			}
 			break;
 
@@ -871,19 +862,18 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							} catch (TwitterException e) {
 								// XXX Toast ?!
 								e.printStackTrace();
-								Log.e(TAG, "Twittering failed "
-										+ e.getMessage());
+								Log.e(TAG,
+										"Twittering failed " + e.getMessage());
 							}
 						} else {
-							
-							//Need to authorise.
+
+							// Need to authorise.
 							runOnUiThread(new Runnable() {
 								public void run() {
-									Toast
-											.makeText(
-													LibraryActivity.this,
-													R.string.launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_,
-													Toast.LENGTH_LONG).show();
+									Toast.makeText(
+											LibraryActivity.this,
+											R.string.launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_,
+											Toast.LENGTH_LONG).show();
 
 								}
 							});
@@ -892,8 +882,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							Intent intent2 = new Intent().setClass(
 									LibraryActivity.this,
 									TwitterOAuthActivity.class);
-							LibraryActivity.this.startActivity(
-									intent2);
+							LibraryActivity.this.startActivity(intent2);
 
 						}
 					} else {
@@ -902,11 +891,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 						runOnUiThread(new Runnable() {
 							public void run() {
 
-								Toast
-										.makeText(
-												LibraryActivity.this,
-												R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
-												Toast.LENGTH_LONG).show();
+								Toast.makeText(
+										LibraryActivity.this,
+										R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
+										Toast.LENGTH_LONG).show();
 							}
 						});
 
@@ -1034,45 +1022,49 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private void showFacebookOptionsMenu() {
 		Log.d(TAG, "Showing facebook menu alert dialog");
-		fb_dialog = new AlertDialog.Builder(this).setMessage(
-				R.string.request_facebook_login).setView(lb).setPositiveButton(
-				R.string.videopost_ok, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						// If they succeeded in login, then the
-						// session will be valid.
+		fb_dialog = new AlertDialog.Builder(this)
+				.setMessage(R.string.request_facebook_login)
+				.setView(lb)
+				.setPositiveButton(R.string.videopost_ok,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								// If they succeeded in login, then the
+								// session will be valid.
 
-						if (mainapp.getFacebook().isSessionValid()) {
-							// we have a valid session.
+								if (mainapp.getFacebook().isSessionValid()) {
+									// we have a valid session.
 
-							String[] strs = dbutils
-									.getTitleAndDescriptionFromID(new String[] { Long
-											.toString(sdrecord_id) });
-							// add our branding to the description.
-							thread_fb = pu.videoUploadToFacebook(
-									LibraryActivity.this, handler, mainapp
-											.getFacebook(), movieurl, strs[0],
-									strs[1] ,
-									emailPreference, sdrecord_id);
+									String[] strs = dbutils
+											.getTitleAndDescriptionFromID(new String[] { Long
+													.toString(sdrecord_id) });
+									// add our branding to the description.
+									thread_fb = pu.videoUploadToFacebook(
+											LibraryActivity.this, handler,
+											mainapp.getFacebook(), movieurl,
+											strs[0], strs[1], emailPreference,
+											sdrecord_id);
 
-						}
+								}
 
-					}
-				})
+							}
+						})
 
-		.setNegativeButton(R.string.videopost_cancel,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
+				.setNegativeButton(R.string.videopost_cancel,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
 
-						// logout of facebook, if the session is
-						// valid.
-						if (mainapp.getFacebook().isSessionValid()) {
-							lb.logout();
-						}
+								// logout of facebook, if the session is
+								// valid.
+								if (mainapp.getFacebook().isSessionValid()) {
+									lb.logout();
+								}
 
-					}
-				})
+							}
+						})
 
-		.show();
+				.show();
 
 		resetFacebookMenuButtons();
 
@@ -1147,25 +1139,22 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				}
 			});
 
-			
 			Intent intent2 = new Intent().setClass(this,
 					TwitterOAuthActivity.class);
-			//this.startActivityForResult(intent2, 0);
+			// this.startActivityForResult(intent2, 0);
 			this.startActivity(intent2);
-			
+
 			break;
 
-			// De-Authorising Twitter.
+		// De-Authorising Twitter.
 		case MENU_ITEM_14:
 			// Tweet the video hosted URL
 			runOnUiThread(new Runnable() {
 				public void run() {
 					Toast.makeText(LibraryActivity.this,
-							R.string.tweeting_deauth, Toast.LENGTH_LONG)
-							.show();
+							R.string.tweeting_deauth, Toast.LENGTH_LONG).show();
 				}
 			});
-
 
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(getBaseContext());
@@ -1173,10 +1162,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			editor.putString("twitterToken", null);
 			editor.putString("twitterTokenSecret", null);
 			editor.commit();
-			
+
 			break;
-	
-			
+
 		}
 		return true;
 	}

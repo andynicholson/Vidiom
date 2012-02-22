@@ -55,9 +55,8 @@ public class SSLEmailSender extends javax.mail.Authenticator {
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.port", "466");
 		props.put("mail.smtp.socketFactory.port", "466");
-		props
-				.put("mail.smtp.socketFactory.class",
-						"au.com.infiniterecursion.vidiom.sslemail.TrustAllSSLSocketFactory");
+		props.put("mail.smtp.socketFactory.class",
+				"au.com.infiniterecursion.vidiom.sslemail.TrustAllSSLSocketFactory");
 		props.put("mail.smtp.socketFactory.fallback", "false");
 		props.setProperty("mail.smtp.quitwait", "false");
 
@@ -73,15 +72,15 @@ public class SSLEmailSender extends javax.mail.Authenticator {
 
 		Log.d(TAG, "sendMail starting");
 		MimeMessage message = new MimeMessage(session);
-		DataHandler handler = new DataHandler(new ByteArrayDataSource(body
-				.getBytes(), "text/plain"));
+		DataHandler handler = new DataHandler(new ByteArrayDataSource(
+				body.getBytes(), "text/plain"));
 		message.setSender(new InternetAddress(sender));
 		message.setFrom(new InternetAddress(sender));
 		message.setSubject(subject);
 		message.setDataHandler(handler);
 		if (recipients.indexOf(',') > 0)
-			message.setRecipients(Message.RecipientType.TO, InternetAddress
-					.parse(recipients));
+			message.setRecipients(Message.RecipientType.TO,
+					InternetAddress.parse(recipients));
 		else
 			message.setRecipient(Message.RecipientType.TO, new InternetAddress(
 					recipients));

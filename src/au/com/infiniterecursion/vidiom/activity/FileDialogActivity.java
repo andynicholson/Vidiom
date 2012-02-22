@@ -27,8 +27,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
+import au.com.infiniterecursion.vidiompro.R;
 
 /**
  * Activity para escolha de arquivos/diretorios.
@@ -115,7 +115,6 @@ public class FileDialogActivity extends ListActivity {
 
 	private VidiomApp mainapp;
 
-	
 	/**
 	 * Called when the activity is first created. Configura todos os parametros
 	 * de entrada e das VIEWS..
@@ -132,7 +131,7 @@ public class FileDialogActivity extends ListActivity {
 		inputManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
 		mainapp = (VidiomApp) getApplication();
-		
+
 		selectButton = (Button) findViewById(R.id.fdButtonSelect);
 		selectButton.setEnabled(false);
 		selectButton.setOnClickListener(new OnClickListener() {
@@ -141,22 +140,26 @@ public class FileDialogActivity extends ListActivity {
 			public void onClick(View v) {
 				if (selectedFile != null) {
 					Log.d(TAG, " file selected is " + selectedFile.getPath());
-					
-					//set the result for the return of the activity, via an intent
+
+					// set the result for the return of the activity, via an
+					// intent
 					getIntent().putExtra(RESULT_PATH, selectedFile.getPath());
 					setResult(RESULT_OK, getIntent());
-					
-					//Set out preferences
-					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+					// Set out preferences
+					SharedPreferences prefs = PreferenceManager
+							.getDefaultSharedPreferences(getBaseContext());
 					Resources res = getResources();
 					Editor editor = prefs.edit();
-					editor.putString(res.getString(R.string.customVideoFolderPreference), selectedFile.getPath());
+					editor.putString(
+							res.getString(R.string.customVideoFolderPreference),
+							selectedFile.getPath());
 					editor.commit();
-					//update mainapp
+					// update mainapp
 					mainapp.setCurrentPath(selectedFile.getPath());
-					
+
 					finish();
-					
+
 				}
 			}
 		});
@@ -176,10 +179,10 @@ public class FileDialogActivity extends ListActivity {
 		selectionMode = getIntent().getIntExtra(SELECTION_MODE,
 				SelectionMode.MODE_CREATE);
 
-		//formatFilter = getIntent().getStringArrayExtra(FORMAT_FILTER);
-		//XXX Fix this, this is very silyy.
+		// formatFilter = getIntent().getStringArrayExtra(FORMAT_FILTER);
+		// XXX Fix this, this is very silyy.
 		formatFilter = new String[] { "qqqq" };
-		
+
 		canSelectDir = getIntent().getBooleanExtra(CAN_SELECT_DIR, true);
 
 		if (selectionMode == SelectionMode.MODE_OPEN) {
@@ -208,28 +211,31 @@ public class FileDialogActivity extends ListActivity {
 					String new_path = currentPath + '/' + mFileName.getText();
 					Log.d(TAG, " file created is " + new_path);
 
-					//Return result from activity,  via intent
+					// Return result from activity, via intent
 					getIntent().putExtra(RESULT_PATH, new_path);
 					setResult(RESULT_OK, getIntent());
-					
-					//Make the directory.
+
+					// Make the directory.
 					File new_fldr = new File(new_path);
 					Boolean success = new_fldr.mkdir();
-					
+
 					Log.d(TAG, " fldr created successfully? " + success);
-					
+
 					if (success) {
-						
-						//Set out preferences
-						SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+						// Set out preferences
+						SharedPreferences prefs = PreferenceManager
+								.getDefaultSharedPreferences(getBaseContext());
 						Resources res = getResources();
 						Editor editor = prefs.edit();
-						editor.putString(res.getString(R.string.customVideoFolderPreference), new_path);
+						editor.putString(
+								res.getString(R.string.customVideoFolderPreference),
+								new_path);
 						editor.commit();
-						//update main app
+						// update main app
 						mainapp.setCurrentPath(new_path);
 					}
-					
+
 					finish();
 				}
 			}
@@ -280,7 +286,10 @@ public class FileDialogActivity extends ListActivity {
 			f = new File(currentPath);
 			files = f.listFiles();
 		}
-		myPath.setText(getText(R.string.location) + ": " + currentPath + "\nNew Folder button creates folder in current location and sets that folder as the Video Folder.");
+		myPath.setText(getText(R.string.location)
+				+ ": "
+				+ currentPath
+				+ "\nNew Folder button creates folder in current location and sets that folder as the Video Folder.");
 
 		if (!currentPath.equals(ROOT)) {
 

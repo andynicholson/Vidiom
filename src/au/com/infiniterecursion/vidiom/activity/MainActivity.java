@@ -52,13 +52,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import au.com.infiniterecursion.vidiompro.R;
 import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.utils.DBUtils;
 import au.com.infiniterecursion.vidiom.utils.PublishingUtils;
+import au.com.infiniterecursion.vidiompro.R;
 
 /*
  * Main Vidiom Activity 
@@ -180,9 +179,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	};
 
 	private boolean showing_titledesc = false;
-	
-	
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -213,25 +210,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		this.addContentView(viewControl, layoutParamsControl);
 
 		statusIndicator = (TextView) findViewById(R.id.overlay);
-		//Make the icon and the current text clickable to record/stop
-		
+		// Make the icon and the current text clickable to record/stop
+
 		statusIndicator.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				// Toggle the status.
 				if (recordingInMotion) {
 					stopRecording();
 				} else {
-					//Dont start if we are still showing dialog from stopRecording..
+					// Dont start if we are still showing dialog from
+					// stopRecording..
 					if (!showing_titledesc) {
 						tryToStartRecording();
 					}
 				}
-				
+
 			}
 		});
-		
+
 		recordingInMotion = false;
 
 		latestVideoFile_absolutepath = "";
@@ -260,10 +258,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		threadVB = null;
 		threadFTP = null;
 
-		//set path in mainapp
+		// set path in mainapp
 		mainapp.setCurrentPath(folder.getPath());
 
-		
 	}
 
 	@Override
@@ -322,7 +319,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	}
 
 	private void checkIfFirstTimeRunAndWelcome() {
-		// 
+		//
 		boolean first_time = prefs.getBoolean("firstTimeRun", true);
 
 		if (first_time) {
@@ -352,29 +349,31 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			}
 
 			// Welcome dialog!
-			new AlertDialog.Builder(MainActivity.this).setMessage(
-					R.string.welcome).setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+			new AlertDialog.Builder(MainActivity.this)
+					.setMessage(R.string.welcome)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-							// show second dialog
-							new AlertDialog.Builder(MainActivity.this)
-									.setMessage(R.string.welcome2)
-									.setPositiveButton(
-											R.string.yes,
-											new DialogInterface.OnClickListener() {
-												public void onClick(
-														DialogInterface dialog,
-														int whichButton) {
+									// show second dialog
+									new AlertDialog.Builder(MainActivity.this)
+											.setMessage(R.string.welcome2)
+											.setPositiveButton(
+													R.string.yes,
+													new DialogInterface.OnClickListener() {
+														public void onClick(
+																DialogInterface dialog,
+																int whichButton) {
 
-													// show second dialog
+															// show second
+															// dialog
 
-												}
-											}).show();
+														}
+													}).show();
 
-						}
-					}).show();
+								}
+							}).show();
 
 		}
 
@@ -395,14 +394,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		filenameConventionPrefence = prefs.getString(
 				"filenameConventionPrefence",
 				res.getString(R.string.filenameConventionDefaultPreference));
-		maxDurationPreference = prefs.getString("maxDurationPreference", res
-				.getString(R.string.maxDurationPreferenceDefault));
-		maxFilesizePreference = prefs.getString("maxFilesizePreference", res
-				.getString(R.string.maxFilesizePreferenceDefault));
+		maxDurationPreference = prefs.getString("maxDurationPreference",
+				res.getString(R.string.maxDurationPreferenceDefault));
+		maxFilesizePreference = prefs.getString("maxFilesizePreference",
+				res.getString(R.string.maxFilesizePreferenceDefault));
 
-		//set the videos folder, either the default or a set user preference.
+		// set the videos folder, either the default or a set user preference.
 		findVideosFolder();
-		
+
 		Log.d(TAG, "behaviour preferences are " + autoEmailPreference + ":"
 				+ fTPPreference + ":" + videobinPreference + ":"
 				+ emailPreference);
@@ -410,16 +409,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Log.d(TAG, "video recording preferences are "
 				+ filenameConventionPrefence + ":" + maxDurationPreference
 				+ ":" + maxFilesizePreference);
-		
+
 	}
 
 	private void checkInstallDirandCreateIfMissing() {
-		//set the videos folder, either the default or a set user preference.
+		// set the videos folder, either the default or a set user preference.
 		findVideosFolder();
-		
+
 		// it is writeable?
 		boolean success;
-		
+
 		if (!folder.exists()) {
 
 			Log.d(TAG, " Folder doesnt exit ... attempting to make it");
@@ -429,8 +428,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				canAccessSDCard = false;
 
 				new AlertDialog.Builder(this)
-						.setMessage(R.string.sdcard_failed).setPositiveButton(
-								R.string.yes,
+						.setMessage(R.string.sdcard_failed)
+						.setPositiveButton(R.string.yes,
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int whichButton) {
@@ -458,19 +457,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private void findVideosFolder() {
 		// android.os.Environment.getExternalStorageDirectory().getPath()
 
-		//DEFAULT videos folder
+		// DEFAULT videos folder
 		folder = new File(Environment.getExternalStorageDirectory()
 				+ res.getString(R.string.rootSDcardFolder));
 		Log.d(TAG, "Base Folder:" + folder.getAbsolutePath());
-		//Check for a set preference, if there is one, use that instead.
-		String customVideoFolder  = prefs.getString(res.getString(R.string.customVideoFolderPreference), "");
+		// Check for a set preference, if there is one, use that instead.
+		String customVideoFolder = prefs.getString(
+				res.getString(R.string.customVideoFolderPreference), "");
 		Log.d(TAG, "Custom Base Folder:" + customVideoFolder);
-		
+
 		if (customVideoFolder.length() > 0) {
-			//Use the custom set path.
+			// Use the custom set path.
 			folder = new File(customVideoFolder);
 		}
-		
+
 		Log.d(TAG, "Using Folder:" + folder.getAbsolutePath());
 	}
 
@@ -557,14 +557,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			final SpannableString s2 = new SpannableString(mesg2);
 			Linkify.addLinks(s2, Linkify.ALL);
 
-			AlertDialog about = new AlertDialog.Builder(this).setMessage(s)
+			AlertDialog about = new AlertDialog.Builder(this)
+					.setMessage(s)
 					.setPositiveButton(R.string.yes,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 
 								}
-							}).setNegativeButton(R.string.licenses,
+							})
+					.setNegativeButton(R.string.licenses,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -589,14 +591,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 													.getInstance());
 
 								}
-							}).setNeutralButton(R.string.help, new DialogInterface.OnClickListener() {
-								
+							})
+					.setNeutralButton(R.string.help,
+							new DialogInterface.OnClickListener() {
+
 								@Override
-								public void onClick(DialogInterface dialog, int which) {
+								public void onClick(DialogInterface dialog,
+										int which) {
 									// help
 									AlertDialog help = new AlertDialog.Builder(
 											MainActivity.this)
-											.setMessage(res.getString(R.string.helpText))
+											.setMessage(
+													res.getString(R.string.helpText))
 											.setPositiveButton(
 													R.string.yes,
 													new DialogInterface.OnClickListener() {
@@ -658,7 +664,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		} else {
 			//
-			new AlertDialog.Builder(this).setMessage(R.string.notrecording)
+			new AlertDialog.Builder(this)
+					.setMessage(R.string.notrecording)
 					.setPositiveButton(R.string.yes,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -766,14 +773,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		} else {
 
-			new AlertDialog.Builder(MainActivity.this).setMessage(
-					R.string.camera_failed).setPositiveButton(R.string.yes,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+			new AlertDialog.Builder(MainActivity.this)
+					.setMessage(R.string.camera_failed)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-						}
-					}).show();
+								}
+							}).show();
 
 			recordingInMotion = false;
 		}
@@ -782,7 +790,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	public boolean startRecording() {
 
 		if (camera == null) {
-			Log.e(TAG, "startRecording: camera is null!");	
+			Log.e(TAG, "startRecording: camera is null!");
 			return false;
 		}
 
@@ -825,8 +833,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		maxDurationInMs = user_duration * 1000;
 		mediaRecorder.setMaxDuration(maxDurationInMs);
 
-		File tempFile = pu
-				.selectFilenameAndCreateFile(filenameConventionPrefence, folder);
+		File tempFile = pu.selectFilenameAndCreateFile(
+				filenameConventionPrefence, folder);
 		latestVideoFile_filename = tempFile.getName();
 		latestVideoFile_absolutepath = tempFile.getAbsolutePath();
 		mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
@@ -852,14 +860,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		maxFileSizeInBytes = user_filesize * 1024;
 		try {
 			mediaRecorder.setMaxFileSize(maxFileSizeInBytes);
-		} catch (RuntimeException rte ) {
+		} catch (RuntimeException rte) {
 			Log.e(TAG, "RuntimeException:" + rte.getMessage());
 			rte.printStackTrace();
-			//keep going -might still work??
+			// keep going -might still work??
 		}
-		
+
 		try {
-			//Setup media recorder 
+			// Setup media recorder
 			//
 			mediaRecorder.prepare();
 			mediaRecorder.start();
@@ -876,56 +884,55 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Illegal State Exception:" + e.getMessage());
 			e.printStackTrace();
-			
+
 			startRecordingMediaRecorderExceptionHandler();
-			
+
 			return false;
 		} catch (IOException e) {
 			Log.e(TAG, "IOException:" + e.getMessage());
 			e.printStackTrace();
-			
+
 			startRecordingMediaRecorderExceptionHandler();
-			
+
 			return false;
 		} catch (RuntimeException re) {
 			Log.e(TAG, "RuntimeException:" + re.getMessage());
 			re.printStackTrace();
-			
+
 			startRecordingMediaRecorderExceptionHandler();
-			
+
 			return false;
 		}
 
 	}
 
 	private void startRecordingMediaRecorderExceptionHandler() {
-		//Reset the UI 
+		// Reset the UI
 		shutdownRecIncrUIThread();
-		
 
 		try {
 			camera.lock();
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			camera = null;
-			Log.e(TAG, "startRecording: unlock failed!");			
-		
+			Log.e(TAG, "startRecording: unlock failed!");
+
 		}
 	}
 
 	public void stopRecording() {
-		
+
 		recordingInMotion = false;
 		endTimeinMillis = System.currentTimeMillis();
 		shutdownRecIncrUIThread();
-		
+
 		Boolean show_dialog = true;
-		
+
 		try {
 			mediaRecorder.stop();
 		} catch (RuntimeException e) {
 			e.printStackTrace();
-			Log.e(TAG, "stopRecording: stop failed!");			
+			Log.e(TAG, "stopRecording: stop failed!");
 			show_dialog = false;
 		}
 
@@ -934,7 +941,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			camera = null;
-			Log.e(TAG, "stopRecording: unlock failed!");			
+			Log.e(TAG, "stopRecording: unlock failed!");
 			show_dialog = false;
 		}
 
@@ -947,7 +954,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		title = null;
 		description = null;
 
-		//if mediarecorder and camera stop/locking worked.
+		// if mediarecorder and camera stop/locking worked.
 		if (show_dialog) {
 			showTitleDescriptionDialog();
 		}
@@ -972,9 +979,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	private void showTitleDescriptionDialog() {
 		// Launch Title/Description Edit View
-		
-		showing_titledesc  = true;
-		
+
+		showing_titledesc = true;
+
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -1042,8 +1049,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					// Add a new record (identified by uri), but with the values
 					// just set.
 					Uri uri = getContentResolver()
-							.insert(
-									MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+							.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
 									values);
 
 					sendBroadcast(new Intent(
@@ -1054,10 +1060,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					doAutoCompletedRecordedActions();
 
 					// Video recording finished dialog!
-					new AlertDialog.Builder(MainActivity.this).setMessage(
-							res.getString(R.string.file_saved) + " "
-									+ latestVideoFile_filename + '\n'
-									+ res.getString(R.string.posts_in_gallery))
+					new AlertDialog.Builder(MainActivity.this)
+							.setMessage(
+									res.getString(R.string.file_saved)
+											+ " "
+											+ latestVideoFile_filename
+											+ '\n'
+											+ res.getString(R.string.posts_in_gallery))
 							.setPositiveButton(R.string.yes,
 									new DialogInterface.OnClickListener() {
 										public void onClick(
@@ -1084,16 +1093,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			Log.d(TAG, "We have reached the end limit");
 
 			// Video recording finished dialog!
-			new AlertDialog.Builder(MainActivity.this).setMessage(
-					res.getString(R.string.limits_reached)).setPositiveButton(
-					R.string.yes, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+			new AlertDialog.Builder(MainActivity.this)
+					.setMessage(res.getString(R.string.limits_reached))
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
 
-							stopRecording();
+									stopRecording();
 
-						}
-					}).show();
+								}
+							}).show();
 
 		}
 
@@ -1152,10 +1162,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					}
 				});
 
-				threadFB = pu.videoUploadToFacebook(this, handler, mainapp
-						.getFacebook(), latestVideoFile_absolutepath, strs[0],
-						strs[1] ,
-						emailPreference, latestsdrecord_id);
+				threadFB = pu.videoUploadToFacebook(this, handler,
+						mainapp.getFacebook(), latestVideoFile_absolutepath,
+						strs[0], strs[1], emailPreference, latestsdrecord_id);
 			}
 		}
 
@@ -1217,7 +1226,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// not uploading anymore.
 
 		// Auto twittering.
-		//  
+		//
 		if (twitterPreference && success) {
 
 			new Thread(new Runnable() {
@@ -1261,10 +1270,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 									}
 								});
 							} catch (TwitterException e) {
-								// 
+								//
 								e.printStackTrace();
-								Log.e(TAG, "Auto twittering failed "
-										+ e.getMessage());
+								Log.e(TAG,
+										"Auto twittering failed "
+												+ e.getMessage());
 							}
 						}
 

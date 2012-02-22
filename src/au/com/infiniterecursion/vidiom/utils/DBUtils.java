@@ -76,7 +76,7 @@ public class DBUtils {
 			Log.v(TAG, "getStats : " + count + " sdrecords");
 		}
 		stats_cursor.close();
-		
+
 		count_sql = "SELECT count(*) FROM " + DatabaseHelper.HOST_TABLE_NAME;
 
 		stats_cursor = generic_write_db.rawQuery(count_sql, null);
@@ -245,8 +245,8 @@ public class DBUtils {
 				video_audio_codecstr);
 		vals.put(DatabaseHelper.SDFileRecord.TITLE, title);
 		vals.put(DatabaseHelper.SDFileRecord.DESCRIPTION, description);
-		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME, (Long) System
-				.currentTimeMillis());
+		vals.put(DatabaseHelper.SDFileRecord.CREATED_DATETIME,
+				(Long) System.currentTimeMillis());
 
 		long rez = generic_write_db.insert(
 				DatabaseHelper.SDFILERECORD_TABLE_NAME,
