@@ -47,10 +47,15 @@ Code included from android-file-dialog - http://code.google.com/p/android-file-d
 
 RELEASE LOG
 
-v0.6.15 - Released to Android Market AS PAID APP on Feb 19th 2012 (Sydney, Australia)
-		( Added ability to choose video folder location, touch-based toggle recording/stopping recording on GUI, and bugfixes for videbin.org API, and crashreports  )
+v0.6.16 - Released to Android Market on Feb 23rd 2012 (Sydney, Australia)
+	
+	( Added basic video editing capabilities )	
 
-	  >> This release has a new certificate signing the application. Previous versions will still work uploading to videobin.org and YouTube, but Facebook uploading wont work due to a changed application signature.
+
+v0.6.15 - Released to Android Market AS PAID APP on Feb 19th 2012 (Sydney, Australia)
+	( Added ability to choose video folder location, touch-based toggle recording/stopping recording on GUI, and bugfixes for videbin.org API, and crashreports  )
+
+	>> This release has a new certificate signing the application. Previous versions will still work uploading to videobin.org and YouTube, but Facebook uploading wont work due to a changed application signature.
 
 v0.6.14 - Released to Android Market on March 31st 2011 (Sydney, Australia)
 	(Fixes for Twitter authorisation, plus added video thumbnails in gallery)
