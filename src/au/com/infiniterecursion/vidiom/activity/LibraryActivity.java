@@ -542,15 +542,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	public void onPause() {
 
 		super.onPause();
-		
 		Log.d(TAG, "On pause");
-
-		if (libraryCursor!=null) {
-			libraryCursor.close();
-		}
-		if (dbutils!=null) {
-			dbutils.close();
-		}
 		
 		if (thread_vb != null) {
 			Log.d(TAG, "Interrupting videobin thread");
@@ -993,6 +985,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		runOnUiThread(new Runnable() {
 			public void run() {
 
+				if (libraryCursor!=null && !libraryCursor.isClosed()) {
+					libraryCursor.close();
+				}
+				
 				makeCursorAndAdapter();
 
 				listAdapter.notifyDataSetChanged();

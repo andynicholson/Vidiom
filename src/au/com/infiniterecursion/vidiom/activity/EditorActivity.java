@@ -320,7 +320,7 @@ public class EditorActivity extends Activity {
 										+ new_file.getName()
 										+ '\n'
 										+ getResources().getString(
-												R.string.posts_in_gallery))
+												R.string.transcoded_in_gallery))
 						.setPositiveButton(R.string.yes,
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
@@ -343,6 +343,9 @@ public class EditorActivity extends Activity {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
 
+									// Finish at this point.
+									finish();
+									
 								}
 							}).show();
 
