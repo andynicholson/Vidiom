@@ -279,16 +279,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// v9 support
 		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD) {
 			support_v9 = true;
+			Log.d(TAG, "Phone supports v9 API or greater");
 		}
 		// v10 and above.
 		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
 			// API 10 or above yes
 			support_v10 = true;
+			Log.d(TAG, "Phone supports v10 API or greater");
 
 		}
 		// API 11 or above
 		if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			support_v11 = true;
+			Log.d(TAG, "Phone supports v11 API or greater");
 		}
 
 	}
@@ -424,7 +427,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		filenameConventionPrefence = prefs.getString(
 				"filenameConventionPrefence",
 				res.getString(R.string.filenameConventionDefaultPreference));
-		recordingQualityPreference = prefs.getString("recordingQualityPreference", res.getString(R.string.recordingQualityDefaultValue));	
+		recordingQualityPreference = prefs.getString(
+				"recordingQualityPreference",
+				res.getString(R.string.recordingQualityDefaultValue));
 		maxDurationPreference = prefs.getString("maxDurationPreference",
 				res.getString(R.string.maxDurationPreferenceDefault));
 		maxFilesizePreference = prefs.getString("maxFilesizePreference",
@@ -733,56 +738,54 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		//
 		Camera.Parameters p = camera.getParameters();
 
-		//CamcoderProfile
-		
-		CamcorderProfile cp = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-		String cp_details = "CamcorderProfile high quality details : " + " Video Width : " + cp.videoFrameWidth + " Video Height : " + cp.videoFrameHeight + "\n" +
-							" video codec number : " + cp.videoCodec + " audio codec number : " + cp.audioCodec + " file format number : " + cp.fileFormat + "\n" + 
-							" video frame rate: " + cp.videoFrameRate + " audio bit rate : " + cp.audioBitRate + " audio sample rate : " + cp.audioSampleRate;
+		// CamcoderProfile
+
+		CamcorderProfile cp = CamcorderProfile
+				.get(CamcorderProfile.QUALITY_HIGH);
+		String cp_details = "CamcorderProfile high quality details : "
+				+ " Video Width : " + cp.videoFrameWidth + " Video Height : "
+				+ cp.videoFrameHeight + "\n" + " video codec number : "
+				+ cp.videoCodec + " audio codec number : " + cp.audioCodec
+				+ " file format number : " + cp.fileFormat + "\n"
+				+ " video frame rate: " + cp.videoFrameRate
+				+ " audio bit rate : " + cp.audioBitRate
+				+ " audio sample rate : " + cp.audioSampleRate;
 		Log.d(TAG, cp_details);
-		new AlertDialog.Builder(this)
-		.setMessage(cp_details)
-		.setPositiveButton(R.string.yes,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog,
-							int whichButton) {
 
-					}
-				}).show();
-		
-		CamcorderProfile cp_low = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
-		String cp_low_details = "CamcorderProfile low quality details : " + " Video Width : " + cp_low.videoFrameWidth + " Video Height : " + cp_low.videoFrameHeight + "\n" +
-							" video codec number : " + cp_low.videoCodec + " audio codec number : " + cp_low.audioCodec + " file format number : " + cp_low.fileFormat + "\n" + 
-							" video frame rate: " + cp_low.videoFrameRate + " audio bit rate : " + cp_low.audioBitRate + " audio sample rate : " + cp_low.audioSampleRate;
+		CamcorderProfile cp_low = CamcorderProfile
+				.get(CamcorderProfile.QUALITY_LOW);
+		String cp_low_details = "CamcorderProfile low quality details : "
+				+ " Video Width : " + cp_low.videoFrameWidth
+				+ " Video Height : " + cp_low.videoFrameHeight + "\n"
+				+ " video codec number : " + cp_low.videoCodec
+				+ " audio codec number : " + cp_low.audioCodec
+				+ " file format number : " + cp_low.fileFormat + "\n"
+				+ " video frame rate: " + cp_low.videoFrameRate
+				+ " audio bit rate : " + cp_low.audioBitRate
+				+ " audio sample rate : " + cp_low.audioSampleRate;
 		Log.d(TAG, cp_low_details);
-		new AlertDialog.Builder(this)
-		.setMessage(cp_low_details)
-		.setPositiveButton(R.string.yes,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog,
-							int whichButton) {
 
-					}
-				}).show();
-		
 		// Query supported capabilities first.
 		List<Camera.Size> sizes = p.getSupportedPreviewSizes();
 		// Assuming ordered from HIGHEST to LOWEST.
 		// Choose highest resolution
 		desired_psize = sizes.get(0);
+		Log.d(TAG, "High resolution preview size / video size is "
+				+ desired_psize.width + " x " + desired_psize.height);
 
 		// old comment ::
 		// 320, 240 seems only possible resolution
 		// and it seems the preview size must be the same as the video size
 		// p.setPreviewSize(320,240);
-		
-		// The above old comment still applies for old phones though it seems 
+
+		// The above old comment still applies for old phones though it seems
 		// ie versions < Android 2.2
 		// Hardcode surface width and height for old phones.
 		if (!support_v9) {
-			Log.d(TAG, "Doesnt support v9 API or greater, using hardcoded 320x240 height and width as preview size and video size.");
-			
-			//sigh
+			Log.d(TAG,
+					"Doesnt support v9 API or greater, using hardcoded 320x240 height and width as preview size and video size.");
+
+			// sigh
 			desired_psize.width = 320;
 			desired_psize.height = 240;
 		}
@@ -823,8 +826,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// Old phones default
 		if (!support_v9) {
 			p.setPreviewFormat(ImageFormat.NV16);
-			
-			Log.d(TAG, "Doesnt support v9 API or greater, using NV16 image format.");
+
+			Log.d(TAG,
+					"Doesnt support v9 API or greater, using NV16 image format.");
 		} else {
 
 			try {
@@ -863,17 +867,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// Focus Mode.
 		List<String> fmodes = p.getSupportedFocusModes();
-		// set  focus mode continuous video.
+		// set focus mode continuous video.
 		if (fmodes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
 			Log.d(TAG, "setting focus mode continuous video");
 			p.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-		}
-		else {
-			//default.
+		} else {
+			// default.
 			Log.d(TAG, "setting focus mode auto");
-			p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO); 
+			p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
 		}
-		
+
 		// Supported Framerates
 		if (support_v9) {
 			List<int[]> supported_fps = camera.getParameters()
@@ -909,7 +912,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			Log.e(TAG, e.getMessage());
 			e.printStackTrace();
 		}
-		
+
 		Log.d(TAG, "surfaceChanged END");
 	}
 
@@ -991,30 +994,40 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		mediaRecorder.setCamera(camera);
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-		
-		//set desired quality quality profile.
-		if (recordingQualityPreference.equals(res.getString(R.string.recordingQualityDefaultValue))) {
-			//default quality
+
+		// set desired quality quality profile.
+		if (recordingQualityPreference.equals(res
+				.getStringArray(R.array.recordingQualityTypeIds)[0])) {
+			// default quality
 			//
+			Log.d(TAG, " using default recording quality");
 			mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
 			mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 			mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+
 		} else {
-			//Check if user wanted low or high quality recording.
-			if (recordingQualityPreference.equals(res.getStringArray(R.array.recordingQualityTypes)[1])) {
-				//First array entry is low.
-				CamcorderProfile cp = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
-				mediaRecorder.setProfile(cp);				
-			} else {	
-				//High quality
-				CamcorderProfile cp = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-				mediaRecorder.setProfile(cp);
-			}			
+			CamcorderProfile cp;
+			// Check if user wanted low or high quality recording.
+			if (recordingQualityPreference.equals(res
+					.getStringArray(R.array.recordingQualityTypeIds)[1])) {
+				// First array entry is low.
+				Log.d(TAG, " using low recording quality");
+				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
+
+			} else {
+				// High quality
+				Log.d(TAG, " using high recording quality");
+				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+
+			}
+			// set the profile
+			mediaRecorder.setProfile(cp);
 		}
-		
+
 		Log.d(TAG, " startRecording - preferences are " + maxDurationPreference
 				+ ":" + filenameConventionPrefence + ":"
-				+ maxFilesizePreference);
+				+ maxFilesizePreference + " desired size "
+				+ desired_psize.width + "x" + desired_psize.height);
 
 		Integer user_duration = 0;
 		Integer user_filesize = 0;
@@ -1030,13 +1043,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		maxDurationInMs = user_duration * 1000;
 		mediaRecorder.setMaxDuration(maxDurationInMs);
 
-		//Find a new file name to use.
+		// Find a new file name to use.
 		File tempFile = pu.selectFilenameAndCreateFile(
 				filenameConventionPrefence, folder);
 		latestVideoFile_filename = tempFile.getName();
 		latestVideoFile_absolutepath = tempFile.getAbsolutePath();
-		
-		//Set output file for mediaRecorder
+
+		// Set output file for mediaRecorder
 		mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
 		Log.d(TAG, "Starting recording into " + tempFile.getAbsolutePath());
 
@@ -1107,14 +1120,22 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// Reset the UI
 		shutdownRecIncrUIThread();
 
+		//We only really need to do this if prepare worked, but start threw an error.
 		try {
 			camera.lock();
 		} catch (RuntimeException e) {
 			e.printStackTrace();
-			camera = null;
-			Log.e(TAG, "startRecordingMediaRecorderExceptionHandler: lock failed!");
+
+			Log.e(TAG,
+					"startRecordingMediaRecorderExceptionHandler: lock failed!");
 
 		}
+		//Stop the preview, release the camera and null the camera object.
+		camera.stopPreview();
+		camera.release();
+		camera = null;
+		previewRunning = false;
+
 	}
 
 	public void stopRecording() {

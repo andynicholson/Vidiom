@@ -176,7 +176,7 @@
 	<string name="library_menu_play">Play video</string>
 	<string name="library_menu_edit">Trim video</string>
 	
-	<string name="cant_show_video">Can not launch video player, sorry!.</string>
+	<string name="cant_show_video">Can not launch video player. Sorry.</string>
 	<string name="rename_video">Title/Description</string>
 	<string name="menu_send_hosted_url_via_email">Email Hosted URL</string>
 	<string name="menu_launch_hosted_url">View Hosted URL</string>
