@@ -1,0 +1,50 @@
+To build Vidiom, use Eclipse. This is mostly about the NDK libraries Vidiom is using.
+
+To build FFmpeg/VideoKit libraries you will need to use a copy of the Android NDK (r7)
+
+The top-level folder structure of the NDK will look like: e.g
+
+	andycat@saoirse:~/src/Vidiom$ ls -ltr ../android-ndk-r7/
+	total 252
+	drwxr-xr-x  5 andycat andycat  4096 2012-02-05 22:44 docs
+	-rw-r--r--  1 andycat andycat     3 2012-02-05 22:44 RELEASE.TXT
+	-rw-r-----  1 andycat andycat  1306 2012-02-05 22:44 GNUmakefile
+	-rw-r-----  1 andycat andycat  1360 2012-02-05 22:44 README.TXT
+	drwxr-xr-x  4 andycat andycat  4096 2012-02-05 22:44 toolchains
+	-rw-r-----  1 andycat andycat   201 2012-02-05 22:45 documentation.html
+	-rwxr-x---  1 andycat andycat 96652 2012-02-05 22:45 ndk-stack
+	drwxr-xr-x  6 andycat andycat  4096 2012-02-05 22:45 tests
+	-rwxr-x---  1 andycat andycat 20990 2012-02-05 22:45 ndk-gdb
+	drwxr-x---  8 andycat andycat  4096 2012-02-05 22:46 platforms
+	drwxr-xr-x  3 andycat andycat  4096 2012-02-05 22:46 prebuilt
+	-rwxr-x---  1 andycat andycat  2985 2012-02-05 22:46 ndk-build
+	drwxr-xr-x  4 andycat andycat  4096 2012-02-05 22:48 apps
+	drwxr-xr-x  5 andycat andycat  4096 2012-02-05 22:54 sources
+	-rw-r-----  1 andycat andycat   279 2012-02-05 22:54 ndk-build.cmd
+	drwxr-xr-x  6 andycat andycat  4096 2012-02-05 22:54 build
+	drwxr-x--- 14 andycat andycat  4096 2012-02-05 22:54 samples
+
+
+Inside apps/, check out a copy of the Vidiom-branch of 'android-ffmpeg-x64'
+https://github.com/andynicholson/android-ffmpeg-x264
+
+You should see a structure like: e.g
+
+	andycat@saoirse:~/src/Vidiom$ ls -ltr ../android-ndk-r7/apps/android-ffmpeg-x264/
+	total 32
+	drwxrwxr-x 5 andycat andycat 4096 2012-02-19 23:49 Project
+	drwxrwxr-x 4 andycat andycat 4096 2012-02-19 23:49 ProjectTest
+	-rw-rw-r-- 1 andycat andycat 3154 2012-02-19 23:49 README.textile
+	-rwxrwxr-x 1 andycat andycat  220 2012-02-19 23:49 init-submodules.sh
+
+Follow the build instructions in there to build the static libraries. ie look at README.textile (or view it formatted at github)
+Basically, config_make_everything.sh, followed by ndk-build. 
+
+You will find the libraries if your build is successful in 'libs/armeabi/' as the docs say.
+e.g
+	andycat@saoirse:~/src/Vidiom$ ls -ltr ../android-ndk-r7/apps/android-ffmpeg-x264/Project/libs/armeabi/
+	total 15592
+	-rwxr-xr-x 1 andycat andycat 7905064 2012-02-20 00:08 ffmpeg
+	-rwxr-xr-x 1 andycat andycat 8036512 2012-02-20 00:08 libvideokit.so
+
+The Android project inside 'Project' should be setup inside Eclipse, marked as a Library, and linked to the 'Vidiom' application , inside the Vidiom project properties.
