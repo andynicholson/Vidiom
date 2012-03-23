@@ -1,7 +1,7 @@
-Vidiom 0.6.16 - 23rd Feb 2012
+Vidiom 0.6.17 - 23rd March 2012
 Video capture and web video publishing for Android devices.
 Author: Andrew Nicholson
-Copyright (C) 2011 Infinite Recursion Pty Ltd
+Copyright (C) 2012 Infinite Recursion Pty Ltd
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ Copyright 2012 tittel@kom.e-technik.tu-darmstadt.de
 Code included from range-seek-bar - http://code.google.com/p/range-seek-bar/ & available under the license http://www.apache.org/licenses/LICENSE-2.0 
 
 Copyright 2012 Nick Howes
-Code included from android-ffmpeg-x64 - https://github.com/andycat/android-ffmpeg-x264  (Vidiom branch of build system)
+Code included from android-ffmpeg-x64 - https://github.com/andynicholson/android-ffmpeg-x264  (Vidiom branch of build system)
 This code includes FFmpeg, x264 built using the Android NDK - see http://ffmpeg.org/ - FFmpeg available under the GPL license http://ffmpeg.org/legal.html
 
 
@@ -54,6 +54,10 @@ This code includes FFmpeg, x264 built using the Android NDK - see http://ffmpeg.
 
 
 RELEASE LOG
+
+v0.6.17 - Released to Android Market on March 23rd 2012 (Sydney, Australia)
+
+	( Tested on Android 4.0. Records video at the highest resolution the camera supports, allowing the user to select between default/low/high quality )
 
 v0.6.16 - Released to Android Market on Feb 23rd 2012 (Sydney, Australia)
 	

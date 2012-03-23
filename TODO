@@ -8,14 +8,26 @@ TODO
 
 2. Vimeo uploading -- DENIED!
 
-3. Touch screen recording controls
+3. Touch screen recording controls --DONE
 
 4. Uploading progress bar?
 
-5. Video editing ability?
+5. Video editing ability? -- STARTED
+	5.1 Debugging of FFMPEG failures
 
 6. Show in Gallery, and be able to upload, already recorded 3GP/MP4 files on sdcard. -- DONE
 
-7. Twitter reposting (using URLs from youtube/facebook/videobin.org etc)
+7. Twitter posting (using URLs from youtube/facebook/videobin.org etc) --DONE
+	7.1 Allow changes to the twitter message being posted.
 	
-8. Remove twitter app id,secret from source & github, put in unchecked in XML!
+8. Remove twitter app id/secret from source, and instead place in strings.xml, which can remain unchecked in from git . see TwitterOAuthActivity
+
+9. Custom hosting of video gallery on http://<username>.vidiom.mobi/, allowing private or public access to videos uploaded there.
+
+10. Ability to change video resolution of video recording
+
+11. Ability to change orientations (portrait/landscape)
+
+12. Inbuilt xmpp 'social network' to share videos amgonst other Vidiom users.
+
+Updated : 11th March 2012

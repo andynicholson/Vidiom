@@ -119,7 +119,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private VidiomApp mainapp;
 
-	private String movieurl;
+	private String moviePath;
 	private String moviefilename;
 	private String hosted_url;
 	private long sdrecord_id;
@@ -530,10 +530,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, " onDestroy ");
-		if (libraryCursor!=null) {
+		if (libraryCursor != null) {
 			libraryCursor.close();
 		}
-		if (dbutils!=null) {
+		if (dbutils != null) {
 			dbutils.close();
 		}
 	}
@@ -543,7 +543,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		super.onPause();
 		Log.d(TAG, "On pause");
-		
+
 		if (thread_vb != null) {
 			Log.d(TAG, "Interrupting videobin thread");
 			thread_vb.interrupt();
@@ -627,24 +627,24 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			return true;
 		}
 
-		movieurl = video_absolutepath[info.position];
+		moviePath = video_absolutepath[info.position];
 		sdrecord_id = video_ids[info.position];
 		moviefilename = video_filename[info.position];
 		hosted_url = hosted_urls[info.position];
-		Log.d(TAG, " operation on " + movieurl + " id " + sdrecord_id
+		Log.d(TAG, " operation on " + moviePath + " id " + sdrecord_id
 				+ " filename " + moviefilename + " hosted url " + hosted_url);
 
 		switch (item.getItemId()) {
 
 		case MENU_ITEM_1:
 			// play
-			pu.launchVideoPlayer(this, movieurl);
+			pu.launchVideoPlayer(this, moviePath);
 			break;
 
 		case MENU_ITEM_15:
 			// edit
 			// shuffle off to a new Activity
-			if (! support_v10) {
+			if (!support_v10) {
 				// Sorry!!
 				//
 				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)
@@ -655,28 +655,29 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									public void onClick(DialogInterface dialog,
 											int whichButton) {
 
-										Intent intent2 = new Intent().setClass(LibraryActivity.this,
+										Intent intent2 = new Intent().setClass(
+												LibraryActivity.this,
 												EditorActivity.class);
-										intent2.putExtra(getString(R.string.EditorActivityFilenameKey),
-												movieurl);
+										intent2.putExtra(
+												getString(R.string.EditorActivityFilenameKey),
+												moviePath);
 
-										LibraryActivity.this.startActivity(intent2);
-										
+										LibraryActivity.this
+												.startActivity(intent2);
+
 									}
 								}).show();
 			} else {
-				
-				//just run it directly..
+
+				// just run it directly..
 				Intent intent2 = new Intent().setClass(this,
 						EditorActivity.class);
 				intent2.putExtra(getString(R.string.EditorActivityFilenameKey),
-						movieurl);
+						moviePath);
 
 				this.startActivity(intent2);
 			}
-			
-		
-			
+
 			break;
 
 		case MENU_ITEM_2:
@@ -691,9 +692,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 										int whichButton) {
 
 									// deleting files,
-									if (!pu.deleteVideo(movieurl)) {
+									if (!pu.deleteVideo(moviePath)) {
 										Log.w(TAG, "Cant delete file "
-												+ movieurl);
+												+ moviePath);
 
 									}
 									// and removing DB records!
@@ -722,13 +723,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					.getTitleAndDescriptionFromID(new String[] { Long
 							.toString(sdrecord_id) });
 			// grab thread
-			thread_vb = pu.videoUploadToVideoBin(this, handler, movieurl,
+			thread_vb = pu.videoUploadToVideoBin(this, handler, moviePath,
 					strs_vb[0], strs_vb[1], emailPreference, sdrecord_id);
 			break;
 
 		case MENU_ITEM_4:
 			// email
-			pu.launchEmailIntentWithCurrentVideo(this, movieurl);
+			pu.launchEmailIntentWithCurrentVideo(this, moviePath);
 			break;
 
 		case MENU_ITEM_5:
@@ -748,7 +749,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		case MENU_ITEM_6:
 			// FTP server upload
 			thread_ftp = pu.videoUploadToFTPserver(this, handler,
-					moviefilename, movieurl, emailPreference, sdrecord_id);
+					moviefilename, moviePath, emailPreference, sdrecord_id);
 
 			break;
 
@@ -771,7 +772,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 						+ possibleEmail);
 				// This launches the youtube upload process
 				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
-						possibleEmail, movieurl, handler, emailPreference,
+						possibleEmail, moviePath, handler, emailPreference,
 						sdrecord_id);
 			} else {
 
@@ -985,10 +986,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		runOnUiThread(new Runnable() {
 			public void run() {
 
-				if (libraryCursor!=null && !libraryCursor.isClosed()) {
+				if (libraryCursor != null && !libraryCursor.isClosed()) {
 					libraryCursor.close();
 				}
-				
+
 				makeCursorAndAdapter();
 
 				listAdapter.notifyDataSetChanged();
@@ -1060,7 +1061,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									// add our branding to the description.
 									thread_fb = pu.videoUploadToFacebook(
 											LibraryActivity.this, handler,
-											mainapp.getFacebook(), movieurl,
+											mainapp.getFacebook(), moviePath,
 											strs[0], strs[1], emailPreference,
 											sdrecord_id);
 

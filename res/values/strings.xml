@@ -62,7 +62,7 @@
     
     <string name="maxFilesizePreferenceDefault">10240</string>
     <string name="maxFilesizePreferenceSummary">Maximum video filesize in kilobytes. Zero for unlimited.</string>
-    <string name="maxFilesizePreferenceTitle">Video filesize</string>
+    <string name="maxFilesizePreferenceTitle">Video Filesize</string>
     <string name="maxDurationPreferenceDefault">150</string>
     <string name="maxDurationPreferenceSummary">Maximum duration for a recorded video in seconds. Zero for unlimited.</string>
     <string name="maxDurationPreferenceTitle">Recording Duration</string>
@@ -72,8 +72,8 @@
     <string name="defaultFTPhostPreferenceTitle">FTP hostname</string>
     <string name="filenameConventionDefaultPreference">date</string>
     <string name="filenameConventionPreferenceSummary">Choose the style of recorded video filenames</string>
-    <string name="filenameConventionPreferenceTitle">Video filename style</string>
-    <string name="filenameConventionPreferenceDialogTitle">Video filename style</string>
+    <string name="filenameConventionPreferenceTitle">Video Filename Style</string>
+    <string name="filenameConventionPreferenceDialogTitle">Video Filename Style</string>
     <string name="videobinPreferenceSummary">Automatically publish video to videobin.org?</string>
     <string name="videobinPreferenceTitle">Videobin.org</string>
     <string name="facebookPreferenceSummary">Automatically publish video to facebook.com?</string>
@@ -113,7 +113,7 @@
 	
 	<string name="about_this">Vidiom - Video capture and web video publishing tool. VERSION - http://vidiom.net.au \nAuthor: Andy Nicholson.\nCopyright 2012 Infinite Recursion Pty. Ltd.\nhttp://www.infiniterecursion.com.au </string>
 	<string name="licenses">Show Licenses</string>
-	<string name="third_party_licenses">\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses\n\nVidiom source code available at https://github.com/andycat/Vidiom\n\nVidiom contains third-party code under separate copyright licenses:\n\nCopyright 2010 Google Inc.\nCode modified from ytd-android - http://code.google.com/p/youtube-direct &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Stickman studio Contributers.\nCode modified from stickman-android - http://code.google.com/p/stickman-android &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Facebook Inc.\nCode modified from Facebook SDK for Android - https://github.com/facebook/facebook-android-sdk &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright (c) 2007-2011, Yusuke Yamamoto\nCode modified from Twitter4J - http://twitter4j.org/en/index.html &amp; available under the BSD license http://twitter4j.org/en/index.html#license\n\nCopyright 2011 Matthias Käppler\nCode included from Signpost - http://code.google.com/p/oauth-signpost &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright 2012 Project contributors\nCode included from android-file-dialog - http://code.google.com/p/android-file-dialog &amp; available under the license http://www.opensource.org/licenses/bsd-license.php\n\nCopyright 2012 tittel@kom.e-technik.tu-darmstadt.de\nCode included from range-seek-bar - http://code.google.com/p/range-seek-bar/ &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2012 Nick Howes\nCode included from android-ffmpeg-x264 - https://github.com/andycat/android-ffmpeg-x264  (Vidiom branch of build system)\nThis build system includes FFmpeg and x264 built using the Android NDK - see http://ffmpeg.org/ - FFmpeg available under the GPL license http://ffmpeg.org/legal.html\n
+	<string name="third_party_licenses">\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses\n\nVidiom source code available at https://github.com/andynicholson/Vidiom\n\nVidiom contains third-party code under separate copyright licenses:\n\nCopyright 2010 Google Inc.\nCode modified from ytd-android - http://code.google.com/p/youtube-direct &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Stickman studio Contributers.\nCode modified from stickman-android - http://code.google.com/p/stickman-android &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2010 Facebook Inc.\nCode modified from Facebook SDK for Android - https://github.com/facebook/facebook-android-sdk &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright (c) 2007-2011, Yusuke Yamamoto\nCode modified from Twitter4J - http://twitter4j.org/en/index.html &amp; available under the BSD license http://twitter4j.org/en/index.html#license\n\nCopyright 2011 Matthias Käppler\nCode included from Signpost - http://code.google.com/p/oauth-signpost &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0.html\n\nCopyright 2012 Project contributors\nCode included from android-file-dialog - http://code.google.com/p/android-file-dialog &amp; available under the license http://www.opensource.org/licenses/bsd-license.php\n\nCopyright 2012 tittel@kom.e-technik.tu-darmstadt.de\nCode included from range-seek-bar - http://code.google.com/p/range-seek-bar/ &amp; available under the license http://www.apache.org/licenses/LICENSE-2.0\n\nCopyright 2012 Nick Howes\nCode included from android-ffmpeg-x264 - https://github.com/andynicholson/android-ffmpeg-x264  (Vidiom branch of build system)\nThis build system includes FFmpeg and x264 built using the Android NDK - see http://ffmpeg.org/ - FFmpeg available under the GPL license http://ffmpeg.org/legal.html\n
 
 </string>
 	 <string name="help">Help</string>
@@ -202,9 +202,29 @@
 		<item>date</item>
 		<item>number</item>
 	</string-array>
+	
+	<string name="recordingQualityChoices">Video Recording Quality</string>
+	<string name="defaultQualitySummary">Choose from default quality, low quality or high quality video recording.</string>
+	<string name="recordingQualityPreference">recordingQualityPreference</string>
+	<string name="recordingQualityDefaultValue">low</string>
+	
+	<string-array name="recordingQualityTypes">
+		<item>Default</item>
+		<item>Low Quality</item>
+		<item>High Quality</item>
+	</string-array>
+
+	<string-array name="recordingQualityTypeIds">
+		<item>default</item>
+		<item>low</item>
+		<item>high</item>
+	</string-array>
+	
 		
 	<string name="EditorActivityFilenameKey">EditorActivityFilenameKey</string>
 
+	
+	
 	<!--  filedialogactivity -->
 	<string name="location">Set Videos Folder to </string>
     <string name="cant_read_folder">Folder can\'t be read!</string>

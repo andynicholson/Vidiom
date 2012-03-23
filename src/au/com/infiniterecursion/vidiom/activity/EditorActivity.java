@@ -62,7 +62,7 @@ public class EditorActivity extends Activity {
 	long duration_millis;
 	ImageAdapter adapterVideoThumbs;
 
-	int number_of_thumbnails = 12;
+	int number_of_thumbnails = 6;
 
 	int start_selection = 0;
 	int end_selection = 100;
@@ -237,11 +237,10 @@ public class EditorActivity extends Activity {
 		// Starting position, offset in microseconds.
 		long offset = (long) (start_selection / 100.0 * duration_micros);
 
-		
-		//TimeUnit.MICROSECONDS.toMinutes(offset), >= API 9 
+		// TimeUnit.MICROSECONDS.toMinutes(offset), >= API 9
 		long rounded_to_mins = (long) (TimeUnit.MICROSECONDS.toSeconds(offset) / 60.0);
-		long rounded_to_mins_in_seconds =  rounded_to_mins * 60;
-				
+		long rounded_to_mins_in_seconds = rounded_to_mins * 60;
+
 		// NOTA BELLA: HOURS set to ZERO!
 		String offsetstr = String.format(
 				"00:%02d:%02d.%03d",
@@ -254,10 +253,12 @@ public class EditorActivity extends Activity {
 
 		// Duration from starting position
 		long duration = (long) ((end_selection - start_selection) / 100.0 * duration_micros);
-		
-		long rounded_to_mins_duration = (long) (TimeUnit.MICROSECONDS.toSeconds(duration)/60.0);      //TimeUnit.MICROSECONDS.toMinutes(duration); >= API 9
+
+		long rounded_to_mins_duration = (long) (TimeUnit.MICROSECONDS
+				.toSeconds(duration) / 60.0); // TimeUnit.MICROSECONDS.toMinutes(duration);
+												// >= API 9
 		long rounded_to_mins_duration_in_seconds = rounded_to_mins_duration * 60;
-		
+
 		// NOTA BELLA : HOURS set to ZERO
 		String durationstr = String.format(
 				"00:%02d:%02d.%03d",
@@ -345,7 +346,7 @@ public class EditorActivity extends Activity {
 
 									// Finish at this point.
 									finish();
-									
+
 								}
 							}).show();
 
@@ -414,12 +415,11 @@ public class EditorActivity extends Activity {
 			Bitmap outThumbnail = null;
 			try {
 				outThumbnail = thumber.getFrameAtTime(timeUs,
-						MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+						MediaMetadataRetriever.OPTION_NEXT_SYNC);
 			} catch (NoSuchMethodError nsm) {
-				//nsm.printStackTrace();
-				//Log.e(TAG, " Probably have Android 2.2 ");
+				// nsm.printStackTrace();
+				// Log.e(TAG, " Probably have Android 2.2 ");
 			}
-			
 
 			if (outThumbnail != null) {
 				Log.v(TAG, " bitmap size is " + outThumbnail.getWidth() + "x"
@@ -430,7 +430,7 @@ public class EditorActivity extends Activity {
 				iv.setImageResource(R.drawable.icon);
 			}
 			Log.v(TAG,
-					" imagaview size is " + iv.getWidth() + "x"
+					" imageview size is " + iv.getWidth() + "x"
 							+ iv.getHeight());
 
 			/*
