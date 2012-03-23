@@ -2,6 +2,8 @@ package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -27,8 +29,10 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
@@ -100,7 +104,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private int maxDurationInMs = 0;
 	// eg 1MB limit
 	private long maxFileSizeInBytes = 0;
-	private final int videoFramesPerSecond = 25;
+	private int videoFramesPerSecond = 25;
 
 	// App state
 	private boolean recordingInMotion;
@@ -179,6 +183,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	};
 
 	private boolean showing_titledesc = false;
+
+	private Camera.Size desired_psize;
+
+	boolean support_v9 = false;
+	boolean support_v10 = false;
+	boolean support_v11 = false;
+
+	private String recordingQualityPreference;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -260,6 +272,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// set path in mainapp
 		mainapp.setCurrentPath(folder.getPath());
+
+		// API level checking.
+
+		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+		// v9 support
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD) {
+			support_v9 = true;
+		}
+		// v10 and above.
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
+			// API 10 or above yes
+			support_v10 = true;
+
+		}
+		// API 11 or above
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+			support_v11 = true;
+		}
 
 	}
 
@@ -394,6 +424,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		filenameConventionPrefence = prefs.getString(
 				"filenameConventionPrefence",
 				res.getString(R.string.filenameConventionDefaultPreference));
+		recordingQualityPreference = prefs.getString("recordingQualityPreference", res.getString(R.string.recordingQualityDefaultValue));	
 		maxDurationPreference = prefs.getString("maxDurationPreference",
 				res.getString(R.string.maxDurationPreferenceDefault));
 		maxFilesizePreference = prefs.getString("maxFilesizePreference",
@@ -663,18 +694,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			stopRecording();
 
 		} else {
-			//
+			// We aren't recording - handle this corner case with a dialog.
 			new AlertDialog.Builder(this)
 					.setMessage(R.string.notrecording)
 					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -690,31 +713,186 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		Log.d(TAG, "surfaceChanged");
+		Log.d(TAG, "surfaceChanged START");
+		String surfaceDetails = " format width height are : " + format + ":"
+				+ width + ":" + height;
+		Log.d(TAG, surfaceDetails);
+
 		// Check camera isnt null for some reason
 		if (camera == null) {
-			Log.e(TAG, "surfaceChanged: camera is null!");
+			Log.e(TAG, "surfaceChanged: camera is null! Aborting.");
 			return;
 		}
 
 		if (previewRunning) {
 			camera.stopPreview();
 		}
-		// Set parameters
+
+		//
+		// Get the camera parameters
+		//
 		Camera.Parameters p = camera.getParameters();
-		Log.d(TAG, " format width height are : " + format + ":" + width + ":"
-				+ height);
 
-		// XXX should query supported capabilities first.
+		//CamcoderProfile
+		
+		CamcorderProfile cp = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+		String cp_details = "CamcorderProfile high quality details : " + " Video Width : " + cp.videoFrameWidth + " Video Height : " + cp.videoFrameHeight + "\n" +
+							" video codec number : " + cp.videoCodec + " audio codec number : " + cp.audioCodec + " file format number : " + cp.fileFormat + "\n" + 
+							" video frame rate: " + cp.videoFrameRate + " audio bit rate : " + cp.audioBitRate + " audio sample rate : " + cp.audioSampleRate;
+		Log.d(TAG, cp_details);
+		new AlertDialog.Builder(this)
+		.setMessage(cp_details)
+		.setPositiveButton(R.string.yes,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,
+							int whichButton) {
 
+					}
+				}).show();
+		
+		CamcorderProfile cp_low = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
+		String cp_low_details = "CamcorderProfile low quality details : " + " Video Width : " + cp_low.videoFrameWidth + " Video Height : " + cp_low.videoFrameHeight + "\n" +
+							" video codec number : " + cp_low.videoCodec + " audio codec number : " + cp_low.audioCodec + " file format number : " + cp_low.fileFormat + "\n" + 
+							" video frame rate: " + cp_low.videoFrameRate + " audio bit rate : " + cp_low.audioBitRate + " audio sample rate : " + cp_low.audioSampleRate;
+		Log.d(TAG, cp_low_details);
+		new AlertDialog.Builder(this)
+		.setMessage(cp_low_details)
+		.setPositiveButton(R.string.yes,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,
+							int whichButton) {
+
+					}
+				}).show();
+		
+		// Query supported capabilities first.
+		List<Camera.Size> sizes = p.getSupportedPreviewSizes();
+		// Assuming ordered from HIGHEST to LOWEST.
+		// Choose highest resolution
+		desired_psize = sizes.get(0);
+
+		// old comment ::
 		// 320, 240 seems only possible resolution
 		// and it seems the preview size must be the same as the video size
-		//
-		p.setPreviewSize(320, 240);
-		// p.setPictureSize(320,240);
-		p.setPreviewFormat(PixelFormat.YCbCr_420_SP);
-		p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-		// Log.d(TAG, "Parameters are " + p.toString());
+		// p.setPreviewSize(320,240);
+		
+		// The above old comment still applies for old phones though it seems 
+		// ie versions < Android 2.2
+		// Hardcode surface width and height for old phones.
+		if (!support_v9) {
+			Log.d(TAG, "Doesnt support v9 API or greater, using hardcoded 320x240 height and width as preview size and video size.");
+			
+			//sigh
+			desired_psize.width = 320;
+			desired_psize.height = 240;
+		}
+
+		Camera.Size preferred_psize = null;
+		if (support_v11) {
+			preferred_psize = p.getPreferredPreviewSizeForVideo();
+		}
+
+		if (support_v11 && preferred_psize != null) {
+			Log.d(TAG,
+					"Setting preview size using preferred preview size for video , of "
+							+ preferred_psize.width + ":"
+							+ preferred_psize.height);
+			p.setPreviewSize(preferred_psize.width, preferred_psize.height);
+
+		} else {
+
+			// PreferredPreview API not available.
+
+			Log.d(TAG, "Setting preview size of " + desired_psize.width + ":"
+					+ desired_psize.height);
+			// Set the preview size based on the first, higest, size
+			p.setPreviewSize(desired_psize.width, desired_psize.height);
+
+		}
+
+		// Preview Format
+		// Lets go through whats available and make sure we choose the best.
+
+		/*
+		 * from PixelFormat int YCbCr_420_SP This constant is deprecated. use
+		 * ImageFormat.NV21 instead. int YCbCr_422_I This constant is
+		 * deprecated. use ImageFormat.YUY2 instead. int YCbCr_422_SP This
+		 * constant is deprecated. use ImageFormat.NV16 instead.
+		 */
+
+		// Old phones default
+		if (!support_v9) {
+			p.setPreviewFormat(ImageFormat.NV16);
+			
+			Log.d(TAG, "Doesnt support v9 API or greater, using NV16 image format.");
+		} else {
+
+			try {
+
+				List<Integer> previewformats = p.getSupportedPreviewFormats();
+
+				if (previewformats == null || previewformats.isEmpty()) {
+					// default
+					p.setPreviewFormat(ImageFormat.NV16);
+
+				} else {
+
+					if (previewformats.contains(ImageFormat.NV16)) {
+						p.setPreviewFormat(ImageFormat.NV16);
+					}
+
+					if (previewformats.contains(ImageFormat.NV21)) {
+						p.setPreviewFormat(ImageFormat.NV21);
+					}
+
+					if (previewformats.contains(ImageFormat.YUY2)) {
+						p.setPreviewFormat(ImageFormat.YUY2);
+					}
+
+					if (previewformats.contains(ImageFormat.YV12)) {
+						p.setPreviewFormat(ImageFormat.YV12);
+					}
+				}
+
+			} catch (NullPointerException npe) {
+				// emulator seems to throw null pointer?!
+				p.setPreviewFormat(ImageFormat.NV16);
+			}
+
+		}
+
+		// Focus Mode.
+		List<String> fmodes = p.getSupportedFocusModes();
+		// set  focus mode continuous video.
+		if (fmodes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+			Log.d(TAG, "setting focus mode continuous video");
+			p.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+		}
+		else {
+			//default.
+			Log.d(TAG, "setting focus mode auto");
+			p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO); 
+		}
+		
+		// Supported Framerates
+		if (support_v9) {
+			List<int[]> supported_fps = camera.getParameters()
+					.getSupportedPreviewFpsRange();
+
+			Iterator<int[]> iter2 = supported_fps.iterator();
+			while (iter2.hasNext()) {
+				int[] range = iter2.next();
+				Log.d(TAG, "fps " + range[0] + ":" + range[1]);
+				if (!iter2.hasNext()) {
+					// Find maximum FPS in the LAST range
+					videoFramesPerSecond = range[1] / 1000;
+				}
+			}
+
+		}
+
+		// set preview FPS
+		p.setPreviewFrameRate(videoFramesPerSecond);
 
 		try {
 			camera.setParameters(p);
@@ -731,6 +909,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			Log.e(TAG, e.getMessage());
 			e.printStackTrace();
 		}
+		
+		Log.d(TAG, "surfaceChanged END");
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
@@ -809,12 +989,29 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		mediaRecorder.setOnInfoListener(this);
 
 		mediaRecorder.setCamera(camera);
-		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-
+		
+		//set desired quality quality profile.
+		if (recordingQualityPreference.equals(res.getString(R.string.recordingQualityDefaultValue))) {
+			//default quality
+			//
+			mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
+			mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+			mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+		} else {
+			//Check if user wanted low or high quality recording.
+			if (recordingQualityPreference.equals(res.getStringArray(R.array.recordingQualityTypes)[1])) {
+				//First array entry is low.
+				CamcorderProfile cp = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
+				mediaRecorder.setProfile(cp);				
+			} else {	
+				//High quality
+				CamcorderProfile cp = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+				mediaRecorder.setProfile(cp);
+			}			
+		}
+		
 		Log.d(TAG, " startRecording - preferences are " + maxDurationPreference
 				+ ":" + filenameConventionPrefence + ":"
 				+ maxFilesizePreference);
@@ -833,20 +1030,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		maxDurationInMs = user_duration * 1000;
 		mediaRecorder.setMaxDuration(maxDurationInMs);
 
+		//Find a new file name to use.
 		File tempFile = pu.selectFilenameAndCreateFile(
 				filenameConventionPrefence, folder);
 		latestVideoFile_filename = tempFile.getName();
 		latestVideoFile_absolutepath = tempFile.getAbsolutePath();
+		
+		//Set output file for mediaRecorder
 		mediaRecorder.setOutputFile(tempFile.getAbsolutePath());
 		Log.d(TAG, "Starting recording into " + tempFile.getAbsolutePath());
 
+		// Set the frame rate and video size
+		// We found these values in the surfaceChanged.
 		mediaRecorder.setVideoFrameRate(videoFramesPerSecond);
-
-		// mediaRecorder.setVideoSize(surfaceView.getWidth(),
-		// surfaceView.getHeight())
-
-		mediaRecorder.setVideoSize(320, 240);
-
+		mediaRecorder.setVideoSize(desired_psize.width, desired_psize.height);
 		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
 
 		try {
@@ -915,7 +1112,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			camera = null;
-			Log.e(TAG, "startRecording: unlock failed!");
+			Log.e(TAG, "startRecordingMediaRecorderExceptionHandler: lock failed!");
 
 		}
 	}
@@ -941,7 +1138,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			camera = null;
-			Log.e(TAG, "stopRecording: unlock failed!");
+			Log.e(TAG, "stopRecording: lock failed!");
 			show_dialog = false;
 		}
 
@@ -965,7 +1162,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		scheduler.schedule(new Runnable() {
 			public void run() {
 				// cancel UI updater
-				ui_Incrementer_handler.cancel(true);
+				if (ui_Incrementer_handler != null) {
+					ui_Incrementer_handler.cancel(true);
+				}
 				// reset the indicator
 				handler.postDelayed(new Runnable() {
 					public void run() {

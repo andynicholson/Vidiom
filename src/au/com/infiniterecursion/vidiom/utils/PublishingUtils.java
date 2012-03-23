@@ -952,26 +952,21 @@ public class PublishingUtils {
 		activity.startActivity(i);
 	}
 
-	public void launchVideoPlayer(final Activity activity, final String movieurl) {
+	public void launchVideoPlayer(final Activity activity,
+			final String moviePath) {
 
 		try {
 			Intent tostart = new Intent(Intent.ACTION_VIEW);
-			tostart.setDataAndType(Uri.parse(movieurl), "video/*");
+			tostart.setDataAndType(Uri.parse("file://" + moviePath), "video/*");
 			activity.startActivity(tostart);
 		} catch (android.content.ActivityNotFoundException e) {
 			Log.e(TAG, " Cant start activity to show video!");
 
+			e.printStackTrace();
+
 			new AlertDialog.Builder(activity)
 					.setMessage(R.string.cant_show_video)
 					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-								}
-							})
-
-					.setNegativeButton(R.string.cancel,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int whichButton) {
@@ -1035,6 +1030,11 @@ public class PublishingUtils {
 	// Copyright 2010 Google License Apache
 	//
 	// Changed by Andy Nicholson
+
+	//
+	// developer docs
+	// http://code.google.com/apis/youtube/2.0/developers_guide_protocol.html
+	//
 
 	public void asyncYouTubeUpload(final Activity activity, final File file,
 			final Handler handler, final String emailAddress,
