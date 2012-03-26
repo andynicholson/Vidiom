@@ -204,20 +204,30 @@
 	</string-array>
 	
 	<string name="recordingQualityChoices">Video Recording Quality</string>
-	<string name="defaultQualitySummary">Choose from default quality, low quality or high quality video recording.</string>
+	<string name="defaultQualitySummary">Choose from default, lowest or highest quality video recording, or a custom video resolution.</string>
 	<string name="recordingQualityPreference">recordingQualityPreference</string>
 	<string name="recordingQualityDefaultValue">low</string>
 	
 	<string-array name="recordingQualityTypes">
-		<item>Default</item>
-		<item>Low Quality</item>
-		<item>High Quality</item>
+		<item>Default Quality</item>
+		<item>Lowest Quality</item>
+		<item>Highest Quality</item>
+		<item>QCIF (76 x 144)</item>
+		<item>CIF (352 x 288)</item>
+		<item>480p (720 x 480) </item>
+		<item>720p (1280 x 720)</item>
+		<item>1080p (1920 x 1088)</item>
 	</string-array>
 
 	<string-array name="recordingQualityTypeIds">
 		<item>default</item>
 		<item>low</item>
 		<item>high</item>
+		<item>qcif</item>
+		<item>cif</item>
+		<item>480p</item>
+		<item>720p</item>
+		<item>1080p</item>	
 	</string-array>
 	
 		

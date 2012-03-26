@@ -130,8 +130,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private boolean importPreference;
 	private boolean got_facebook_sso_callback;
-	// API 10 ?
-	private Boolean support_v10;
+
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -151,13 +150,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		got_facebook_sso_callback = false;
 
-		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
-			// API 10 or above yes
-			support_v10 = true;
-		} else {
-			support_v10 = false;
-		}
 	}
 
 	/**
@@ -644,7 +636,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		case MENU_ITEM_15:
 			// edit
 			// shuffle off to a new Activity
-			if (!support_v10) {
+			if (!mainapp.support_v10) {
 				// Sorry!!
 				//
 				AlertDialog gingerbread_mr1 = new AlertDialog.Builder(this)

@@ -24,7 +24,7 @@ TODO
 
 9. Custom hosting of video gallery on http://<username>.vidiom.mobi/, allowing private or public access to videos uploaded there.
 
-10. Ability to change video resolution of video recording
+10. Ability to change video resolution of video recording -- DONE (default/low/high)
 
 11. Ability to change orientations (portrait/landscape)
 

@@ -13,11 +13,20 @@
 	<Preference android:key="@string/defaultVideosFolder" android:title="@string/defaultVideosFolderTitle">
 		<intent android:action="au.com.infiniterecursion.vidiom.activity.FileDialogActivity" /> 
 	</Preference>
+	
 	<ListPreference android:entries="@array/recordingQualityTypes" android:entryValues="@array/recordingQualityTypeIds" android:title="@string/recordingQualityChoices" 
        android:summary="@string/defaultQualitySummary" android:key="recordingQualityPreference" android:defaultValue="@string/recordingQualityDefaultValue"></ListPreference>
-	<ListPreference android:key="filenameConventionPrefence" android:entries="@array/filenameConventionTypes" android:entryValues="@array/filenameConventionTypeIds" android:dialogTitle="@string/filenameConventionPreferenceDialogTitle" android:title="@string/filenameConventionPreferenceTitle" android:summary="@string/filenameConventionPreferenceSummary" android:defaultValue="@string/filenameConventionDefaultPreference"></ListPreference>
-	<EditTextPreference android:key="maxDurationPreference" android:title="@string/maxDurationPreferenceTitle" android:summary="@string/maxDurationPreferenceSummary" android:defaultValue="@string/maxDurationPreferenceDefault" android:inputType="number" android:dialogMessage="@string/maxDurationPreferenceSummary"></EditTextPreference>
-	<EditTextPreference android:key="maxFilesizePreference" android:title="@string/maxFilesizePreferenceTitle" android:defaultValue="@string/maxFilesizePreferenceDefault" android:summary="@string/maxFilesizePreferenceSummary" android:inputType="number" android:dialogMessage="@string/maxFilesizePreferenceSummary"></EditTextPreference>
+	
+	<ListPreference android:key="filenameConventionPrefence" android:entries="@array/filenameConventionTypes" android:entryValues="@array/filenameConventionTypeIds" 
+	    android:dialogTitle="@string/filenameConventionPreferenceDialogTitle" android:title="@string/filenameConventionPreferenceTitle" 
+	    android:summary="@string/filenameConventionPreferenceSummary" android:defaultValue="@string/filenameConventionDefaultPreference"></ListPreference>
+	
+	<EditTextPreference android:key="maxDurationPreference" android:title="@string/maxDurationPreferenceTitle" android:summary="@string/maxDurationPreferenceSummary" 
+	    android:defaultValue="@string/maxDurationPreferenceDefault" android:inputType="number" android:dialogMessage="@string/maxDurationPreferenceSummary"></EditTextPreference>
+	
+	<EditTextPreference android:key="maxFilesizePreference" android:title="@string/maxFilesizePreferenceTitle" android:defaultValue="@string/maxFilesizePreferenceDefault" 
+	    android:summary="@string/maxFilesizePreferenceSummary" android:inputType="number" android:dialogMessage="@string/maxFilesizePreferenceSummary"></EditTextPreference>
+	
 </PreferenceScreen>
 
  <PreferenceScreen android:title="@string/automaticPreferencesScreenTitle" >

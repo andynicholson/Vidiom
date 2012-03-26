@@ -33,6 +33,10 @@ public class VidiomApp extends Application {
 
 	private String current_path;
 
+	public boolean support_v9 = false;
+	public boolean support_v10 = false;
+	public boolean support_v11 = false;
+
 	/*
 	 * On application startup, get the home position from the preferences.
 	 * 
@@ -52,6 +56,27 @@ public class VidiomApp extends Application {
 		Log.i(TAG, "Session for facebook restored . Is valid ?" + session_valid);
 
 		isUploading = false;
+
+		// API level checking.
+
+		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+		// v9 support
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD) {
+			support_v9 = true;
+			Log.d(TAG, "Phone supports v9 API or greater");
+		}
+		// v10 and above.
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
+			// API 10 or above yes
+			support_v10 = true;
+			Log.d(TAG, "Phone supports v10 API or greater");
+
+		}
+		// API 11 or above
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+			support_v11 = true;
+			Log.d(TAG, "Phone supports v11 API or greater");
+		}
 	}
 
 	public void onTerminate() {
