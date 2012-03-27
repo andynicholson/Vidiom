@@ -512,12 +512,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			menu.removeItem(MENU_ITEM_1);
 			MenuItem menu_stop = menu.add(0, MENU_ITEM_2, 0,
 					R.string.menu_stop_recording);
-			menu_stop.setIcon(R.drawable.stop48);
+			menu_stop.setIcon(R.drawable.close48);
 		} else {
 			if (canAccessSDCard) {
 				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0,
 						R.string.menu_start_recording);
-				menu_start.setIcon(R.drawable.sun48);
+				menu_start.setIcon(R.drawable.video48);
 				menu.removeItem(MENU_ITEM_2);
 			}
 		}
@@ -527,13 +527,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu.add(0, MENU_ITEM_5, 0, R.string.menu_about);
-		menu_about.setIcon(R.drawable.wizard48);
+		menu_about.setIcon(R.drawable.info48);
 		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0,
 				R.string.menu_preferences);
-		menu_prefs.setIcon(R.drawable.options);
+		menu_prefs.setIcon(R.drawable.settings48);
 		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
 				R.string.menu_library);
-		menu_library.setIcon(R.drawable.business48);
+		menu_library.setIcon(R.drawable.gallery48);
 
 	}
 

@@ -9,18 +9,21 @@
 	android:orientation="vertical">
 
 
-<ImageView android:id="@+id/videoThumbnailimageView"
+<ImageView android:id="@+id/videoThumbnailimageView" android:contentDescription="video thumbnail"
 		android:src="@drawable/icon" android:layout_height="wrap_content"
-		android:layout_width="wrap_content" android:layout_margin="3dip"></ImageView>
+		android:layout_width="wrap_content" android:layout_margin="3dip"
+		android:layout_centerHorizontal="true"
+		></ImageView>
 		
 		
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
 	android:orientation="vertical"
-	android:layout_toRightOf="@id/videoThumbnailimageView"
+	android:layout_below="@id/videoThumbnailimageView"
+	android:padding="3dp"
 	>
 
+    <!--  title -->
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
@@ -29,11 +32,12 @@
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:text="@string/text5intro" />
 
-		<TextView android:id="@+id/text5" android:textSize="16sp"
+		<TextView android:id="@+id/text5" android:textSize="16sp" android:textStyle="bold"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
 	</LinearLayout>
 
+	<!--  description -->
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
@@ -42,51 +46,71 @@
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:text="@string/text6intro" />
 
-		<TextView android:id="@+id/text6" android:textSize="16sp"
+		<TextView android:id="@+id/text6" android:textSize="16sp" android:textStyle="bold"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
 	</LinearLayout>
 
 
-
+	<!-- filename -->
 
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
-		<TextView android:id="@+id/text1intro" android:textSize="16sp"
+		
+		<TextView android:id="@+id/text1intro" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:text="@string/text1intro" />
 
-
-		<TextView android:id="@android:id/text1" android:textSize="16sp"
+		<TextView android:id="@android:id/text1" android:textSize="14sp"
 			android:textStyle="bold" android:layout_width="fill_parent"
 			android:layout_height="wrap_content" />
 
 
 	</LinearLayout>
 
+	<!-- file size -->
+
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		
+		<TextView android:id="@+id/text7intro" android:textSize="14sp"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:text="@string/text7intro" />
+
+
+		<TextView android:id="@+id/text7" android:textSize="14sp"
+			android:textStyle="normal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content" />
+
+
+	</LinearLayout>
+	
+	<!--  duration -->
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<TextView android:id="@+id/text2intro" android:textSize="16sp"
+		<TextView android:id="@+id/text2intro" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:text="@string/text2intro" />
 
-		<TextView android:id="@android:id/text2" android:textSize="16sp"
+		<TextView android:id="@android:id/text2" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
 	</LinearLayout>
 
+	<!--  Date filmed -->
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<TextView android:id="@+id/text3intro" android:textSize="16sp"
+		<TextView android:id="@+id/text3intro" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:text="@string/text3intro" />
 
-		<TextView android:id="@+id/text3" android:textSize="16sp"
+		<TextView android:id="@+id/text3" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
 	</LinearLayout>
@@ -97,11 +121,11 @@
 		android:layout_width="fill_parent" android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<TextView android:id="@+id/text4intro" android:textSize="16sp"
+		<TextView android:id="@+id/text4intro" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:text="@string/text4intro" />
 
-		<TextView android:id="@+id/text4" android:textSize="16sp"
+		<TextView android:id="@+id/text4" android:textSize="14sp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
 	</LinearLayout>

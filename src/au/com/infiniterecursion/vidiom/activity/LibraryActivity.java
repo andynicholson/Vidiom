@@ -23,6 +23,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -131,7 +133,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private boolean importPreference;
 	private boolean got_facebook_sso_callback;
 
-
+	
+	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		res = getResources();
@@ -149,7 +152,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		thread_youtube = null;
 
 		got_facebook_sso_callback = false;
-
+		
+		
+		
 	}
 
 	/**
@@ -342,11 +347,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			 * MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns,
 			 * MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
 			 */
-			// Log.d(TAG, "We have " + s);
+			
+			Log.d(TAG, "We have " + s);
 
 			String[] mediaColumns = { MediaStore.Video.Media._ID,
-					MediaStore.Video.Media.DATA, MediaStore.Video.Media.TITLE,
-					MediaStore.Video.Media.MIME_TYPE };
+					MediaStore.Video.Media.DATA };
 
 			Cursor thumb_cursor = managedQuery(
 					MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns,
@@ -372,21 +377,29 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				 * .getLong(thumb_cursor
 				 * .getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
 				 */
+				
 				Bitmap bm = MediaStore.Video.Thumbnails
 						.getThumbnail(
 								getContentResolver(),
 								thumb_cursor.getLong(thumb_cursor
 										.getColumnIndexOrThrow(MediaStore.Video.Media._ID)),
-								MediaStore.Video.Thumbnails.MICRO_KIND, null);
+								MediaStore.Video.Thumbnails.MINI_KIND, null);
 				if (bm != null && v != null) {
 					v.setImageBitmap(bm);
 				}
 
+				
+				
+					
 			} else {
 				// set default icon
 				v.setImageResource(R.drawable.icon);
+				
 			}
 
+			
+			
+			
 		}
 	}
 
@@ -400,7 +413,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
 
 		// SELECT
-		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
+		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
 				+ " b.host_uri as host_uri , b.host_video_url as host_video_url FROM "
 				+ " videofiles a LEFT OUTER JOIN hosts b ON "
 				+ " a._id = b.sdrecord_id "
@@ -469,18 +482,53 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				DatabaseHelper.SDFileRecord.TITLE,
 				DatabaseHelper.SDFileRecord.DESCRIPTION,
-				DatabaseHelper.SDFileRecord.FILEPATH, };
+				DatabaseHelper.SDFileRecord.FILEPATH, 
+				"filepath2", 
+				};
 
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
 				R.id.text3, R.id.text4, R.id.text5, R.id.text6,
-				R.id.videoThumbnailimageView };
+				R.id.videoThumbnailimageView, R.id.text7 };
 
 		listAdapter = new VideoFilesSimpleCursorAdapter(this,
 				R.layout.library_list_item, libraryCursor, from, to);
 
 		listAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+			
 			public boolean setViewValue(View view, Cursor cursor,
 					int columnIndex) {
+				
+				if (columnIndex == cursor
+						.getColumnIndexOrThrow("filepath2") ) {
+					
+					TextView filesizeview = (TextView) view.findViewById(R.id.text7);
+					
+					//Log.d(TAG, " filesizeview is " + filesizeview + " filepath is " + cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH)));
+					
+					String[] mediaColumns = { MediaStore.Video.Media._ID, MediaStore.Video.Media.SIZE };
+
+					Cursor thumb_cursor = managedQuery(
+							MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns,
+							MediaStore.Video.Media.DATA + " = ? ", new String[] { cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH)) },
+							null);
+
+					if ( thumb_cursor!= null && thumb_cursor.moveToFirst()) {
+					
+						//compute video filesize in (KB)
+						String size_in_bytes = thumb_cursor.getString(thumb_cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
+						Long bytes = Long.valueOf(size_in_bytes);
+						Long kilobytes = bytes/1024;
+						filesizeview.setText(kilobytes.toString());
+					
+					} else {
+						//No file size data
+						filesizeview.setText("0 KB");
+					}
+					
+					return true;
+				}
+				
+				
 				// Transform the text4 specifically, from a blank entry
 				// repr. into a string saying "not uploaded yet"
 				if (columnIndex == cursor
@@ -578,18 +626,25 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			ContextMenu.ContextMenuInfo menuInfo) {
 
 		// PLAY
-		menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
+		MenuItem p = menu.add(0, MENU_ITEM_1, 0, R.string.library_menu_play);
+		// p.setIcon(R.drawable.video48);
 
 		// EDIT
-		menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
+		MenuItem ed = menu.add(0, MENU_ITEM_15, 0, R.string.library_menu_edit);
+		// ed.setIcon(R.drawable.edit48);
 
 		// TITLE / DESCRIPTION
-		menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
+		MenuItem rename = menu.add(0, MENU_ITEM_8, 0, R.string.rename_video);
+		// rename.setIcon(R.drawable.edittitle48);
 
 		// PUBLISHING OPTIONS
-		menu.add(0, MENU_ITEM_3, 0, R.string.menu_publish_to_videobin);
+		MenuItem vb = menu.add(0, MENU_ITEM_3, 0,
+				R.string.menu_publish_to_videobin);
+		// vb.setIcon(R.drawable.upload48);
 
-		menu.add(0, MENU_ITEM_5, 0, R.string.menu_publish_to_facebook);
+		MenuItem fb = menu.add(0, MENU_ITEM_5, 0,
+				R.string.menu_publish_to_facebook);
+		// fb.setIcon(R.drawable.fb48);
 
 		menu.add(0, MENU_ITEM_7, 0, R.string.menu_youtube);
 
@@ -1112,18 +1167,28 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu
 				.add(0, MENU_ITEM_10, 0, R.string.menu_import);
-		// XXX get some different icon
-		menu_about.setIcon(R.drawable.wizard48);
+		menu_about.setIcon(R.drawable.refresh48);
 
-		MenuItem menu_twitter = menu.add(0, MENU_ITEM_11, 0,
-				R.string.twitter_auth);
-		// XXX get some different icon
-		menu_twitter.setIcon(R.drawable.wizard48);
+		// Toogle twitter depending on auth'd or not.
 
-		MenuItem menu_twitter_deauth = menu.add(0, MENU_ITEM_14, 0,
-				R.string.twitter_deauth);
-		// XXX get some different icon
-		menu_twitter_deauth.setIcon(R.drawable.wizard48);
+		// Check there is a valid twitter OAuth tokens.
+		String twitterToken = prefs.getString("twitterToken", null);
+		String twitterTokenSecret = prefs.getString("twitterTokenSecret", null);
+
+		if (twitterToken != null && twitterTokenSecret != null) {
+
+			MenuItem menu_twitter_deauth = menu.add(0, MENU_ITEM_14, 0,
+					R.string.twitter_deauth);
+			menu_twitter_deauth.setIcon(R.drawable.twitter48);
+
+		} else {
+
+			MenuItem menu_twitter = menu.add(0, MENU_ITEM_11, 0,
+					R.string.twitter_auth);
+			menu_twitter.setIcon(R.drawable.twitter48);
+
+		}
+
 	}
 
 	@Override
