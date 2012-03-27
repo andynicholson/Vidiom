@@ -423,7 +423,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		Log.d(TAG, "video recording preferences are "
 				+ filenameConventionPrefence + ":" + maxDurationPreference
-				+ ":" + maxFilesizePreference);
+				+ ":" + maxFilesizePreference + ": quality pref:" + recordingQualityPreference);
 
 	}
 

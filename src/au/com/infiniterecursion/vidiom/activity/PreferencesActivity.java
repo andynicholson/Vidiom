@@ -171,11 +171,11 @@ public class PreferencesActivity extends PreferenceActivity {
 					.getStringArray(R.array.recordingQualityTypes)[2]);
 			
 			valid_entries_values.add(res
-					.getStringArray(R.array.recordingQualityTypes)[0]);
+					.getStringArray(R.array.recordingQualityTypeIds)[0]);
 			valid_entries_values.add(res
-					.getStringArray(R.array.recordingQualityTypes)[1]);
+					.getStringArray(R.array.recordingQualityTypeIds)[1]);
 			valid_entries_values.add(res
-					.getStringArray(R.array.recordingQualityTypes)[2]);
+					.getStringArray(R.array.recordingQualityTypeIds)[2]);
 			
 		}
 
