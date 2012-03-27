@@ -514,15 +514,22 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 					if ( thumb_cursor!= null && thumb_cursor.moveToFirst()) {
 					
-						//compute video filesize in (KB)
+						//compute video filesize in KB
 						String size_in_bytes = thumb_cursor.getString(thumb_cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
-						Long bytes = Long.valueOf(size_in_bytes);
-						Long kilobytes = bytes/1024;
+						Long kilobytes = 0L;
+						try {
+							Long bytes = Long.valueOf(size_in_bytes);
+							kilobytes = bytes/1024;
+						} catch (NumberFormatException nfe) {
+							nfe.printStackTrace();
+							Log.e(TAG, "Caught number format exception with " + size_in_bytes);
+						}
+						//set size in kilobytes
 						filesizeview.setText(kilobytes.toString());
 					
 					} else {
-						//No file size data
-						filesizeview.setText("0 KB");
+						//No file size data available
+						filesizeview.setText("Unknown");
 					}
 					
 					return true;

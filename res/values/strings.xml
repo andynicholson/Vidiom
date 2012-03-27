@@ -207,7 +207,7 @@
 	<string name="recordingQualityChoices">Video Recording Quality</string>
 	<string name="defaultQualitySummary">Choose from default, lowest or highest quality video recording, or a custom video resolution.</string>
 	<string name="recordingQualityPreference">recordingQualityPreference</string>
-	<string name="recordingQualityDefaultValue">low</string>
+	<string name="recordingQualityDefaultValue">default</string>
 	
 	<string-array name="recordingQualityTypes">
 		<item>Default Quality</item>
