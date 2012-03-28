@@ -32,6 +32,7 @@ import android.content.res.Resources;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -156,7 +157,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	protected TextView statusIndicator;
 	protected TextView resolutionIndicator;
-	
+
 	private Resources res;
 
 	// UI threaded updater infrastructure
@@ -220,7 +221,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		statusIndicator = (TextView) findViewById(R.id.overlay);
 		resolutionIndicator = (TextView) findViewById(R.id.overlayResolution);
-		
+
 		// Make the overlay text clickable to record/stop
 		statusIndicator.setOnClickListener(new OnClickListener() {
 
@@ -270,8 +271,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// set path in mainapp
 		mainapp.setCurrentPath(folder.getPath());
-
-		
 
 	}
 
@@ -423,7 +422,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		Log.d(TAG, "video recording preferences are "
 				+ filenameConventionPrefence + ":" + maxDurationPreference
-				+ ":" + maxFilesizePreference + ": quality pref:" + recordingQualityPreference);
+				+ ":" + maxFilesizePreference + ": quality pref:"
+				+ recordingQualityPreference);
 
 	}
 
@@ -746,9 +746,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// Query supported capabilities first.
 		List<Camera.Size> sizes = p.getSupportedPreviewSizes();
-		// Assuming ordered from HIGHEST to LOWEST.
-		// Choose highest resolution
-		desired_psize = sizes.get(0);		
+		
+		//check if we have hardcoded a desired resolution
+		if (recordingQualityPreference.equals(res
+				.getStringArray(R.array.recordingQualityTypeIds)[8])) {
+		
+			desired_psize = camera.new Size(0,0);
+			desired_psize.width = 720;
+			desired_psize.height = 480;
+			
+		} else {
+			
+			// Assuming ordered from HIGHEST to LOWEST, from getSupportedPreviewSizes
+			// Choose highest resolution
+			desired_psize = sizes.get(0);
+		
+		}
+		
 		Log.d(TAG, "Desired resolution preview size / video size is "
 				+ desired_psize.width + " x " + desired_psize.height);
 
@@ -759,7 +773,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// The above old comment still applies for old phones though it seems
 		// ie versions < Android 2.2
-		// Hardcode surface width and height for old phones.
+		// Hardcode 320x240 width and height for old phones.
 		if (!mainapp.support_v9) {
 			Log.d(TAG,
 					"Doesnt support v9 API or greater, using hardcoded 320x240 height and width as preview size and video size.");
@@ -768,7 +782,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			desired_psize.width = 320;
 			desired_psize.height = 240;
 		}
-		
+
 		Camera.Size preferred_psize = null;
 		if (mainapp.support_v11) {
 			preferred_psize = p.getPreferredPreviewSizeForVideo();
@@ -876,6 +890,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// set preview FPS
 		p.setPreviewFrameRate(videoFramesPerSecond);
 
+		// Samsung hack
+		// http://forum.xda-developers.com/showthread.php?t=1104970&page=8
+		// http://stackoverflow.com/questions/7225571/camcorderprofile-quality-high-resolution-produces-green-flickering-video
+		// http://forum.xda-developers.com/archive/index.php/t-1104970.html
+		p.set("cam_mode", 1);
+
 		try {
 			camera.setParameters(p);
 		} catch (RuntimeException e) {
@@ -980,71 +1000,120 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				.getStringArray(R.array.recordingQualityTypeIds)[0])) {
 			// default quality
 			// using default output format, audio and video encoders
-			//The sizes we are using for video width/height is set by the found supported preview sizes.
+			// The sizes we are using for video width/height is set by the found
+			// supported preview sizes.
 			Log.d(TAG, " using default recording quality");
-			mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-			mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-			mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-			
-		} else if  (recordingQualityPreference.equals(res
-					.getStringArray(R.array.recordingQualityTypeIds)[1])) {
-				// Check if user wanted low or high quality recording.
-				// First array entry is low -- check strings.xml
-				Log.d(TAG, " using low recording quality");
+			setDefaultFormatAndEncoders();
+
+		} else if (recordingQualityPreference.equals(res
+				.getStringArray(R.array.recordingQualityTypeIds)[1])) {
+			// Check if user wanted low or high quality recording.
+			// First array entry is low -- check strings.xml
+			Log.d(TAG, " using low recording quality");
+			try {
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
 				// set the profile
 				mediaRecorder.setProfile(cp);
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
 
 		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[2])) {
-				// High quality
-				Log.d(TAG, " using high recording quality");
+			// High quality
+			Log.d(TAG, " using high recording quality");
+			try {
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
 				// set the profile
 				mediaRecorder.setProfile(cp);
-			
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
+
 		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[3])) {
-				// QCIF quality
-				Log.d(TAG, " using QCIF recording quality");
+			// QCIF quality
+			Log.d(TAG, " using QCIF recording quality");
+			try {
+
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_QCIF);
 				// set the profile
 				mediaRecorder.setProfile(cp);
-			
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
+
 		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[4])) {
-				// CIF quality
-				Log.d(TAG, " using CIF recording quality");
+			// CIF quality
+			Log.d(TAG, " using CIF recording quality");
+			try {
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_CIF);
 				// set the profile
 				mediaRecorder.setProfile(cp);
-			
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
+
 		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[5])) {
-				// 480p quality
-				Log.d(TAG, " using 480p recording quality");
+			// 480p quality
+			Log.d(TAG, " using 480p recording quality");
+			try {
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
 				// set the profile
 				mediaRecorder.setProfile(cp);
-			
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
+
 		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[6])) {
-				// 720p quality
-				Log.d(TAG, " using 720p recording quality");
+			// 720p quality
+			Log.d(TAG, " using 720p recording quality");
+			try {
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_720P);
 				// set the profile
 				mediaRecorder.setProfile(cp);
-			
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
+
 		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[7])) {
-				// 1080p quality
-				Log.d(TAG, " using 1080p recording quality");
+			// 1080p quality
+			Log.d(TAG, " using 1080p recording quality");
+			try {
 				cp = CamcorderProfile.get(CamcorderProfile.QUALITY_1080P);
 				// set the profile
 				mediaRecorder.setProfile(cp);
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Doesnt actually support it!");
+				setDefaultFormatAndEncoders();
+				cp = null;
+			}
+
+		}  else if (recordingQualityPreference.equals(res
+				.getStringArray(R.array.recordingQualityTypeIds)[8])) {
+			// custom 720 x 480 quality
+			Log.d(TAG, " using custom 720x480 recording quality");
+			
+			setDefaultFormatAndEncoders();
 			
 		}
-		
+
 		Log.d(TAG, " startRecording - preferences are " + maxDurationPreference
 				+ ":" + filenameConventionPrefence + ":"
 				+ maxFilesizePreference + " desired size "
@@ -1077,19 +1146,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// Set the frame rate and video size
 		// We found these values in the surfaceChanged.
 		mediaRecorder.setVideoFrameRate(videoFramesPerSecond);
-		//This needs to be the CamcorderProfile size , if not null
-		if (cp==null) {
-			//We are using the default quality option.
-			mediaRecorder.setVideoSize(desired_psize.width, desired_psize.height);
-			Log.d(TAG, "Using default quality setting: video size " + desired_psize.width + "x" + desired_psize.height);
-			resolutionIndicator.setText(desired_psize.width + "x" + desired_psize.height);
+		// This needs to be the CamcorderProfile size , if not null
+		if (cp == null) {
+			// We are using the default quality option.
+			mediaRecorder.setVideoSize(desired_psize.width,
+					desired_psize.height);
+			Log.d(TAG, "Using default quality setting: video size "
+					+ desired_psize.width + "x" + desired_psize.height);
+			resolutionIndicator.setText(desired_psize.width + "x"
+					+ desired_psize.height);
 		} else {
-			//We are using a inbuilt CamcorderProfile
+			// We are using a inbuilt CamcorderProfile
 			mediaRecorder.setVideoSize(cp.videoFrameWidth, cp.videoFrameHeight);
-			Log.d(TAG, "Using CamcorderProfile settings: video size " + cp.videoFrameWidth + "x" + cp.videoFrameHeight);
-			resolutionIndicator.setText(cp.videoFrameWidth + "x" + cp.videoFrameHeight);
+			Log.d(TAG, "Using CamcorderProfile settings: video size "
+					+ cp.videoFrameWidth + "x" + cp.videoFrameHeight);
+			resolutionIndicator.setText(cp.videoFrameWidth + "x"
+					+ cp.videoFrameHeight);
 		}
-		//Set preview display surface
+		// Set preview display surface
 		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
 
 		try {
@@ -1149,11 +1223,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	}
 
+	private void setDefaultFormatAndEncoders() {
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+	}
+
 	private void startRecordingMediaRecorderExceptionHandler() {
 		// Reset the UI
 		shutdownRecIncrUIThread();
 
-		//We only really need to do this if prepare worked, but start threw an error.
+		// We only really need to do this if prepare worked, but start threw an
+		// error.
 		try {
 			camera.lock();
 		} catch (RuntimeException e) {
@@ -1163,7 +1244,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					"startRecordingMediaRecorderExceptionHandler: lock failed!");
 
 		}
-		//Stop the preview, release the camera and null the camera object.
+		// Stop the preview, release the camera and null the camera object.
 		camera.stopPreview();
 		camera.release();
 		camera = null;
@@ -1282,7 +1363,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 								latestVideoFile_filename,
 								(int) ((endTimeinMillis - startTimeinMillis) / 1000),
 								// XXX hardcoded vid & audio codecs
-								// Change this based on what type of encoder for video/audio we setup XXX
+								// Change this based on what type of encoder for
+								// video/audio we setup XXX
 								"h263;amr-nb", title, description);
 
 				// If ID > 0, then new record in DB was successfully created

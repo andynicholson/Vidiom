@@ -163,19 +163,31 @@ public class PreferencesActivity extends PreferenceActivity {
 			
 		} else {
 			// if not v11 or higher, only use default, low and high.
+			// Plus 480p
+			
+			//The descriptive strings
+			//
 			valid_entries.add(res
 					.getStringArray(R.array.recordingQualityTypes)[0]);
 			valid_entries.add(res
 					.getStringArray(R.array.recordingQualityTypes)[1]);
 			valid_entries.add(res
 					.getStringArray(R.array.recordingQualityTypes)[2]);
+			//Custom 720 x 480
+			valid_entries.add(res
+					.getStringArray(R.array.recordingQualityTypes)[8]);
 			
+			
+			// The values
 			valid_entries_values.add(res
 					.getStringArray(R.array.recordingQualityTypeIds)[0]);
 			valid_entries_values.add(res
 					.getStringArray(R.array.recordingQualityTypeIds)[1]);
 			valid_entries_values.add(res
 					.getStringArray(R.array.recordingQualityTypeIds)[2]);
+			//Custom 720 x 480
+			valid_entries_values.add(res
+					.getStringArray(R.array.recordingQualityTypeIds)[8]);
 			
 		}
 

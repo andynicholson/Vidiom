@@ -218,6 +218,7 @@
 		<item>480p (720 x 480) </item>
 		<item>720p (1280 x 720)</item>
 		<item>1080p (1920 x 1088)</item>
+		<item>Custom 720 x 480</item>
 	</string-array>
 
 	<string-array name="recordingQualityTypeIds">
@@ -229,6 +230,7 @@
 		<item>480p</item>
 		<item>720p</item>
 		<item>1080p</item>	
+		<item>custom480p</item>
 	</string-array>
 	
 		
