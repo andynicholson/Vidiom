@@ -450,14 +450,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 											int whichButton) {
 
 									}
-								})
-
-						.setNegativeButton(R.string.cancel,
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int whichButton) {
-
-									}
 								}).show();
 			} else {
 				Log.d(TAG, " Folder created...");
@@ -730,6 +722,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				+ " audio bit rate : " + cp.audioBitRate
 				+ " audio sample rate : " + cp.audioSampleRate;
 		Log.d(TAG, cp_details);
+		//Set HIGEST video frame rate supported
+		videoFramesPerSecond = cp.videoFrameRate;
 
 		CamcorderProfile cp_low = CamcorderProfile
 				.get(CamcorderProfile.QUALITY_LOW);
@@ -766,18 +760,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		Log.d(TAG, "Desired resolution preview size / video size is "
 				+ desired_psize.width + " x " + desired_psize.height);
 
-		// old comment ::
+		// For versions < Android 2.2
+		// Hard-code 320x240 width and height for old phones.
 		// 320, 240 seems only possible resolution
 		// and it seems the preview size must be the same as the video size
-		// p.setPreviewSize(320,240);
 
-		// The above old comment still applies for old phones though it seems
-		// ie versions < Android 2.2
-		// Hardcode 320x240 width and height for old phones.
 		if (!mainapp.support_v9) {
 			Log.d(TAG,
 					"Doesnt support v9 API or greater, using hardcoded 320x240 height and width as preview size and video size.");
-
 			// sigh
 			desired_psize.width = 320;
 			desired_psize.height = 240;
@@ -808,13 +798,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// Preview Format
 		// Lets go through whats available and make sure we choose the best.
-
-		/*
-		 * from PixelFormat int YCbCr_420_SP This constant is deprecated. use
-		 * ImageFormat.NV21 instead. int YCbCr_422_I This constant is
-		 * deprecated. use ImageFormat.YUY2 instead. int YCbCr_422_SP This
-		 * constant is deprecated. use ImageFormat.NV16 instead.
-		 */
 
 		// Old phones default
 		if (!mainapp.support_v9) {
@@ -861,7 +844,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// Focus Mode.
 		List<String> fmodes = p.getSupportedFocusModes();
 		// set focus mode continuous video.
-		if (fmodes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+		if (fmodes!=null && fmodes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
 			Log.d(TAG, "setting focus mode continuous video");
 			p.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 		} else {
@@ -870,25 +853,27 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			p.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
 		}
 
+		int videoPreviewFramesPerSecond = 0;
 		// Supported Framerates
 		if (mainapp.support_v9) {
-			List<int[]> supported_fps = camera.getParameters()
-					.getSupportedPreviewFpsRange();
-
-			Iterator<int[]> iter2 = supported_fps.iterator();
-			while (iter2.hasNext()) {
-				int[] range = iter2.next();
-				Log.d(TAG, "fps " + range[0] + ":" + range[1]);
-				if (!iter2.hasNext()) {
-					// Find maximum FPS in the LAST range
-					videoFramesPerSecond = range[1] / 1000;
+			List<int[]> supported_fps = camera.getParameters().getSupportedPreviewFpsRange();
+			if (supported_fps != null) {
+				Iterator<int[]> iter2 = supported_fps.iterator();
+			
+				while (iter2.hasNext()) {
+					int[] range = iter2.next();
+					Log.d(TAG, "fps " + range[0] + ":" + range[1]);
+					if (!iter2.hasNext()) {
+						// Find maximum FPS in the LAST range
+						videoPreviewFramesPerSecond = range[1] / 1000;
+					}
 				}
 			}
 
 		}
 
 		// set preview FPS
-		p.setPreviewFrameRate(videoFramesPerSecond);
+		p.setPreviewFrameRate(videoPreviewFramesPerSecond);
 
 		// Samsung hack
 		// http://forum.xda-developers.com/showthread.php?t=1104970&page=8

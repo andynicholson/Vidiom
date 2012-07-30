@@ -14,8 +14,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="au.com.infiniterecursion.vidiompro"
-    android:versionCode="27"
-    android:versionName="0.6.18" >
+    android:versionCode="28"
+    android:versionName="0.6.19" >
 
     <supports-screens
         android:anyDensity="true"
@@ -23,7 +23,7 @@
         android:normalScreens="true"
         android:smallScreens="true" />
 
-    <uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15"/>
 
     <uses-feature android:name="android.hardware.camera" />
 
