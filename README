@@ -1,4 +1,4 @@
-Vidiom 0.6.18 - 27th March 2012
+Vidiom 0.6.19 - 30th July 2012
 Video capture and web video publishing for Android devices.
 Author: Andrew Nicholson
 Copyright (C) 2012 Infinite Recursion Pty Ltd
@@ -60,6 +60,10 @@ www.humphreybc.com
 
 
 RELEASE LOG
+v0.6.19 - Released to Android Market on July 30th 2012 (Sydney, Australia)
+
+	( Minor fixes for video resolution selection, video framerates and others )
+
 
 v0.6.18 - Released to Android Market on March 27th 2012 (Sydney, Australia)
 
