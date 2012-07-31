@@ -510,9 +510,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 					R.string.menu_stop_recording);
 			menu_stop.setIcon(R.drawable.close48);
 
-			menu_stop.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
+			if (mainapp.support_v11) {
+				menu_stop.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
 					| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
+			}
+			
 		} else {
 			if (canAccessSDCard) {
 				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0,
@@ -520,8 +522,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				menu_start.setIcon(R.drawable.video48);
 				menu.removeItem(MENU_ITEM_2);
 
-				menu_start.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
+				if (mainapp.support_v11) {
+					menu_start.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
 						| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+				}
 			}
 		}
 
@@ -531,20 +535,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu.add(0, MENU_ITEM_5, 0, R.string.menu_about);
 		menu_about.setIcon(R.drawable.info48);
-		menu_about.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
+		if (mainapp.support_v11) {
+			menu_about.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
 				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		}
 
 		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0,
 				R.string.menu_preferences);
 		menu_prefs.setIcon(R.drawable.settings48);
-		menu_prefs.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
+		if (mainapp.support_v11) {
+			menu_prefs.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
 				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
+		}
+		
 		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
 				R.string.menu_library);
 		menu_library.setIcon(R.drawable.gallery48);
-		menu_library.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
+		if (mainapp.support_v11) {
+			menu_library.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
 				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		}
 
 	}
 
