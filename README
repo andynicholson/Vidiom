@@ -1,4 +1,4 @@
-Vidiom 0.6.19 - 30th July 2012
+Vidiom 0.7.0 - 31th July 2012
 Video capture and web video publishing for Android devices.
 Author: Andrew Nicholson
 Copyright (C) 2012 Infinite Recursion Pty Ltd
@@ -60,10 +60,13 @@ www.humphreybc.com
 
 
 RELEASE LOG
+v0.7.0 - Released to Android Market on July 31th 2012 (Sydney, Australia) as FREE APP again.
+
+	(Fixes for Twitter integration, make the action bar transparent over the video preview, Vidiom's overlay video controls are moved to the bottom)
+
 v0.6.19 - Released to Android Market on July 30th 2012 (Sydney, Australia)
 
 	( Minor fixes for video resolution selection, video framerates and others )
-
 
 v0.6.18 - Released to Android Market on March 27th 2012 (Sydney, Australia)
 
@@ -76,7 +79,6 @@ v0.6.17 - Released to Android Market on March 24th 2012 (Sydney, Australia)
 v0.6.16 - Released to Android Market on Feb 23rd 2012 (Sydney, Australia)
 	
 	( Added basic video editing capabilities, reorganised preferences screen, YouTube videos can be uploaded as private or public. Removed "Uploaded by Vidiom" text on video uploads )	
-
 
 v0.6.15 - Released to Android Market AS PAID APP on Feb 19th 2012 (Sydney, Australia)
 	( Added ability to choose video folder location, touch-based toggle recording/stopping recording on GUI, and bugfixes for videbin.org API, and crashreports  )
