@@ -118,7 +118,7 @@
 	<string name="notification_title">Vidiom</string>
 	 
 	<!--  dialog words -->
-    <string name="camera_failed">The camera failed to start recording. Sorry.</string>
+    <string name="camera_failed">The camera failed to start recording. Sorry. Please check your Video Recording Quality settings in the Preferences.</string>
     <string name="sdcard_failed">The SD card access failed, so we can not record videos. Sorry.</string>
     <string name="cancel">Cancel</string>
     <string name="yes">OK</string>

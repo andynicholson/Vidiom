@@ -604,16 +604,6 @@ public class PublishingUtils {
 														int whichButton) {
 
 												}
-											})
-
-									.setNegativeButton(
-											R.string.cancel,
-											new DialogInterface.OnClickListener() {
-												public void onClick(
-														DialogInterface dialog,
-														int whichButton) {
-
-												}
 											}).show();
 
 						}
