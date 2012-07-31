@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -40,17 +41,64 @@ public class TwitterOAuthActivity extends Activity {
 
 		setContentView(R.layout.twitter_oauth_browser);
 
-		doOauth();
+		new TwitterOauthAsyncTask().execute();
+	}
 
+	
+
+	/**
+	 * Opens the browser using signpost jar with application specific
+	 * consumerkey and consumerSecret.
+	 */
+
+	
+	
+	private class TwitterOauthAsyncTask extends AsyncTask<Void, Void, String> {
+
+		@Override
+		protected String doInBackground(Void... params) {
+			String authUrl = null;
+			Log.d(TAG, " TwitterOauthAsyncTask starting ");
+			
+			try {
+				httpOauthConsumer = new CommonsHttpOAuthConsumer(consumerKey,
+						consumerSecret);
+				httpOauthprovider = new CommonsHttpOAuthProvider(
+						"http://twitter.com/oauth/request_token",
+						"http://twitter.com/oauth/access_token",
+						"http://twitter.com/oauth/authorize");
+				authUrl = httpOauthprovider.retrieveRequestToken(
+						httpOauthConsumer, CALLBACKURL);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.d(TAG, " TwitterOauthAsyncTask errored " + e.getMessage());
+				authUrl = null;
+				//Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+				//finish();
+			}
+			
+			return authUrl;
+			
+			
+		}
+		
+		protected void onPostExecute(String authUrl) {
+			WebView webv = (WebView) findViewById(R.id.webkitWebView1);
+			webv.setWebViewClient(new TwitterOAuthWebViewClient());
+
+			webv.loadUrl(authUrl);
+		}
+		
 	}
 
 	private class TwitterOAuthWebViewClient extends WebViewClient {
 		public boolean shouldOverrideUrlLoading(WebView v, String url) {
-			Log.d(TAG, " Url is " + url);
+			Log.d(TAG, "TwitterOAuthWebViewClient Url is " + url);
 
 			if (url != null && url.startsWith(CALLBACKURL)) {
 
-				parseUri(url);
+				new TwitterParseUriAsyncTask().execute(url);
 
 				finish();
 
@@ -61,72 +109,57 @@ public class TwitterOAuthActivity extends Activity {
 		}
 
 	}
-
-	/**
-	 * Opens the browser using signpost jar with application specific
-	 * consumerkey and consumerSecret.
-	 */
-
-	private void doOauth() {
-
-		try {
-			httpOauthConsumer = new CommonsHttpOAuthConsumer(consumerKey,
-					consumerSecret);
-			httpOauthprovider = new CommonsHttpOAuthProvider(
-					"http://twitter.com/oauth/request_token",
-					"http://twitter.com/oauth/access_token",
-					"http://twitter.com/oauth/authorize");
-			String authUrl = httpOauthprovider.retrieveRequestToken(
-					httpOauthConsumer, CALLBACKURL);
-
-			WebView webv = (WebView) findViewById(R.id.webkitWebView1);
-			webv.setWebViewClient(new TwitterOAuthWebViewClient());
-
-			webv.loadUrl(authUrl);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.d(TAG, " doOauth errored " + e.getMessage());
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			finish();
-		}
-	}
-
+	
 	/**
 	 * After user authorizes this is the function where we get called back, with
 	 * user specific token and secret token. We store this token for future use.
 	 */
 
-	protected void parseUri(String url) {
+	private class TwitterParseUriAsyncTask extends AsyncTask<String,Void,Void> {
+		
+		@Override
+		protected Void doInBackground(String... params) {
+			
+			Log.d(TAG, "parseUri: Url is " + params[0]);
+			Uri uri = Uri.parse(params[0]);
 
-		Uri uri = Uri.parse(url);
+			String verifier = uri
+					.getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
 
-		String verifier = uri
-				.getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
+			try {
+				// this will populate token and token_secret in consumer
 
-		try {
-			// this will populate token and token_secret in consumer
+				httpOauthprovider.retrieveAccessToken(httpOauthConsumer, verifier);
 
-			httpOauthprovider.retrieveAccessToken(httpOauthConsumer, verifier);
+				AccessToken a = new AccessToken(httpOauthConsumer.getToken(),
+						httpOauthConsumer.getTokenSecret());
 
-			AccessToken a = new AccessToken(httpOauthConsumer.getToken(),
-					httpOauthConsumer.getTokenSecret());
+				SharedPreferences prefs = PreferenceManager
+						.getDefaultSharedPreferences(getBaseContext());
+				Editor editor = prefs.edit();
+				editor.putString("twitterToken", a.getToken());
+				editor.putString("twitterTokenSecret", a.getTokenSecret());
+				editor.commit();
 
-			SharedPreferences prefs = PreferenceManager
-					.getDefaultSharedPreferences(getBaseContext());
-			Editor editor = prefs.edit();
-			editor.putString("twitterToken", a.getToken());
-			editor.putString("twitterTokenSecret", a.getTokenSecret());
-			editor.commit();
+				runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+					
+						Toast.makeText(TwitterOAuthActivity.this,
+								R.string.twitter_authorisation_successfully,
+								Toast.LENGTH_LONG).show();
+						
+					}
+				});
+			
 
-			Toast.makeText(TwitterOAuthActivity.this,
-					R.string.twitter_authorisation_successfully,
-					Toast.LENGTH_LONG).show();
-
-		} catch (Exception e) {
-
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.d(TAG, "parseUri: Exception is " + e.getMessage());
+				
+			}
+			return null;
 		}
 
 	}

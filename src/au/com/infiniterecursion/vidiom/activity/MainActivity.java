@@ -194,12 +194,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mainapp = (VidiomApp) getApplication();
 		res = getResources();
 
-		Log.d(TAG, "On create");
+		Log.d(TAG, "On create, have resources and main app ready");
 
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+		// Check we have api level 11
+		if (mainapp.support_v11) {
+			getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+			getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+		}
 		getWindow().clearFlags(
 				WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 
@@ -246,8 +252,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		latestVideoFile_absolutepath = "";
 		latestVideoFile_filename = "";
 		startTimeinMillis = endTimeinMillis = 0;
-
-		mainapp = (VidiomApp) getApplication();
 
 		// Helper classes
 		//
@@ -505,12 +509,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			MenuItem menu_stop = menu.add(0, MENU_ITEM_2, 0,
 					R.string.menu_stop_recording);
 			menu_stop.setIcon(R.drawable.close48);
+
+			menu_stop.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
+					| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
 		} else {
 			if (canAccessSDCard) {
 				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0,
 						R.string.menu_start_recording);
 				menu_start.setIcon(R.drawable.video48);
 				menu.removeItem(MENU_ITEM_2);
+
+				menu_start.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
+						| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			}
 		}
 
@@ -520,12 +531,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu.add(0, MENU_ITEM_5, 0, R.string.menu_about);
 		menu_about.setIcon(R.drawable.info48);
+		menu_about.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
+				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
 		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0,
 				R.string.menu_preferences);
 		menu_prefs.setIcon(R.drawable.settings48);
+		menu_prefs.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
+				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
 		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
 				R.string.menu_library);
 		menu_library.setIcon(R.drawable.gallery48);
+		menu_library.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
+				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
 	}
 
@@ -722,7 +741,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				+ " audio bit rate : " + cp.audioBitRate
 				+ " audio sample rate : " + cp.audioSampleRate;
 		Log.d(TAG, cp_details);
-		//Set HIGEST video frame rate supported
+		// Set HIGEST video frame rate supported
 		videoFramesPerSecond = cp.videoFrameRate;
 
 		CamcorderProfile cp_low = CamcorderProfile
@@ -740,23 +759,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		// Query supported capabilities first.
 		List<Camera.Size> sizes = p.getSupportedPreviewSizes();
-		
-		//check if we have hardcoded a desired resolution
+
+		// check if we have hardcoded a desired resolution
 		if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[8])) {
-		
-			desired_psize = camera.new Size(0,0);
+
+			desired_psize = camera.new Size(0, 0);
 			desired_psize.width = 720;
 			desired_psize.height = 480;
-			
+
 		} else {
-			
-			// Assuming ordered from HIGHEST to LOWEST, from getSupportedPreviewSizes
+
+			// Assuming ordered from HIGHEST to LOWEST, from
+			// getSupportedPreviewSizes
 			// Choose highest resolution
 			desired_psize = sizes.get(0);
-		
+
 		}
-		
+
 		Log.d(TAG, "Desired resolution preview size / video size is "
 				+ desired_psize.width + " x " + desired_psize.height);
 
@@ -844,7 +864,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		// Focus Mode.
 		List<String> fmodes = p.getSupportedFocusModes();
 		// set focus mode continuous video.
-		if (fmodes!=null && fmodes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+		if (fmodes != null
+				&& fmodes
+						.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
 			Log.d(TAG, "setting focus mode continuous video");
 			p.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 		} else {
@@ -856,10 +878,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		int videoPreviewFramesPerSecond = 0;
 		// Supported Framerates
 		if (mainapp.support_v9) {
-			List<int[]> supported_fps = camera.getParameters().getSupportedPreviewFpsRange();
+			List<int[]> supported_fps = camera.getParameters()
+					.getSupportedPreviewFpsRange();
 			if (supported_fps != null) {
 				Iterator<int[]> iter2 = supported_fps.iterator();
-			
+
 				while (iter2.hasNext()) {
 					int[] range = iter2.next();
 					Log.d(TAG, "fps " + range[0] + ":" + range[1]);
@@ -934,9 +957,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	private void tryToStartRecording() {
 		// If all the stars are aligned..
-		if (canAccessSDCard && previewRunning && startRecording()) {
+		if (canAccessSDCard && previewRunning && !recordingInMotion
+				&& startRecording()) {
 
 			recordingInMotion = true;
+
+		} else if (recordingInMotion) {
+
+			menuResponseForStopItem();
 
 		} else {
 
@@ -1090,13 +1118,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				cp = null;
 			}
 
-		}  else if (recordingQualityPreference.equals(res
+		} else if (recordingQualityPreference.equals(res
 				.getStringArray(R.array.recordingQualityTypeIds)[8])) {
 			// custom 720 x 480 quality
 			Log.d(TAG, " using custom 720x480 recording quality");
-			
+
 			setDefaultFormatAndEncoders();
-			
+
 		}
 
 		Log.d(TAG, " startRecording - preferences are " + maxDurationPreference
@@ -1412,21 +1440,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
 				|| what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
 
-			Log.d(TAG, "We have reached the end limit");
+			Log.d(TAG, "We have reached the end limit of duration or filesize. what=" + what);
+			
+			if (recordingInMotion) {
 
-			// Video recording finished dialog!
-			new AlertDialog.Builder(MainActivity.this)
-					.setMessage(res.getString(R.string.limits_reached))
-					.setPositiveButton(R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
+				stopRecording();
 
-									stopRecording();
+				// Video recording finished dialog!
+				new AlertDialog.Builder(MainActivity.this)
+						.setMessage(res.getString(R.string.limits_reached))
+						.setPositiveButton(R.string.yes,
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int whichButton) {
 
-								}
-							}).show();
+									}
+								}).show();
 
+			}
 		}
 
 	}

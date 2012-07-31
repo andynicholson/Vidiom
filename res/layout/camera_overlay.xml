@@ -1,26 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content"
-  android:id="@+id/cameraOverlay">
-  
-  <ImageView android:id="@+id/watermarkIcon" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  		android:src="@drawable/icon" android:clickable="true" android:contentDescription="vidiom icon"></ImageView>
-  
-  <TextView android:id="@+id/overlay" android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:text="STOPPED" android:textSize="12pt" android:textColor="#FF0000" android:clickable="true"
-				android:layout_toRightOf="@+id/watermarkIcon"
-				>
-</TextView>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cameraOverlay"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
 
-  <TextView
-      android:id="@+id/overlayResolution"
-     android:layout_width="wrap_content" android:layout_height="wrap_content"
-      android:clickable="false"
-      android:textColor="#000000"
-      android:textSize="10pt" 
-      android:layout_alignParentRight="true"
-      />
-  
+    <ImageView
+        android:id="@+id/watermarkIcon"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:contentDescription="vidiom icon"
+        android:src="@drawable/icon" >
+    </ImageView>
+
+    <TextView
+        android:id="@+id/overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/watermarkIcon"
+        android:clickable="true"
+        android:text="STOPPED"
+        android:textColor="#FF0000"
+        android:textSize="12pt" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/overlayResolution"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:clickable="false"
+        android:textColor="#000000"
+        android:textSize="10pt" />
+
 </RelativeLayout>
