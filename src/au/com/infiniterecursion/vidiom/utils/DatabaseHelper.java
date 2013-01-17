@@ -34,7 +34,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String SDFILERECORD_TABLE_NAME = "videofiles";
 	public static final String HOST_TABLE_NAME = "hosts";
 
-	private static final String TAG = "RoboticEye DatabaseHelper";
+	private static final String TAG = "VidiomTag DatabaseHelper";
 
 	public DatabaseHelper(Context context, String name, CursorFactory factory,
 			int version) {

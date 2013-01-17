@@ -8,7 +8,7 @@ import javax.net.ssl.X509TrustManager;
 import android.util.Log;
 
 public class TrustAllTrustManager implements X509TrustManager {
-	private static final String TAG = "RoboticEye-TrustAllTrustManager";
+	private static final String TAG = "VidiomTag-TrustAllTrustManager";
 
 	public TrustAllTrustManager() {
 	}

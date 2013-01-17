@@ -91,7 +91,7 @@ import com.facebook.android.Util;
 
 public class PublishingUtils {
 
-	private static final String TAG = "RoboticEye-PublishingUtils";
+	private static final String TAG = "VidiomTag-PublishingUtils";
 
 	private Resources res;
 	private DBUtils dbutils;

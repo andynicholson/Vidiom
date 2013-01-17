@@ -48,7 +48,7 @@ import au.com.infiniterecursion.vidiompro.R;
  */
 
 public class EditorActivity extends Activity {
-	private static final String TAG = "RoboticEye-EditorActivity";
+	private static final String TAG = "VidiomTag-EditorActivity";
 
 	private static final int MENU_ITEM_1 = 0;
 

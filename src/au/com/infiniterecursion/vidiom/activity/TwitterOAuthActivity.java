@@ -28,7 +28,7 @@ import au.com.infiniterecursion.vidiompro.R;
 
 public class TwitterOAuthActivity extends Activity {
 
-	private String TAG = "RoboticEye-TwitterOAuthActivity";
+	private String TAG = "VidiomTag-TwitterOAuthActivity";
 	private CommonsHttpOAuthConsumer httpOauthConsumer;
 	private OAuthProvider httpOauthprovider;
 	public final static String consumerKey = "AXKcekv78ff73UohyRd9ng";

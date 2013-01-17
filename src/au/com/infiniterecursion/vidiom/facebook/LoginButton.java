@@ -42,7 +42,7 @@ public class LoginButton extends ImageButton {
 	private Handler mHandler;
 	private SessionListener mSessionListener = new SessionListener();
 	private String[] mPermissions;
-	private static String TAG = "RoboticEye-Facebook";
+	private static String TAG = "VidiomTag-Facebook";
 	private LibraryActivity mAuth_activity;
 
 	public LoginButton(Context context) {

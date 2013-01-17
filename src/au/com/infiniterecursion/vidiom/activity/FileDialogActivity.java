@@ -89,7 +89,7 @@ public class FileDialogActivity extends ListActivity {
 	 */
 	public static final String CAN_SELECT_DIR = "CAN_SELECT_DIR";
 
-	protected static final String TAG = "RoboticEye-FileDialogActivity";
+	protected static final String TAG = "VidiomTag-FileDialogActivity";
 
 	private List<String> path = null;
 	private TextView myPath;

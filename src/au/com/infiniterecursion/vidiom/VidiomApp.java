@@ -23,7 +23,7 @@ public class VidiomApp extends Application {
 	private static final String FACEBOOK_APP_ID = "175287182490445";
 	public static final String[] FB_LOGIN_PERMISSIONS = new String[] {
 			"publish_stream", "read_stream", "video_upload" };
-	private static String TAG = "RoboticEye-MainApp";
+	private static String TAG = "VidiomTag-MainApp";
 
 	// Facebook associated objects
 	private Facebook mFacebook;

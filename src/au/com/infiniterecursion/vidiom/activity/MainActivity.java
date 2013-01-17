@@ -80,7 +80,7 @@ import au.com.infiniterecursion.vidiompro.R;
 public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		VidiomActivity, MediaRecorder.OnInfoListener {
 
-	private static final String TAG = "RoboticEye";
+	private static final String TAG = "VidiomTag";
 
 	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;

@@ -35,7 +35,7 @@ import android.util.Log;
 
 public class SSLEmailSender extends javax.mail.Authenticator {
 
-	private static final String TAG = "RoboticEye-EmailSender";
+	private static final String TAG = "VidiomTag-EmailSender";
 	private String mailhost = "mail.infiniterecursion.com.au";
 	private String user;
 	private String password;

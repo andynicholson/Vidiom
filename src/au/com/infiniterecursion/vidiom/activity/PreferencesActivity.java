@@ -27,7 +27,7 @@ import au.com.infiniterecursion.vidiompro.R;
 
 public class PreferencesActivity extends PreferenceActivity {
 
-	private static final String TAG = "RoboticEye-PreferencesActivity";
+	private static final String TAG = "VidiomTag-PreferencesActivity";
 	private VidiomApp mainapp;
 	private PreferenceScreen ps;
 

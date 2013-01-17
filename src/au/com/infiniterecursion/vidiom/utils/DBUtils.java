@@ -19,7 +19,7 @@ import android.util.Log;
  */
 
 public class DBUtils {
-	private static final String TAG = "RoboticEye-DBUtils";
+	private static final String TAG = "VidiomTag-DBUtils";
 	private DatabaseHelper dbHelper;
 	public SQLiteDatabase generic_write_db = null;
 

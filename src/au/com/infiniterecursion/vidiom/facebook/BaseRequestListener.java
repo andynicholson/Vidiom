@@ -16,7 +16,7 @@ import com.facebook.android.FacebookError;
  */
 public abstract class BaseRequestListener implements RequestListener {
 
-	private static String TAG = "RoboticEye-Facebook";
+	private static String TAG = "VidiomTag-Facebook";
 
 	public void onFacebookError(FacebookError e) {
 		Log.e(TAG, e.getMessage());

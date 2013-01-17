@@ -103,7 +103,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private LoginButton lb;
 	private AlertDialog fb_dialog;
 
-	private static final String TAG = "RoboticEye-Library";
+	private static final String TAG = "VidiomTag-Library";
 	private static final int NOTIFICATION_ID = 2;
 	private PublishingUtils pu;
 
