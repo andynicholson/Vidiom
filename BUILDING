@@ -1,5 +1,8 @@
-To build Vidiom, use Eclipse. This is mostly about the NDK libraries Vidiom is using.
+To develop Vidiom, use Eclipse, to build using Ant run 'ant release'
 
+You need the Facebook SDK for Android, and mark it as a Library, and inside the Vidiom project reference it as a library.
+
+The following is about the NDK libraries Vidiom is using.
 To build FFmpeg/VideoKit libraries you will need to use a copy of the Android NDK (r7)
 
 The top-level folder structure of the NDK will look like: e.g

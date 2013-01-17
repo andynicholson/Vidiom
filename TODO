@@ -14,6 +14,7 @@ TODO
 
 5. Video editing ability? -- STARTED
 	5.1 Debugging of FFMPEG failures
+	5.2 Show a progress indicator during long running operations , like transcoding, moving progress bar etc
 
 6. Show in Gallery, and be able to upload, already recorded 3GP/MP4 files on sdcard. -- DONE
 
@@ -23,6 +24,7 @@ TODO
 8. Remove twitter app id/secret from source, and instead place in strings.xml, which can remain unchecked in from git . see TwitterOAuthActivity
 
 9. Custom hosting of video gallery on http://<username>.vidiom.mobi/, allowing private or public access to videos uploaded there.
+	9.1 Needs in app billing..
 
 10. Ability to change video resolution of video recording -- DONE (default/low/high + custom resolutions if supported by phone)
 
@@ -30,4 +32,4 @@ TODO
 
 12. Inbuilt xmpp 'social network' to share videos amgonst other Vidiom users.
 
-Updated : 28th March 2012
+Updated : 31st July 2012

@@ -23,7 +23,7 @@
         android:normalScreens="true"
         android:smallScreens="true" />
 
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15"/>
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15"/>
 
     <uses-feature android:name="android.hardware.camera" />
 

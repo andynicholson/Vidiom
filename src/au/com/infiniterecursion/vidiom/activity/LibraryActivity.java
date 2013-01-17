@@ -23,7 +23,6 @@ import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,7 +37,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -133,8 +131,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private boolean importPreference;
 	private boolean got_facebook_sso_callback;
 
-	
-	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		res = getResources();
@@ -152,9 +148,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		thread_youtube = null;
 
 		got_facebook_sso_callback = false;
-		
-		
-		
+
 	}
 
 	/**
@@ -347,7 +341,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			 * MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns,
 			 * MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
 			 */
-			
+
 			Log.d(TAG, "We have " + s);
 
 			String[] mediaColumns = { MediaStore.Video.Media._ID,
@@ -377,7 +371,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				 * .getLong(thumb_cursor
 				 * .getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
 				 */
-				
+
 				Bitmap bm = MediaStore.Video.Thumbnails
 						.getThumbnail(
 								getContentResolver(),
@@ -388,18 +382,12 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					v.setImageBitmap(bm);
 				}
 
-				
-				
-					
 			} else {
 				// set default icon
 				v.setImageResource(R.drawable.icon);
-				
+
 			}
 
-			
-			
-			
 		}
 	}
 
@@ -482,9 +470,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				DatabaseHelper.SDFileRecord.TITLE,
 				DatabaseHelper.SDFileRecord.DESCRIPTION,
-				DatabaseHelper.SDFileRecord.FILEPATH, 
-				"filepath2", 
-				};
+				DatabaseHelper.SDFileRecord.FILEPATH, "filepath2", };
 
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
 				R.id.text3, R.id.text4, R.id.text5, R.id.text6,
@@ -494,48 +480,55 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				R.layout.library_list_item, libraryCursor, from, to);
 
 		listAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-			
+
 			public boolean setViewValue(View view, Cursor cursor,
 					int columnIndex) {
-				
-				if (columnIndex == cursor
-						.getColumnIndexOrThrow("filepath2") ) {
-					
-					TextView filesizeview = (TextView) view.findViewById(R.id.text7);
-					
-					//Log.d(TAG, " filesizeview is " + filesizeview + " filepath is " + cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH)));
-					
-					String[] mediaColumns = { MediaStore.Video.Media._ID, MediaStore.Video.Media.SIZE };
+
+				if (columnIndex == cursor.getColumnIndexOrThrow("filepath2")) {
+
+					TextView filesizeview = (TextView) view
+							.findViewById(R.id.text7);
+
+					// Log.d(TAG, " filesizeview is " + filesizeview +
+					// " filepath is " +
+					// cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH)));
+
+					String[] mediaColumns = { MediaStore.Video.Media._ID,
+							MediaStore.Video.Media.SIZE };
 
 					Cursor thumb_cursor = managedQuery(
-							MediaStore.Video.Media.EXTERNAL_CONTENT_URI, mediaColumns,
-							MediaStore.Video.Media.DATA + " = ? ", new String[] { cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH)) },
+							MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+							mediaColumns,
+							MediaStore.Video.Media.DATA + " = ? ",
+							new String[] { cursor.getString(cursor
+									.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILEPATH)) },
 							null);
 
-					if ( thumb_cursor!= null && thumb_cursor.moveToFirst()) {
-					
-						//compute video filesize in KB
-						String size_in_bytes = thumb_cursor.getString(thumb_cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
+					if (thumb_cursor != null && thumb_cursor.moveToFirst()) {
+
+						// compute video filesize in KB
+						String size_in_bytes = thumb_cursor.getString(thumb_cursor
+								.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
 						Long kilobytes = 0L;
 						try {
 							Long bytes = Long.valueOf(size_in_bytes);
-							kilobytes = bytes/1024;
+							kilobytes = bytes / 1024;
 						} catch (NumberFormatException nfe) {
 							nfe.printStackTrace();
-							Log.e(TAG, "Caught number format exception with " + size_in_bytes);
+							Log.e(TAG, "Caught number format exception with "
+									+ size_in_bytes);
 						}
-						//set size in kilobytes
+						// set size in kilobytes
 						filesizeview.setText(kilobytes.toString());
-					
+
 					} else {
-						//No file size data available
+						// No file size data available
 						filesizeview.setText("Unknown");
 					}
-					
+
 					return true;
 				}
-				
-				
+
 				// Transform the text4 specifically, from a blank entry
 				// repr. into a string saying "not uploaded yet"
 				if (columnIndex == cursor

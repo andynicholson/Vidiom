@@ -54,7 +54,6 @@ public class RangeSeekBar<T extends Number> extends ImageView {
 	private boolean notifyWhileDragging = false;
 	private OnRangeSeekBarChangeListener<T> listener;
 
-	
 	/**
 	 * Creates a new RangeSeekBar.
 	 * 

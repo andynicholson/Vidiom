@@ -15,6 +15,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.http.AccessToken;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -30,12 +31,11 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.ImageFormat;
-import android.graphics.PixelFormat;
 import android.hardware.Camera;
-import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -498,6 +498,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		return true;
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void createConditionalMenu(Menu menu) {
 		menu.clear();
 
@@ -512,9 +513,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 			if (mainapp.support_v11) {
 				menu_stop.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
-					| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+						| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			}
-			
+
 		} else {
 			if (canAccessSDCard) {
 				MenuItem menu_start = menu.add(0, MENU_ITEM_1, 0,
@@ -524,20 +525,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 				if (mainapp.support_v11) {
 					menu_start.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
-						| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+							| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 				}
 			}
 		}
 
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void addConstantMenuItems(Menu menu) {
 		// ALWAYS ON menu items.
 		MenuItem menu_about = menu.add(0, MENU_ITEM_5, 0, R.string.menu_about);
 		menu_about.setIcon(R.drawable.info48);
 		if (mainapp.support_v11) {
 			menu_about.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
-				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+					| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 		}
 
 		MenuItem menu_prefs = menu.add(0, MENU_ITEM_6, 0,
@@ -545,15 +547,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		menu_prefs.setIcon(R.drawable.settings48);
 		if (mainapp.support_v11) {
 			menu_prefs.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM
-				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+					| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 		}
-		
+
 		MenuItem menu_library = menu.add(0, MENU_ITEM_7, 0,
 				R.string.menu_library);
 		menu_library.setIcon(R.drawable.gallery48);
 		if (mainapp.support_v11) {
 			menu_library.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS
-				| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+					| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 		}
 
 	}
@@ -1450,8 +1452,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
 				|| what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
 
-			Log.d(TAG, "We have reached the end limit of duration or filesize. what=" + what);
-			
+			Log.d(TAG,
+					"We have reached the end limit of duration or filesize. what="
+							+ what);
+
 			if (recordingInMotion) {
 
 				stopRecording();
