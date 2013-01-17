@@ -76,6 +76,7 @@ import au.com.infiniterecursion.vidiompro.R;
  * http://www.infiniterecursion.com.au
  */
 
+
 public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		VidiomActivity, MediaRecorder.OnInfoListener {
 
@@ -718,6 +719,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 	 * Camera methods
 	 */
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		Log.d(TAG, "surfaceChanged START");
@@ -967,13 +969,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void tryToStartRecording() {
+		
 		// If all the stars are aligned..
+		// check flags and call into startRecording()
+		//
 		if (canAccessSDCard && previewRunning && !recordingInMotion
 				&& startRecording()) {
 
+			//
+			//We reach here AFTER startRecording() returns true
+			//
 			recordingInMotion = true;
-
+			statusIndicator.setText("RECORDING 00:00");
+			if (mainapp.support_v11) {
+				invalidateOptionsMenu();
+			}
+			
 		} else if (recordingInMotion) {
 
 			menuResponseForStopItem();
@@ -994,6 +1007,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
+
 	public boolean startRecording() {
 
 		if (camera == null) {
@@ -1001,6 +1015,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 
+		//Try to unlock the camera 
+		//
 		try {
 			camera.unlock();
 		} catch (RuntimeException e) {
@@ -1010,8 +1026,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 
-		statusIndicator.setText("RECORDING 00:00");
-
+		
 		mediaRecorder = new MediaRecorder();
 		mediaRecorder.setOnInfoListener(this);
 
@@ -1277,6 +1292,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public void stopRecording() {
 
 		recordingInMotion = false;
@@ -1311,6 +1327,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		title = null;
 		description = null;
 
+		if (mainapp.support_v11) {
+			invalidateOptionsMenu();
+		}
+		
 		// if mediarecorder and camera stop/locking worked.
 		if (show_dialog) {
 			showTitleDescriptionDialog();

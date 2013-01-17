@@ -14,8 +14,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="au.com.infiniterecursion.vidiompro"
-    android:versionCode="30"
-    android:versionName="0.7.0" >
+    android:versionCode="31"
+    android:versionName="0.7.1" >
 
     <supports-screens
         android:anyDensity="true"
