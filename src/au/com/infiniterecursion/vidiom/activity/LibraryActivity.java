@@ -9,6 +9,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.http.AccessToken;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -25,6 +26,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -112,11 +114,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private SimpleCursorAdapter listAdapter;
 	private Cursor libraryCursor;
 
-	private Thread thread_vb;
-	private Thread thread_fb;
-	private Thread thread_ftp;
-	private Thread thread_youtube;
-
 	private VidiomApp mainapp;
 
 	private String moviePath;
@@ -142,10 +139,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		dbutils = new DBUtils(getBaseContext());
 		pu = new PublishingUtils(getResources(), dbutils);
 		handler = new Handler();
-		thread_vb = null;
-		thread_fb = null;
-		thread_ftp = null;
-		thread_youtube = null;
 
 		got_facebook_sso_callback = false;
 
@@ -196,8 +189,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				mExternalStorageAvailable = mExternalStorageWriteable = false;
 			}
 
-			// OK, start
-			if (mExternalStorageAvailable) {
+			// OK, start, if we support v10 or higher
+			if (mExternalStorageAvailable && mainapp.support_v10) {
 				Log.d(TAG,
 						"Starting import. OUR Directory path is : "
 								+ Environment.getExternalStorageDirectory()
@@ -209,6 +202,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			Log.d(TAG, " Import FINISHED !");
 		}
 
+		@TargetApi(Build.VERSION_CODES.GINGERBREAD_MR1)
 		public void directoryScanRecurse(File directory) {
 
 			if (directory == null) {
@@ -394,18 +388,17 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private void makeCursorAndAdapter() {
 		dbutils.genericWriteOpen();
 
-		// This query is for videofiles only, no joins.
+		// SELECT VIDEOS
+		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
+				+ " b.host_uri as host_uri , b.host_video_url as host_video_url FROM "
+				+ " videofiles a LEFT OUTER JOIN hosts b ON"
+				+ " a._id = b.sdrecord_id "
+				+ " ORDER BY a.created_datetime DESC ";
 
+		// This query is for videofiles (unused)
 		// libraryCursor = dbutils.generic_write_db.query(
 		// DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null,
 		// null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
-
-		// SELECT
-		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
-				+ " b.host_uri as host_uri , b.host_video_url as host_video_url FROM "
-				+ " videofiles a LEFT OUTER JOIN hosts b ON "
-				+ " a._id = b.sdrecord_id "
-				+ " ORDER BY a.created_datetime DESC ";
 
 		libraryCursor = dbutils.generic_write_db.rawQuery(join_sql, null);
 
@@ -550,6 +543,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// repr.
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
+
+					// Load all possible records , from
+					// " hosts b WHERE a._id = b.sdrecord_id "
+
 					long time_in_mills = cursor.getLong(cursor
 							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME));
 					TextView datetime = (TextView) view
@@ -584,22 +581,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		super.onPause();
 		Log.d(TAG, "On pause");
 
-		if (thread_vb != null) {
-			Log.d(TAG, "Interrupting videobin thread");
-			thread_vb.interrupt();
-		}
-		if (thread_fb != null) {
-			Log.d(TAG, "Interrupting facebook thread");
-			thread_fb.interrupt();
-		}
-		if (thread_ftp != null) {
-			Log.d(TAG, "Interrupting ftp thread");
-			thread_ftp.interrupt();
-		}
-		if (thread_youtube != null) {
-			Log.d(TAG, "Interrupting youtube thread");
-			thread_youtube.interrupt();
-		}
 		if (fb_dialog != null && fb_dialog.isShowing()) {
 			Log.d(TAG, "Dismissing fb dialog");
 			fb_dialog.dismiss();
@@ -766,12 +747,23 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		case MENU_ITEM_3:
 			// publish to video bin
-			String[] strs_vb = dbutils
-					.getTitleAndDescriptionFromID(new String[] { Long
-							.toString(sdrecord_id) });
-			// grab thread
-			thread_vb = pu.videoUploadToVideoBin(this, handler, moviePath,
-					strs_vb[0], strs_vb[1], emailPreference, sdrecord_id);
+
+			// Dont allow simultanous uploads to video bin for the same video.
+			if (!dbutils.isSDFileRecordUploading(sdrecord_id,
+					PublishingUtils.TYPE_VB)) {
+
+				dbutils.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+						PublishingUtils.TYPE_VB);
+
+				String[] strs_vb = dbutils
+						.getTitleAndDescriptionFromID(new String[] { Long
+								.toString(sdrecord_id) });
+				// start videobin thread
+				pu.videoUploadToVideoBin(this, handler, moviePath, strs_vb[0],
+						strs_vb[1], emailPreference, sdrecord_id);
+
+			}
+
 			break;
 
 		case MENU_ITEM_4:
@@ -795,9 +787,18 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		case MENU_ITEM_6:
 			// FTP server upload
-			thread_ftp = pu.videoUploadToFTPserver(this, handler,
-					moviefilename, moviePath, emailPreference, sdrecord_id);
 
+			// Don't allow simultaneous uploads to FTP for the same video.
+			if (!dbutils.isSDFileRecordUploading(sdrecord_id,
+					PublishingUtils.TYPE_FTP)) {
+
+				dbutils.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+						PublishingUtils.TYPE_FTP);
+
+				pu.videoUploadToFTPserver(this, handler, moviefilename,
+						moviePath, emailPreference, sdrecord_id);
+
+			}
 			break;
 
 		case MENU_ITEM_7:
@@ -817,10 +818,22 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			if (possibleEmail != null) {
 				Log.d(TAG, "Using account name for youtube upload .. "
 						+ possibleEmail);
-				// This launches the youtube upload process
-				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
-						possibleEmail, moviePath, handler, emailPreference,
-						sdrecord_id);
+
+				// Don't allow simultaneous uploads to Youtube for the same
+				// video.
+				if (!dbutils.isSDFileRecordUploading(sdrecord_id,
+						PublishingUtils.TYPE_YT)) {
+
+					dbutils.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+							PublishingUtils.TYPE_YT);
+
+					// This launches the youtube upload process
+					pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
+							possibleEmail, moviePath, handler, emailPreference,
+							sdrecord_id);
+
+				}
+
 			} else {
 
 				// throw up dialog
@@ -1099,14 +1112,22 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 								// If they succeeded in login, then the
 								// session will be valid.
 
-								if (mainapp.getFacebook().isSessionValid()) {
-									// we have a valid session.
+								if (mainapp.getFacebook().isSessionValid()
+										&& !dbutils.isSDFileRecordUploading(
+												sdrecord_id,
+												PublishingUtils.TYPE_FB)) {
+									// we have a valid session, and we arent
+									// already uploading this file.
+
+									dbutils.addSDFileRecordIDtoUploadingTrack(
+											sdrecord_id,
+											PublishingUtils.TYPE_FB);
 
 									String[] strs = dbutils
 											.getTitleAndDescriptionFromID(new String[] { Long
 													.toString(sdrecord_id) });
 									// add our branding to the description.
-									thread_fb = pu.videoUploadToFacebook(
+									pu.videoUploadToFacebook(
 											LibraryActivity.this, handler,
 											mainapp.getFacebook(), moviePath,
 											strs[0], strs[1], emailPreference,

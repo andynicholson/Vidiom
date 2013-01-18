@@ -96,6 +96,13 @@ public class PublishingUtils {
 	private Resources res;
 	private DBUtils dbutils;
 
+	// Video hosting services , internal classification - for tracking uploads
+	// in progress.
+	public static final int TYPE_FB = 0;
+	public static final int TYPE_YT = 1;
+	public static final int TYPE_FTP = 2;
+	public static final int TYPE_VB = 3;
+
 	private static final String INITIAL_UPLOAD_URL = "http://uploads.gdata.youtube.com/resumable/feeds/api/users/default/uploads";
 	private static final String DEFAULT_VIDEO_CATEGORY = "News";
 	private static final String DEFAULT_VIDEO_TAGS = "mobile";
@@ -275,6 +282,9 @@ public class PublishingUtils {
 						// Log record of this URL in POSTs table
 						dbutils.creatHostDetailRecordwithNewVideoUploaded(
 								sdrecord_id, url, hosted_url, "");
+
+						dbutils.removeSDFileRecordIDfromUploadingTrack(
+								sdrecord_id, TYPE_FB);
 
 						// Use the handler to execute a Runnable on the
 						// main thread in order to have access to the
@@ -509,6 +519,9 @@ public class PublishingUtils {
 						res.getString(R.string.http_videobin_org_add),
 						response, "");
 
+				dbutils.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+						TYPE_VB);
+
 				// Use the handler to execute a Runnable on the
 				// main thread in order to have access to the
 				// UI elements.
@@ -651,16 +664,6 @@ public class PublishingUtils {
 									.setMessage(R.string.cant_login_upload_host)
 									.setPositiveButton(
 											R.string.yes,
-											new DialogInterface.OnClickListener() {
-												public void onClick(
-														DialogInterface dialog,
-														int whichButton) {
-
-												}
-											})
-
-									.setNegativeButton(
-											R.string.cancel,
 											new DialogInterface.OnClickListener() {
 												public void onClick(
 														DialogInterface dialog,
@@ -903,6 +906,9 @@ public class PublishingUtils {
 				// Log record of this URL in POSTs table
 				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 						ftpHostName, ftpHostName, "");
+
+				dbutils.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+						TYPE_FTP);
 
 				// Use the handler to execute a Runnable on the
 				// main thread in order to have access to the
@@ -1210,6 +1216,8 @@ public class PublishingUtils {
 			// Log record of this URL in POSTs table
 			dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 					uploadUrl, YOUTUBE_PLAYER_URL + videoId, "");
+
+			dbutils.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
 
 			// Use the handler to execute a Runnable on the
 			// main thread in order to have access to the

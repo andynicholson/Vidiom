@@ -1,4 +1,4 @@
-To develop Vidiom, use Eclipse, to build using Ant run 'ant release'
+To develop Vidiom, use Eclipse, to build using Ant, on cmd line 'ant release'
 
 You need the Facebook SDK for Android, and mark it as a Library, and inside the Vidiom project reference it as a library.
 

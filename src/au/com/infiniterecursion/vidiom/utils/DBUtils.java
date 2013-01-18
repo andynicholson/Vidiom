@@ -1,5 +1,9 @@
 package au.com.infiniterecursion.vidiom.utils;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -25,8 +29,13 @@ public class DBUtils {
 
 	private Context context;
 
+	// A Map of SDRecord id and to a set of flags indicating this record is
+	// being uploaded by a thread (particular service id).
+	private Map<Long, HashSet<Integer>> in_progress_uploads;
+
 	public DBUtils(Context c) {
 		context = c;
+		in_progress_uploads = new HashMap<Long, HashSet<Integer>>();
 	}
 
 	private void getOpenHelper() {
@@ -259,8 +268,43 @@ public class DBUtils {
 		return rez;
 	}
 
+	// Methods to track uploading per ID , per video hosting service
+	public void addSDFileRecordIDtoUploadingTrack(long sdfilerecord_id, int type) {
+		HashSet<Integer> services_in_progress;
+		if (in_progress_uploads.containsKey(sdfilerecord_id)) {
+			services_in_progress = in_progress_uploads.get(sdfilerecord_id);
+			services_in_progress.add(type);
+		} else {
+			services_in_progress = new HashSet<Integer>();
+			services_in_progress.add(type);
+			in_progress_uploads.put(sdfilerecord_id, services_in_progress);
+		}
+
+	}
+
+	public boolean isSDFileRecordUploading(long sdfilerecord_id, int type) {
+		HashSet<Integer> services_in_progress = in_progress_uploads
+				.get(sdfilerecord_id);
+		if (services_in_progress == null)
+			return false;
+		return services_in_progress.contains(type);
+
+	}
+
+	public void removeSDFileRecordIDfromUploadingTrack(long sdfilerecord_id,
+			int type) {
+
+		HashSet<Integer> services_in_progress;
+		if (in_progress_uploads.containsKey(sdfilerecord_id)) {
+			services_in_progress = in_progress_uploads.get(sdfilerecord_id);
+			services_in_progress.remove(type);
+		} else {
+			// nothing to do.
+		}
+	}
+
 	/*
-	 * Returns the ID of the new record, or -1 if error
+	 * Returns the ID of the new record, or -1 if error 
 	 */
 	public long creatHostDetailRecordwithNewVideoUploaded(long sdrecord_id,
 			String host_uri, String hosted_video_url, String params) {

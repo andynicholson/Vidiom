@@ -76,7 +76,6 @@ import au.com.infiniterecursion.vidiompro.R;
  * http://www.infiniterecursion.com.au
  */
 
-
 public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		VidiomActivity, MediaRecorder.OnInfoListener {
 
@@ -971,7 +970,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void tryToStartRecording() {
-		
+
 		// If all the stars are aligned..
 		// check flags and call into startRecording()
 		//
@@ -979,14 +978,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				&& startRecording()) {
 
 			//
-			//We reach here AFTER startRecording() returns true
+			// We reach here AFTER startRecording() returns true
 			//
 			recordingInMotion = true;
 			statusIndicator.setText("RECORDING 00:00");
 			if (mainapp.support_v11) {
 				invalidateOptionsMenu();
 			}
-			
+
 		} else if (recordingInMotion) {
 
 			menuResponseForStopItem();
@@ -1007,7 +1006,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		}
 	}
 
-
 	public boolean startRecording() {
 
 		if (camera == null) {
@@ -1015,7 +1013,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 
-		//Try to unlock the camera 
+		// Try to unlock the camera
 		//
 		try {
 			camera.unlock();
@@ -1026,7 +1024,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 			return false;
 		}
 
-		
 		mediaRecorder = new MediaRecorder();
 		mediaRecorder.setOnInfoListener(this);
 
@@ -1330,7 +1327,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		if (mainapp.support_v11) {
 			invalidateOptionsMenu();
 		}
-		
+
 		// if mediarecorder and camera stop/locking worked.
 		if (show_dialog) {
 			showTitleDescriptionDialog();
