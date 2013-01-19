@@ -450,7 +450,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null,
 		// null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
 
-		libraryCursor = dbutils.generic_write_db.rawQuery(join_sql, null);
+		libraryCursor = dbutils.rawQuery(join_sql, new String[] {});
 
 		if (libraryCursor == null) {
 			return;
@@ -549,20 +549,21 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					// We need the views' parent to get to the textview
 					View p = view.getRootView();
 					TextView tvpb = (TextView) p.findViewById(R.id.textPB1);
-					if (uploading_in_progress == null
-							|| uploading_in_progress.size() == 0) {
-						Log.d(TAG, "No uploads in progress for ID:" + video_id);
-						pb.setIndeterminate(false);
-						tvpb.setText(R.string.no_uploads_in_progress);
-					} else {
-						Log.d(TAG, "Some uploads in progress for ID:"
-								+ video_id);
-						pb.setIndeterminate(true);
-						tvpb.setText(R.string.uploading_in_progress_);
-						// XXX
-						// show textually what service is being uploaded to.
+					if (tvpb != null) {
+						if (uploading_in_progress == null
+								|| uploading_in_progress.size() == 0) {
+							Log.d(TAG, "No uploads in progress for ID:" + video_id);
+							pb.setIndeterminate(false);
+							tvpb.setText(R.string.no_uploads_in_progress);
+						} else {
+							Log.d(TAG, "Some uploads in progress for ID:"
+									+ video_id);
+							pb.setIndeterminate(true);
+							tvpb.setText(R.string.uploading_in_progress_);
+							// XXX
+							// show textually what service is being uploaded to.
+						}
 					}
-
 					return true;
 				}
 

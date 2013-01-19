@@ -21,7 +21,7 @@ import android.util.Log;
 public class DBUtils {
 	private static final String TAG = "VidiomTag-DBUtils";
 	private DatabaseHelper dbHelper;
-	public SQLiteDatabase generic_write_db = null;
+	private SQLiteDatabase generic_write_db = null;
 	private Context context;
 
 	public DBUtils(Context c) {
@@ -320,6 +320,14 @@ public class DBUtils {
 
 		return -1;
 
+	}
+
+	public Cursor rawQuery(String join_sql, String[] objects) {
+		// wrapper.
+		if (generic_write_db != null) {
+			return generic_write_db.rawQuery(join_sql, objects);
+		} else 
+			return null;
 	}
 
 }
