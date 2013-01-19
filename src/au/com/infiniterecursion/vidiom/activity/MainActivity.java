@@ -1600,7 +1600,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	public void startedUploading(int service_code) {
 		String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(), service_code);
-		this.createNotification(res.getString(R.string.starting_upload) + service);
+		this.createNotification(res.getString(R.string.starting_upload) + " " + service);
 		// flip the switch
 		mainapp.setUploading();
 	}

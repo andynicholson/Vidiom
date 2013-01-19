@@ -1197,7 +1197,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(), service_code);
 		
-		this.createNotification(res.getString(R.string.starting_upload) + service);
+		this.createNotification(res.getString(R.string.starting_upload) + " " + service);
 
 		mainapp.setUploading();
 	}
