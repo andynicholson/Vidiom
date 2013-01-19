@@ -16,6 +16,7 @@ import android.app.ListActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -268,6 +269,24 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 										f.getAbsolutePath(), filename,
 										(int) (duration_millis / 1000),
 										audio_video_codec, title, "");
+								
+								
+								// Send the info to the inbuilt Android Media Scanner
+
+								// Save the name and description of a video in a
+								// ContentValues map.
+								ContentValues values = new ContentValues(2);
+								values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+								values.put(MediaStore.Video.Media.DATA, fp[0]);
+
+								// Add a new record (identified by uri), but with the values
+								// just set.
+								Uri uri = getContentResolver().insert(
+										MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+
+								sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+										uri));
+								
 							}
 						}
 
