@@ -1598,12 +1598,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		return mainapp.isUploading();
 	}
 
-	public void startedUploading() {
-		this.createNotification(res.getString(R.string.starting_upload) + " "
-				+ latestVideoFile_filename);
+	public void startedUploading(int service_code) {
+		String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(), service_code);
+		this.createNotification(res.getString(R.string.starting_upload) + service);
 		// flip the switch
 		mainapp.setUploading();
 	}
+
+	
 
 	public void finishedUploading(boolean success) {
 		// not uploading anymore.

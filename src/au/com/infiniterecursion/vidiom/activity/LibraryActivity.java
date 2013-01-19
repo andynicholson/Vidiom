@@ -563,22 +563,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							String services = "";
 							Iterator<Integer> iter = uploading_in_progress.iterator();
 							while (iter.hasNext()) {
-								String service = "";
 								Integer service_code = iter.next();
-								switch (service_code) {
-								case PublishingUtils.TYPE_YT:
-									service = getString(R.string.youtube);
-									break;
-								case PublishingUtils.TYPE_VB:
-									service = getString(R.string.videobin);
-									break;
-								case PublishingUtils.TYPE_FB:
-									service = getString(R.string.facebook);
-									break;
-								case PublishingUtils.TYPE_FTP:
-									service = getString(R.string.ftp_server);
-									break;
-								}
+								String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(),service_code);
+								
 								String sep = "";
 								if (iter.hasNext()) {
 									sep = ",";
@@ -1204,11 +1191,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		return mainapp.isUploading();
 	}
 
-	public void startedUploading() {
+	public void startedUploading(int service_code) {
 		// Show notification of uploading
 		Resources res = getResources();
-		this.createNotification(res.getString(R.string.starting_upload) + " "
-				+ moviefilename);
+
+		String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(), service_code);
+		
+		this.createNotification(res.getString(R.string.starting_upload) + service);
 
 		mainapp.setUploading();
 	}

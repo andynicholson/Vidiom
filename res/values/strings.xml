@@ -43,7 +43,7 @@
     <string name="auto_publishing_to_facebook_com">Auto publishing to facebook.com</string>
     <string name="auto_publishing_to_ftp_server">Auto publishing to FTP server</string>
     <string name="auto_publishing_to_videobin_org">Auto publishing to videobin.org</string>
-	<string name="starting_upload">Starting upload of</string>
+	<string name="starting_upload">Starting upload to </string>
 
 	<!--  SD card file paths and file names -->
 	<string name="rootSDcardFolder">/Vidiom</string>

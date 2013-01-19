@@ -16,7 +16,8 @@ public abstract interface VidiomActivity {
 
 	public abstract boolean isUploading();
 
-	public abstract void startedUploading();
+	//Service code as defined by PublishingUtils public static final ints TYPE_*
+	public abstract void startedUploading(int service_code);
 
 	public abstract void finishedUploading(boolean success);
 

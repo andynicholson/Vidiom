@@ -59,6 +59,7 @@ import org.xml.sax.SAXException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -143,6 +144,25 @@ public class PublishingUtils {
 
 	}
 
+	public static String getVideoServiceStringFromServiceCode(Context c, int service_code) {
+		String service = "";
+		switch (service_code) {
+		case PublishingUtils.TYPE_YT:
+			service = c.getString(R.string.youtube);
+			break;
+		case PublishingUtils.TYPE_VB:
+			service = c.getString(R.string.videobin);
+			break;
+		case PublishingUtils.TYPE_FB:
+			service = c.getString(R.string.facebook);
+			break;
+		case PublishingUtils.TYPE_FTP:
+			service = c.getString(R.string.ftp_server);
+			break;
+		}
+		return service;
+	}
+	
 	/*
 	 * 
 	 * Methods for publishing the video
@@ -162,7 +182,7 @@ public class PublishingUtils {
 			final String emailAddress, final long sdrecord_id) {
 
 		// Make the progress bar view visible.
-		((VidiomActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading(PublishingUtils.TYPE_FB);
 		final Resources res = activity.getResources();
 
 		Thread t = new Thread(new Runnable() {
@@ -375,7 +395,7 @@ public class PublishingUtils {
 		Log.d(TAG, "doPOSTtoVideoBin starting");
 
 		// Make the progress bar view visible.
-		((VidiomActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading(PublishingUtils.TYPE_VB);
 		final Resources res = activity.getResources();
 
 		Thread t = new Thread(new Runnable() {
@@ -570,7 +590,7 @@ public class PublishingUtils {
 		Log.d(TAG, "doVideoFTP starting");
 
 		// Make the progress bar view visible.
-		((VidiomActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading(PublishingUtils.TYPE_FTP);
 
 		final Resources res = activity.getResources();
 
@@ -1692,7 +1712,7 @@ public class PublishingUtils {
 			final long sdrecord_id) {
 
 		// Make the progress bar view visible.
-		((VidiomActivity) activity).startedUploading();
+		((VidiomActivity) activity).startedUploading(PublishingUtils.TYPE_YT);
 
 		this.youTubeName = accountName;
 
