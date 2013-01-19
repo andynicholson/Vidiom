@@ -191,10 +191,19 @@ public class DBUtils {
 				+ DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE "
 				+ DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
 
+		
 		if (strs.moveToFirst()) {
 			String title = strs.getString(0);
 			String descr = strs.getString(1);
-
+			
+			Log.d(TAG, "getTitleAndDescriptionFromID : " + sdrecord_id[0] + " returning " + title + " and " + descr);
+			
+			if (title == null) {
+				title = "";
+			}
+			if (descr == null) {
+				descr = "";
+			}
 			rez[0] = title;
 			rez[1] = descr;
 		} else {
@@ -238,7 +247,7 @@ public class DBUtils {
 			String title, String description) {
 		genericWriteOpen();
 
-		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called .. "
+		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called with title " + title + " description :" + description + " and filepath :"
 				+ filepath);
 
 		ContentValues vals = new ContentValues();

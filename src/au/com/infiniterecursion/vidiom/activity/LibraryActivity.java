@@ -313,7 +313,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									thumber.setDataSource(fp[0]);
 									String duration = thumber
 											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-									Log.d(TAG, "Filepath has duration "
+									Log.d(TAG, "Found filepath " + f.getAbsolutePath() + " has duration "
 											+ duration);
 									duration_millis = Long.parseLong(duration);
 									audio_video_codec = thumber
@@ -321,6 +321,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									title = thumber
 											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
 
+									if (title == null) {
+										title = "Untitled";
+									}
+									
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
