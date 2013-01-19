@@ -1,6 +1,7 @@
 package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
+import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -42,7 +44,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -81,6 +82,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private String[] video_filename;
 	private Integer[] video_ids;
 
+	// Variable to hold the last chosen hosted URL for a video which has more
+	// than one uploaded URL available.
+	private String hosted_url_chosen;
+
 	private boolean videos_available;
 
 	// Context MENU
@@ -111,6 +116,12 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private static final String TAG = "VidiomTag-Library";
 	private static final int NOTIFICATION_ID = 2;
+
+	// Activity codes for launchers , when using multiple hosted URL picker.
+	private static final int EMAIL = 0;
+	private static final int VIEW = 1;
+	private static final int TWEET = 2;
+
 	private PublishingUtils pu;
 
 	private Handler handler;
@@ -439,27 +450,27 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private void makeCursorAndAdapter() {
 		dbutils.genericWriteOpen();
 
-		
-		// SELECT VIDEOS -- with dummy columns to dynamically update in list view.
-		
-		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, " +
-				"a._id as _id , a.title as title, a.description as description, a.filepath as host_video_url, a.filepath as progressBar1 "
-				+ " FROM videofiles a "
-				+ " ORDER BY a.created_datetime DESC ";
-		libraryCursor = dbutils.rawQuery(join_sql, new String[] {});
-		
-		
-		// This query is for videofiles (unused)
-		//libraryCursor = dbutils.query(DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null, null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
+		// SELECT VIDEOS -- with dummy columns to dynamically update in list
+		// view.
 
-		/* unused join
-		 * String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
-				+ " b.host_uri as host_uri , b.host_video_url as host_video_url, b.host_video_url as progressBar1 FROM "
-				+ " videofiles a LEFT OUTER JOIN hosts b ON"
-				+ " a._id = b.sdrecord_id "
-				+ " ORDER BY a.created_datetime DESC ";
+		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, "
+				+ "a._id as _id , a.title as title, a.description as description, a.filepath as host_video_url, a.filepath as progressBar1 "
+				+ " FROM videofiles a " + " ORDER BY a.created_datetime DESC ";
+		libraryCursor = dbutils.rawQuery(join_sql, new String[] {});
+
+		// This query is for videofiles (unused)
+		// libraryCursor = dbutils.query(DatabaseHelper.SDFILERECORD_TABLE_NAME,
+		// null, null, null, null, null,
+		// DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
+
+		/*
+		 * unused join String join_sql =
+		 * " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
+		 * +
+		 * " b.host_uri as host_uri , b.host_video_url as host_video_url, b.host_video_url as progressBar1 FROM "
+		 * + " videofiles a LEFT OUTER JOIN hosts b ON" +
+		 * " a._id = b.sdrecord_id " + " ORDER BY a.created_datetime DESC ";
 		 */
-	
 
 		if (libraryCursor == null) {
 			return;
@@ -469,7 +480,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
 			ArrayList<String> video_filenames_al = new ArrayList<String>();
-		
 
 			do {
 				long video_id = libraryCursor
@@ -505,8 +515,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		// Make Cursor Adapter
 
-		String[] from = new String[] {
-				DatabaseHelper.SDFileRecord.FILENAME,
+		String[] from = new String[] { DatabaseHelper.SDFileRecord.FILENAME,
 				DatabaseHelper.SDFileRecord.LENGTH_SECS,
 				DatabaseHelper.SDFileRecord.CREATED_DATETIME,
 				DatabaseHelper.HostDetails.HOST_VIDEO_URL,
@@ -551,30 +560,37 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					if (tvpb != null) {
 						if (uploading_in_progress == null
 								|| uploading_in_progress.size() == 0) {
-							Log.d(TAG, "No uploads in progress for ID:" + video_id);
+							Log.d(TAG, "No uploads in progress for ID:"
+									+ video_id);
 							pb.setIndeterminate(false);
 							tvpb.setText(R.string.no_uploads_in_progress);
 						} else {
 							Log.d(TAG, "Some uploads in progress for ID:"
 									+ video_id);
 							pb.setIndeterminate(true);
-							
-							// show textually what services are being uploaded to.
+
+							// show textually what services are being uploaded
+							// to.
 							String services = "";
-							Iterator<Integer> iter = uploading_in_progress.iterator();
+							Iterator<Integer> iter = uploading_in_progress
+									.iterator();
 							while (iter.hasNext()) {
 								Integer service_code = iter.next();
-								String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(),service_code);
-								
+								String service = PublishingUtils
+										.getVideoServiceStringFromServiceCode(
+												getBaseContext(), service_code);
+
 								String sep = "";
 								if (iter.hasNext()) {
 									sep = ",";
 								}
 								services = services + service + sep;
 							}
-							//Set the progress bar underneath text.
-							tvpb.setText(getString(R.string.uploading_in_progress_) + getString(R.string._services_being_used_) + services);
-							
+							// Set the progress bar underneath text.
+							tvpb.setText(getString(R.string.uploading_in_progress_)
+									+ getString(R.string._services_being_used_)
+									+ services);
+
 						}
 					}
 					return true;
@@ -633,18 +649,20 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
 					Log.d(TAG, "Checking ID " + video_id
 							+ " for any hosted URLs.");
-					
-					//Grab all URLs from dbutils 
-					String[] urls = dbutils.getHostedURLsFromID(new String[] {Long.toString(video_id)});
+
+					// Grab all URLs from dbutils
+					String[] urls = dbutils
+							.getHostedURLsFromID(new String[] { Long
+									.toString(video_id) });
 					String url_repr = "";
-		
+
 					TextView host_details = (TextView) view
 							.findViewById(R.id.text4);
 					if (urls == null || urls.length == 0) {
 						url_repr = "Not uploaded yet.";
 					} else {
-						for (int i = 0; i < urls.length ; i ++) {
-							url_repr = url_repr + urls[i] + "\n"; 
+						for (int i = 0; i < urls.length; i++) {
+							url_repr = url_repr + urls[i] + "\n";
 						}
 					}
 					host_details.setText(url_repr);
@@ -656,8 +674,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// repr.
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
-
-
 
 					long time_in_mills = cursor.getLong(cursor
 							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME));
@@ -673,6 +689,37 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		setListAdapter(listAdapter);
 
 		dbutils.close();
+	}
+
+	private void launchURLsPickerDialog(final String[] urls,
+			final int activity_code) {
+
+		AlertDialog.Builder urls_picker = new AlertDialog.Builder(this);
+		urls_picker.setTitle("Choose a URL");
+
+		urls_picker.setItems(urls, new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// Save url chosen by user
+				Log.d(TAG, "launchURLsPickerDialog - " + urls[which]);
+				hosted_url_chosen = urls[which];
+
+				switch (activity_code) {
+				case EMAIL:
+					doEmailActivity();
+					break;
+				case VIEW:
+					doViewActivity();
+					break;
+				case TWEET:
+					doTweetonThread();
+					break;
+				}
+			}
+		});
+
+		urls_picker.show();
 	}
 
 	@Override
@@ -744,12 +791,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		moviePath = video_absolutepath[info.position];
 		sdrecord_id = video_ids[info.position];
 		moviefilename = video_filename[info.position];
-		//hosted_url = hosted_urls[info.position];
-		
-		hosted_urls = dbutils.getHostedURLsFromID(new String[] { Long.toString(sdrecord_id) });
-		
+		// hosted_url = hosted_urls[info.position];
+
+		hosted_urls = dbutils.getHostedURLsFromID(new String[] { Long
+				.toString(sdrecord_id) });
+
 		Log.d(TAG, " operation on " + moviePath + " id " + sdrecord_id
-				+ " filename " + moviefilename );
+				+ " filename " + moviefilename);
 
 		switch (item.getItemId()) {
 
@@ -837,7 +885,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		case MENU_ITEM_3:
 			// publish to video bin
 
-			// Dont allow simultanous uploads to video bin for the same video.
+			// Don't allow simultaneous uploads to video bin for the same video.
 			if (!mainapp.isSDFileRecordUploading(sdrecord_id,
 					PublishingUtils.TYPE_VB)) {
 
@@ -896,59 +944,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			} else {
 				showAlertDialogUploadingInProgress();
 			}
-			
+
 			break;
 
 		case MENU_ITEM_7:
 			// youtube
 
-			String possibleEmail = null;
-			// We need a linked google account for youtube.
-			Account[] accounts = AccountManager.get(this).getAccountsByType(
-					"com.google");
-			for (Account account : accounts) {
-				// TODO: Check possibleEmail against an email regex or treat
-				// account.name as an email address only for certain
-				// account.type values.
-				possibleEmail = account.name;
-				Log.d(TAG, "Could use : " + possibleEmail);
-			}
-			if (possibleEmail != null) {
-				Log.d(TAG, "Using account name for youtube upload .. "
-						+ possibleEmail);
-
-				// Don't allow simultaneous uploads to Youtube for the same
-				// video.
-				if (!mainapp.isSDFileRecordUploading(sdrecord_id,
-						PublishingUtils.TYPE_YT)) {
-
-					mainapp.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
-							PublishingUtils.TYPE_YT);
-
-					// This launches the youtube upload process
-					pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
-							possibleEmail, moviePath, handler, emailPreference,
-							sdrecord_id);
-
-					reloadList();
-
-				} else {
-					showAlertDialogUploadingInProgress();
-				}
-
-			} else {
-
-				// throw up dialog
-				AlertDialog no_email = new AlertDialog.Builder(this)
-						.setMessage(R.string.no_email_account_for_youtube)
-						.setPositiveButton(R.string.yes,
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int whichButton) {
-
-									}
-								}).show();
-			}
+			doYouTubeUpload();
 			break;
 
 		case MENU_ITEM_8:
@@ -960,25 +962,17 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		case MENU_ITEM_9:
 			// Email the HOSTED URL field of the currently selected video
-			
-			// XXX get which URL from user if more than one!!
-		
-			if (hosted_urls != null && hosted_urls.length > 0 && hosted_urls[0].length() > 0) {
-				
-				Log.d(TAG, "Emailing the following URL " + hosted_urls[0]);
-				
-				Intent i = new Intent(Intent.ACTION_SEND);
-				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				i.setType("message/rfc822");
-				i.putExtra(Intent.EXTRA_TEXT, hosted_urls[0]);
-				try {
-					this.startActivity(i);
+
+			if (hosted_urls != null && hosted_urls.length > 0
+					&& hosted_urls[0].length() != 0) {
+				if (hosted_urls[0].length() > 1) {
+					launchURLsPickerDialog(hosted_urls, EMAIL);
+				} else {
+					hosted_url_chosen = hosted_urls[0];
+					// launch activity
+					doEmailActivity();
 				}
-				catch (ActivityNotFoundException e) {
-					e.printStackTrace();
-					Log.e(TAG, "Emailing caught ActivityNotFoundException - can't email URL ");
-				}
-				
+
 			} else {
 				Toast.makeText(
 						this,
@@ -992,12 +986,17 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			// View the HOSTED URL field of the currently selected video in a
 			// web browser.
 
-			// XXX get which URL from user if more than one!!
-			if (hosted_urls != null && hosted_urls.length > 0 && hosted_urls[0].length() > 0) {
-				Intent i2 = new Intent(Intent.ACTION_VIEW);
-				i2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				i2.setData(Uri.parse(hosted_urls[0]));
-				this.startActivity(i2);
+			if (hosted_urls != null && hosted_urls.length > 0
+					&& hosted_urls[0].length() != 0) {
+
+				if (hosted_urls[0].length() > 1) {
+					launchURLsPickerDialog(hosted_urls, VIEW);
+				} else {
+					hosted_url_chosen = hosted_urls[0];
+					// launch activity
+					doViewActivity();
+				}
+
 			} else {
 				Toast.makeText(
 						this,
@@ -1008,91 +1007,28 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		case MENU_ITEM_13:
 			// Tweet the video hosted URL
-			runOnUiThread(new Runnable() {
-				public void run() {
-					Toast.makeText(LibraryActivity.this,
-							R.string.tweeting_starting, Toast.LENGTH_LONG)
-							.show();
+			
+			// Get which URL from user if more than one!!
+			if (hosted_urls != null && hosted_urls.length > 0
+					&& hosted_urls[0].length() != 0) {
+
+				if (hosted_urls[0].length() > 1) {
+					launchURLsPickerDialog(hosted_urls, TWEET);
+				} else {
+					hosted_url_chosen = hosted_urls[0];
+					doTweetonThread();
 				}
-			});
-			// XXX get which URL from user if more than one!!
+			} else {
+				// No URL available to tweet..
 
-			new Thread(new Runnable() {
-				public void run() {
-					if (hosted_urls != null && hosted_urls.length > 0 && hosted_urls[0].length() > 0) {
+				Toast.makeText(
+						LibraryActivity.this,
+						R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
+						Toast.LENGTH_LONG).show();
 
-						// Check there is a valid twitter OAuth tokens.
-						String twitterToken = prefs.getString("twitterToken",
-								null);
-						String twitterTokenSecret = prefs.getString(
-								"twitterTokenSecret", null);
+			}
 
-						if (twitterToken != null && twitterTokenSecret != null) {
-
-							// Ok, now we can tweet this URL
-							AccessToken a = new AccessToken(twitterToken,
-									twitterTokenSecret);
-							Twitter twitter = new TwitterFactory()
-									.getInstance();
-							twitter.setOAuthConsumer(
-									TwitterOAuthActivity.consumerKey,
-									TwitterOAuthActivity.consumerSecret);
-							twitter.setOAuthAccessToken(a);
-
-							String status = "New video:" + hosted_urls[0];
-							try {
-								// Twitter update
-								twitter.updateStatus(status);
-								// Toast
-								runOnUiThread(new Runnable() {
-									public void run() {
-										Toast.makeText(LibraryActivity.this,
-												R.string.tweeted_ok,
-												Toast.LENGTH_LONG).show();
-									}
-								});
-							} catch (TwitterException e) {
-								// XXX Toast ?!
-								e.printStackTrace();
-								Log.e(TAG,
-										"Twittering failed " + e.getMessage());
-							}
-						} else {
-
-							// Need to authorise.
-							runOnUiThread(new Runnable() {
-								public void run() {
-									Toast.makeText(
-											LibraryActivity.this,
-											R.string.launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_,
-											Toast.LENGTH_LONG).show();
-
-								}
-							});
-
-							// Launch Twitter Authorisation
-							Intent intent2 = new Intent().setClass(
-									LibraryActivity.this,
-									TwitterOAuthActivity.class);
-							LibraryActivity.this.startActivity(intent2);
-
-						}
-					} else {
-						// No URL available to tweet anyway..
-						// Toast on UI thread.
-						runOnUiThread(new Runnable() {
-							public void run() {
-
-								Toast.makeText(
-										LibraryActivity.this,
-										R.string.video_is_not_uploaded_yet_no_hosted_url_available_,
-										Toast.LENGTH_LONG).show();
-							}
-						});
-
-					}
-				}
-			}).start();
+			
 
 			break;
 
@@ -1102,10 +1038,167 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
+	/**
+	 * 
+	 */
+	private void doYouTubeUpload() {
+		String possibleEmail = null;
+		// We need a linked google account for youtube.
+		Account[] accounts = AccountManager.get(this).getAccountsByType(
+				"com.google");
+		for (Account account : accounts) {
+			// TODO: Check possibleEmail against an email regex or treat
+			// account.name as an email address only for certain
+			// account.type values.
+			possibleEmail = account.name;
+			Log.d(TAG, "Could use : " + possibleEmail);
+		}
+		if (possibleEmail != null) {
+			Log.d(TAG, "Using account name for youtube upload .. "
+					+ possibleEmail);
+
+			// Don't allow simultaneous uploads to Youtube for the same
+			// video.
+			if (!mainapp.isSDFileRecordUploading(sdrecord_id,
+					PublishingUtils.TYPE_YT)) {
+
+				mainapp.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+						PublishingUtils.TYPE_YT);
+
+				// This launches the youtube upload process
+				pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
+						possibleEmail, moviePath, handler, emailPreference,
+						sdrecord_id);
+
+				reloadList();
+
+			} else {
+				showAlertDialogUploadingInProgress();
+			}
+
+		} else {
+
+			// throw up dialog
+			AlertDialog no_email = new AlertDialog.Builder(this)
+					.setMessage(R.string.no_email_account_for_youtube)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+
+								}
+							}).show();
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void doTweetonThread() {
+		new Thread(new Runnable() {
+			public void run() {
+				
+				// Check there is a valid twitter OAuth tokens.
+				String twitterToken = prefs.getString("twitterToken", null);
+				String twitterTokenSecret = prefs.getString(
+						"twitterTokenSecret", null);
+
+				if (twitterToken != null && twitterTokenSecret != null) {
+					
+					runOnUiThread(new Runnable() {
+						public void run() {
+							Toast.makeText(LibraryActivity.this,
+									R.string.tweeting_starting, Toast.LENGTH_LONG)
+									.show();
+						}
+					});
+					
+					// Ok, now we can tweet this URL
+					AccessToken a = new AccessToken(twitterToken,
+							twitterTokenSecret);
+					Twitter twitter = new TwitterFactory().getInstance();
+					twitter.setOAuthConsumer(
+							TwitterOAuthActivity.consumerKey,
+							TwitterOAuthActivity.consumerSecret);
+					twitter.setOAuthAccessToken(a);
+
+					String status = "New video:" + hosted_url_chosen;
+					try {
+						// Twitter update
+						twitter.updateStatus(status);
+						// Toast
+						runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(LibraryActivity.this,
+										R.string.tweeted_ok,
+										Toast.LENGTH_LONG).show();
+							}
+						});
+					} catch (TwitterException e) {
+						// XXX Toast ?!
+						e.printStackTrace();
+						Log.e(TAG, "Twittering failed " + e.getMessage());
+					}
+				} else {
+
+					// Need to authorise.
+					runOnUiThread(new Runnable() {
+						public void run() {
+							Toast.makeText(
+									LibraryActivity.this,
+									R.string.launching_twitter_authorisation_come_back_and_tweet_after_you_have_done_this_,
+									Toast.LENGTH_LONG).show();
+
+						}
+					});
+
+					// Launch Twitter Authorisation
+					Intent intent2 = new Intent().setClass(
+							LibraryActivity.this,
+							TwitterOAuthActivity.class);
+					LibraryActivity.this.startActivity(intent2);
+
+				}
+
+			}
+		}).start();
+	}
+
+	/**
+	 * 
+	 */
+	private void doViewActivity() {
+		Intent i2 = new Intent(Intent.ACTION_VIEW);
+		i2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i2.setData(Uri.parse(hosted_url_chosen));
+		this.startActivity(i2);
+	}
+
+	/**
+	 * Email activity with chosen hosted URL.
+	 */
+	private void doEmailActivity() {
+
+		Log.d(TAG, "Emailing the following URL " + hosted_url_chosen);
+
+		Intent i = new Intent(Intent.ACTION_SEND);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setType("message/rfc822");
+		i.putExtra(Intent.EXTRA_TEXT, hosted_url_chosen);
+		try {
+			this.startActivity(i);
+		} catch (ActivityNotFoundException e) {
+			e.printStackTrace();
+			Log.e(TAG,
+					"Emailing caught ActivityNotFoundException - can't email URL ");
+		}
+	}
+
 	private void showAlertDialogUploadingInProgress() {
 		// throw up dialog
 		AlertDialog alreadydoingit = new AlertDialog.Builder(this)
-				.setMessage(R.string.this_video_is_in_the_process_of_uploading_already_)
+				.setMessage(
+						R.string.this_video_is_in_the_process_of_uploading_already_)
 				.setPositiveButton(R.string.yes,
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog,
@@ -1114,7 +1207,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							}
 						}).show();
 	}
-	
+
 	private void showTitleDescriptionDialog() {
 		// Launch Title/Description Edit View
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
@@ -1143,14 +1236,14 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		d.setContentView(title_descr);
 		// Cancel
 		Button cbutton = (Button) d.findViewById(R.id.button2Cancel);
-		cbutton.setOnClickListener(new OnClickListener() {
+		cbutton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				d.dismiss();
 			}
 		});
 		// Edit
 		Button ebutton = (Button) d.findViewById(R.id.button1Edit);
-		ebutton.setOnClickListener(new OnClickListener() {
+		ebutton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				// save title and description to DB.
 				String title_str = title_edittext.getText().toString();
@@ -1195,9 +1288,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		// Show notification of uploading
 		Resources res = getResources();
 
-		String service = PublishingUtils.getVideoServiceStringFromServiceCode(getBaseContext(), service_code);
-		
-		this.createNotification(res.getString(R.string.starting_upload) + " " + service);
+		String service = PublishingUtils.getVideoServiceStringFromServiceCode(
+				getBaseContext(), service_code);
+
+		this.createNotification(res.getString(R.string.starting_upload) + " "
+				+ service);
 
 		mainapp.setUploading();
 	}
