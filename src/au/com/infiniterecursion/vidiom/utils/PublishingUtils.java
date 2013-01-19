@@ -122,7 +122,7 @@ public class PublishingUtils {
 	private GoogleAuthoriser authorizer;
 
 	private VidiomApp mainapp;
-	
+
 	public PublishingUtils(Resources res, VidiomApp app) {
 
 		this.res = res;
@@ -237,10 +237,10 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
-					
-					mainapp.removeSDFileRecordIDfromUploadingTrack(
-							sdrecord_id, TYPE_FB);
-					
+
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FB);
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -316,9 +316,9 @@ public class PublishingUtils {
 				} else {
 
 					// an error -- fb_response is NULL.
-					mainapp.removeSDFileRecordIDfromUploadingTrack(
-							sdrecord_id, TYPE_FB);
-					
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FB);
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -396,7 +396,7 @@ public class PublishingUtils {
 					// Ours is a fixed URL, so not likely to get here.
 					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 							TYPE_VB);
-					
+
 					e.printStackTrace();
 					return;
 
@@ -484,7 +484,7 @@ public class PublishingUtils {
 					// UI elements.
 					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 							TYPE_VB);
-					
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -723,11 +723,10 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
-					
+
 					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 							TYPE_FTP);
 
-					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -851,7 +850,6 @@ public class PublishingUtils {
 					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 							TYPE_FTP);
 
-					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -880,7 +878,6 @@ public class PublishingUtils {
 					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 							TYPE_FTP);
 
-					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -906,11 +903,10 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
-					
+
 					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 							TYPE_FTP);
 
-					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -1289,7 +1285,8 @@ public class PublishingUtils {
 
 	private String uploadMetaData(final Activity activity,
 			final Handler handler, String filePath, String title,
-			String description, boolean retry, long sdrecord_id) throws IOException {
+			String description, boolean retry, long sdrecord_id)
+			throws IOException {
 		String uploadUrl = INITIAL_UPLOAD_URL;
 
 		HttpURLConnection urlConnection = getGDataUrlConnection(uploadUrl);
@@ -1383,7 +1380,7 @@ public class PublishingUtils {
 			outStreamWriter = null;
 
 			mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
-			
+
 			// Use the handler to execute a Runnable on the
 			// main thread in order to have access to the
 			// UI elements.
@@ -1416,8 +1413,9 @@ public class PublishingUtils {
 						description, false, sdrecord_id);
 			} else {
 
-				mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
-				
+				mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+						TYPE_YT);
+
 				// Probably not authorised!
 
 				// Need to setup a Youtube account.
@@ -1713,8 +1711,9 @@ public class PublishingUtils {
 
 						Log.d(TAG, " Error in fetchAuthToken! ");
 
-						mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
-						
+						mainapp.removeSDFileRecordIDfromUploadingTrack(
+								sdrecord_id, TYPE_YT);
+
 						// Use the handler to execute a Runnable on the
 						// main thread in order to have access to the
 						// UI elements.

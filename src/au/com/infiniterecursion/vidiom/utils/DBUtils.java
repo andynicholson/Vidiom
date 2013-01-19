@@ -1,9 +1,5 @@
 package au.com.infiniterecursion.vidiom.utils;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -30,7 +26,7 @@ public class DBUtils {
 
 	public DBUtils(Context c) {
 		context = c;
-		
+
 	}
 
 	private void getOpenHelper() {
@@ -191,13 +187,13 @@ public class DBUtils {
 				+ DatabaseHelper.SDFILERECORD_TABLE_NAME + " WHERE "
 				+ DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
 
-		
 		if (strs.moveToFirst()) {
 			String title = strs.getString(0);
 			String descr = strs.getString(1);
-			
-			Log.d(TAG, "getTitleAndDescriptionFromID : " + sdrecord_id[0] + " returning " + title + " and " + descr);
-			
+
+			Log.d(TAG, "getTitleAndDescriptionFromID : " + sdrecord_id[0]
+					+ " returning " + title + " and " + descr);
+
 			if (title == null) {
 				title = "";
 			}
@@ -247,7 +243,8 @@ public class DBUtils {
 			String title, String description) {
 		genericWriteOpen();
 
-		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called with title " + title + " description :" + description + " and filepath :"
+		Log.v(TAG, "createSDFileRecordwithNewVideoRecording called with title "
+				+ title + " description :" + description + " and filepath :"
 				+ filepath);
 
 		ContentValues vals = new ContentValues();
@@ -273,7 +270,7 @@ public class DBUtils {
 	}
 
 	/*
-	 * Returns the ID of the new record, or -1 if error 
+	 * Returns the ID of the new record, or -1 if error
 	 */
 	public long creatHostDetailRecordwithNewVideoUploaded(long sdrecord_id,
 			String host_uri, String hosted_video_url, String params) {

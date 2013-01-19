@@ -41,7 +41,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -142,7 +141,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		Log.d(TAG, " onCreate ");
 		mainapp = (VidiomApp) getApplication();
 		dbutils = mainapp.getDBUtils();
-		
+
 		pu = new PublishingUtils(getResources(), mainapp);
 		handler = new Handler();
 
@@ -153,10 +152,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	public void onResume() {
 		super.onResume();
 
-		
 		Log.d(TAG, " onResume ");
 		setContentView(R.layout.library_layout);
-		
+
 		makeCursorAndAdapter();
 
 		registerForContextMenu(getListView());
@@ -178,7 +176,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		}
 
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -205,7 +203,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
-	
 	/**
 	 * 
 	 * We get this callback after the facebook SSO
@@ -314,8 +311,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									thumber.setDataSource(fp[0]);
 									String duration = thumber
 											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-									Log.d(TAG, "Found filepath " + f.getAbsolutePath() + " has duration "
-											+ duration);
+									Log.d(TAG,
+											"Found filepath "
+													+ f.getAbsolutePath()
+													+ " has duration "
+													+ duration);
 									duration_millis = Long.parseLong(duration);
 									audio_video_codec = thumber
 											.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE);
@@ -325,7 +325,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									if (title == null) {
 										title = "Untitled";
 									}
-									
+
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -334,24 +334,28 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 										f.getAbsolutePath(), filename,
 										(int) (duration_millis / 1000),
 										audio_video_codec, title, "");
-								
-								
-								// Send the info to the inbuilt Android Media Scanner
+
+								// Send the info to the inbuilt Android Media
+								// Scanner
 
 								// Save the name and description of a video in a
 								// ContentValues map.
 								ContentValues values = new ContentValues(2);
-								values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+								values.put(MediaStore.Video.Media.MIME_TYPE,
+										"video/mp4");
 								values.put(MediaStore.Video.Media.DATA, fp[0]);
 
-								// Add a new record (identified by uri), but with the values
+								// Add a new record (identified by uri), but
+								// with the values
 								// just set.
-								Uri uri = getContentResolver().insert(
-										MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+								Uri uri = getContentResolver()
+										.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+												values);
 
-								sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+								sendBroadcast(new Intent(
+										Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
 										uri));
-								
+
 							}
 						}
 
@@ -371,7 +375,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
-	
 	private class VideoFilesSimpleCursorAdapter extends SimpleCursorAdapter {
 
 		public VideoFilesSimpleCursorAdapter(Context context, int layout,
@@ -510,13 +513,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				DatabaseHelper.SDFileRecord.TITLE,
 				DatabaseHelper.SDFileRecord.DESCRIPTION,
-				DatabaseHelper.SDFileRecord.FILEPATH, 
-				//Dummy columns to fill in more information
+				DatabaseHelper.SDFileRecord.FILEPATH,
+				// Dummy columns to fill in more information
 				"filepath2", "progressBar1"
-				
-				};
 
-		//The list of view IDs that the above columns map to.
+		};
+
+		// The list of view IDs that the above columns map to.
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
 				R.id.text3, R.id.text4, R.id.text5, R.id.text6,
 				R.id.videoThumbnailimageView, R.id.text7, R.id.progressBar1 };
@@ -529,36 +532,40 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			public boolean setViewValue(View view, Cursor cursor,
 					int columnIndex) {
 
-				//Uploading progress bar
+				// Uploading progress bar
 				if (columnIndex == cursor.getColumnIndexOrThrow("progressBar1")) {
-					
-					//check with dbutils if this particular video is uploading,
-					
-					long video_id = cursor
-							.getLong(cursor
-									.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
-					Log.d(TAG, "Checking ID " + video_id + " for any uploads in progress.");
-					HashSet<Integer>uploading_in_progress = mainapp.isSDFileRecordUploadingToAnyService(video_id);
-					ProgressBar pb = (ProgressBar) view.findViewById(R.id.progressBar1);
-					
+
+					// check with dbutils if this particular video is uploading,
+
+					long video_id = cursor.getLong(cursor
+							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
+					Log.d(TAG, "Checking ID " + video_id
+							+ " for any uploads in progress.");
+					HashSet<Integer> uploading_in_progress = mainapp
+							.isSDFileRecordUploadingToAnyService(video_id);
+					ProgressBar pb = (ProgressBar) view
+							.findViewById(R.id.progressBar1);
+
 					// We need the views' parent to get to the textview
 					View p = view.getRootView();
 					TextView tvpb = (TextView) p.findViewById(R.id.textPB1);
-					if (uploading_in_progress == null || uploading_in_progress.size() == 0) {
+					if (uploading_in_progress == null
+							|| uploading_in_progress.size() == 0) {
 						Log.d(TAG, "No uploads in progress for ID:" + video_id);
 						pb.setIndeterminate(false);
 						tvpb.setText(R.string.no_uploads_in_progress);
 					} else {
-						Log.d(TAG, "Some uploads in progress for ID:" + video_id);
+						Log.d(TAG, "Some uploads in progress for ID:"
+								+ video_id);
 						pb.setIndeterminate(true);
 						tvpb.setText(R.string.uploading_in_progress_);
-						//XXX
+						// XXX
 						// show textually what service is being uploaded to.
 					}
-					
+
 					return true;
 				}
-				
+
 				if (columnIndex == cursor.getColumnIndexOrThrow("filepath2")) {
 
 					TextView filesizeview = (TextView) view
@@ -626,7 +633,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
 
-					//XXX when coalescing the same video rows per hosted URL
+					// XXX when coalescing the same video rows per hosted URL
 					// this is where to grab ALL hosted URLS
 					//
 					// Load all possible records , from
@@ -647,7 +654,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		dbutils.close();
 	}
-
 
 	@Override
 	protected void onListItemClick(ListView l, View v, final int position,
@@ -821,7 +827,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// start videobin thread
 				pu.videoUploadToVideoBin(this, handler, moviePath, strs_vb[0],
 						strs_vb[1], emailPreference, sdrecord_id);
-				
+
 				reloadList();
 
 			}
@@ -859,7 +865,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				pu.videoUploadToFTPserver(this, handler, moviefilename,
 						moviePath, emailPreference, sdrecord_id);
-				
+
 				reloadList();
 
 			}
@@ -895,7 +901,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
 							possibleEmail, moviePath, handler, emailPreference,
 							sdrecord_id);
-					
+
 					reloadList();
 
 				}
@@ -1198,7 +1204,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 											mainapp.getFacebook(), moviePath,
 											strs[0], strs[1], emailPreference,
 											sdrecord_id);
-									
+
 									reloadList();
 								}
 
