@@ -248,5 +248,11 @@
 	
 	<string name="no_uploads_in_progress">No uploads in progress.</string>
 	<string name="uploading_in_progress_">Uploading in progress.</string>
+	<string name="this_video_is_in_the_process_of_uploading_already_">This video is in the process of uploading already.</string>
+	<string name="_services_being_used_">" Services being used : "</string>
+	<string name="youtube">YouTube</string>
+	<string name="videobin">Videobin</string>
+	<string name="facebook">Facebook</string>
+	<string name="ftp_server">FTP server</string>
 	
 </resources>

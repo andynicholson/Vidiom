@@ -3,6 +3,7 @@ package au.com.infiniterecursion.vidiom.activity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -557,9 +558,36 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							Log.d(TAG, "Some uploads in progress for ID:"
 									+ video_id);
 							pb.setIndeterminate(true);
-							tvpb.setText(R.string.uploading_in_progress_);
-							// XXX
-							// show textually what service is being uploaded to.
+							
+							// show textually what services are being uploaded to.
+							String services = "";
+							Iterator<Integer> iter = uploading_in_progress.iterator();
+							while (iter.hasNext()) {
+								String service = "";
+								Integer service_code = iter.next();
+								switch (service_code) {
+								case PublishingUtils.TYPE_YT:
+									service = getString(R.string.youtube);
+									break;
+								case PublishingUtils.TYPE_VB:
+									service = getString(R.string.videobin);
+									break;
+								case PublishingUtils.TYPE_FB:
+									service = getString(R.string.facebook);
+									break;
+								case PublishingUtils.TYPE_FTP:
+									service = getString(R.string.ftp_server);
+									break;
+								}
+								String sep = "";
+								if (iter.hasNext()) {
+									sep = ",";
+								}
+								services = services + service + sep;
+							}
+							//Set the progress bar underneath text.
+							tvpb.setText(getString(R.string.uploading_in_progress_) + getString(R.string._services_being_used_) + services);
+							
 						}
 					}
 					return true;
@@ -838,6 +866,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				reloadList();
 
+			} else {
+				showAlertDialogUploadingInProgress();
 			}
 
 			break;
@@ -876,7 +906,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				reloadList();
 
+			} else {
+				showAlertDialogUploadingInProgress();
 			}
+			
 			break;
 
 		case MENU_ITEM_7:
@@ -912,6 +945,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 					reloadList();
 
+				} else {
+					showAlertDialogUploadingInProgress();
 				}
 
 			} else {
@@ -1080,6 +1115,19 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
+	private void showAlertDialogUploadingInProgress() {
+		// throw up dialog
+		AlertDialog alreadydoingit = new AlertDialog.Builder(this)
+				.setMessage(R.string.this_video_is_in_the_process_of_uploading_already_)
+				.setPositiveButton(R.string.yes,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+
+							}
+						}).show();
+	}
+	
 	private void showTitleDescriptionDialog() {
 		// Launch Title/Description Edit View
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext()
@@ -1228,6 +1276,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 											sdrecord_id);
 
 									reloadList();
+								} else {
+									showAlertDialogUploadingInProgress();
 								}
 
 							}
