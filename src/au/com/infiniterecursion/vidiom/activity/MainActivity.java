@@ -79,7 +79,7 @@ import au.com.infiniterecursion.vidiompro.R;
 public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		VidiomActivity, MediaRecorder.OnInfoListener {
 
-	private static final String TAG = "VidiomTag";
+	private static final String TAG = "VidiomTag-MainActivity";
 
 	// Menu ids
 	private static final int MENU_ITEM_1 = Menu.FIRST;
@@ -258,7 +258,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 		handler = new Handler();
 		db_utils = new DBUtils(getBaseContext());
-		pu = new PublishingUtils(res, db_utils);
+		pu = new PublishingUtils(res, db_utils, mainapp);
 		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
 		// dump stats

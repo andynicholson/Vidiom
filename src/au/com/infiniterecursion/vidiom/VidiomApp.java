@@ -11,6 +11,10 @@ package au.com.infiniterecursion.vidiom;
  * Copyright Infinite Recursion Pty Ltd.
  */
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import android.app.Application;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.facebook.SessionStore;
@@ -37,6 +41,12 @@ public class VidiomApp extends Application {
 	public boolean support_v10 = false;
 	public boolean support_v11 = false;
 
+	//Static variable 
+	
+	// A Map of SDRecord id and to a set of flags indicating this record is
+	// being uploaded by a thread (particular service id).
+	private static Map<Long, HashSet<Integer>> in_progress_uploads;
+		
 	/*
 	 * On application startup, get the home position from the preferences.
 	 * 
@@ -77,6 +87,9 @@ public class VidiomApp extends Application {
 			support_v11 = true;
 			Log.d(TAG, "Phone supports v11 API or greater");
 		}
+		
+		// Uploading tracking
+		in_progress_uploads = new HashMap<Long, HashSet<Integer>>();
 	}
 
 	public void onTerminate() {
@@ -112,4 +125,54 @@ public class VidiomApp extends Application {
 	public void setCurrentPath(String path) {
 		this.current_path = path;
 	}
+	
+
+	// Methods to track uploading per ID , per video hosting service
+	public void addSDFileRecordIDtoUploadingTrack(long sdfilerecord_id, int type) {
+		
+		Log.d(TAG, "addSDFileRecordIDtoUploadingTrack id " + sdfilerecord_id + " type :" + type);
+		
+		HashSet<Integer> services_in_progress;
+		if (in_progress_uploads.containsKey(sdfilerecord_id)) {
+			services_in_progress = in_progress_uploads.get(sdfilerecord_id);
+			services_in_progress.add(type);
+		} else {
+			services_in_progress = new HashSet<Integer>();
+			services_in_progress.add(type);
+			in_progress_uploads.put(sdfilerecord_id, services_in_progress);
+		}
+
+	}
+
+	public boolean isSDFileRecordUploading(long sdfilerecord_id, int type) {
+		HashSet<Integer> services_in_progress = in_progress_uploads
+				.get(sdfilerecord_id);
+		if (services_in_progress == null)
+			return false;
+		return services_in_progress.contains(type);
+
+	}
+
+	public HashSet<Integer> isSDFileRecordUploadingToAnyService(long sdfilerecord_id) {
+		HashSet<Integer> services_in_progress = in_progress_uploads
+				.get(sdfilerecord_id);
+		return services_in_progress;
+
+	}
+
+	
+	public void removeSDFileRecordIDfromUploadingTrack(long sdfilerecord_id,
+			int type) {
+
+		Log.d(TAG, "removeSDFileRecordIDfromUploadingTrack id " + sdfilerecord_id + " type :" + type);
+		
+		HashSet<Integer> services_in_progress;
+		if (in_progress_uploads.containsKey(sdfilerecord_id)) {
+			services_in_progress = in_progress_uploads.get(sdfilerecord_id);
+			services_in_progress.remove(type);
+		} else {
+			// nothing to do.
+		}
+	}
+
 }

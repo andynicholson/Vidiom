@@ -26,16 +26,11 @@ public class DBUtils {
 	private static final String TAG = "VidiomTag-DBUtils";
 	private DatabaseHelper dbHelper;
 	public SQLiteDatabase generic_write_db = null;
-
 	private Context context;
-
-	// A Map of SDRecord id and to a set of flags indicating this record is
-	// being uploaded by a thread (particular service id).
-	private Map<Long, HashSet<Integer>> in_progress_uploads;
 
 	public DBUtils(Context c) {
 		context = c;
-		in_progress_uploads = new HashMap<Long, HashSet<Integer>>();
+		
 	}
 
 	private void getOpenHelper() {
@@ -266,41 +261,6 @@ public class DBUtils {
 		close();
 
 		return rez;
-	}
-
-	// Methods to track uploading per ID , per video hosting service
-	public void addSDFileRecordIDtoUploadingTrack(long sdfilerecord_id, int type) {
-		HashSet<Integer> services_in_progress;
-		if (in_progress_uploads.containsKey(sdfilerecord_id)) {
-			services_in_progress = in_progress_uploads.get(sdfilerecord_id);
-			services_in_progress.add(type);
-		} else {
-			services_in_progress = new HashSet<Integer>();
-			services_in_progress.add(type);
-			in_progress_uploads.put(sdfilerecord_id, services_in_progress);
-		}
-
-	}
-
-	public boolean isSDFileRecordUploading(long sdfilerecord_id, int type) {
-		HashSet<Integer> services_in_progress = in_progress_uploads
-				.get(sdfilerecord_id);
-		if (services_in_progress == null)
-			return false;
-		return services_in_progress.contains(type);
-
-	}
-
-	public void removeSDFileRecordIDfromUploadingTrack(long sdfilerecord_id,
-			int type) {
-
-		HashSet<Integer> services_in_progress;
-		if (in_progress_uploads.containsKey(sdfilerecord_id)) {
-			services_in_progress = in_progress_uploads.get(sdfilerecord_id);
-			services_in_progress.remove(type);
-		} else {
-			// nothing to do.
-		}
 	}
 
 	/*

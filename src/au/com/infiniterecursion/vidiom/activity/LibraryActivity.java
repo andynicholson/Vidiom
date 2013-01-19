@@ -2,6 +2,7 @@ package au.com.infiniterecursion.vidiom.activity;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -40,6 +41,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -47,6 +49,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -138,13 +141,70 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		Log.d(TAG, " onCreate ");
 		dbutils = new DBUtils(getBaseContext());
-		pu = new PublishingUtils(getResources(), dbutils);
+		mainapp = (VidiomApp) getApplication();
+		pu = new PublishingUtils(getResources(), dbutils, mainapp);
 		handler = new Handler();
 
 		got_facebook_sso_callback = false;
 
 	}
 
+	public void onResume() {
+		super.onResume();
+
+		
+		Log.d(TAG, " onResume ");
+		setContentView(R.layout.library_layout);
+		
+		makeCursorAndAdapter();
+
+		registerForContextMenu(getListView());
+
+		lb = new LoginButton(this);
+		lb.init(mainapp.getFacebook(), VidiomApp.FB_LOGIN_PERMISSIONS, this);
+
+		if (importPreference) {
+			ImporterThread importer = new ImporterThread();
+			importer.run();
+		}
+
+		if (got_facebook_sso_callback) {
+			got_facebook_sso_callback = false;
+			// show facebook dialog again
+			Log.d(TAG, "We have been called back by fb sso, showing dialog");
+			showFacebookOptionsMenu();
+
+		}
+
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Log.d(TAG, " onDestroy ");
+		if (libraryCursor != null) {
+			libraryCursor.close();
+		}
+		if (dbutils != null) {
+			dbutils.close();
+		}
+	}
+
+	@Override
+	public void onPause() {
+
+		super.onPause();
+		Log.d(TAG, "On pause");
+
+		if (fb_dialog != null && fb_dialog.isShowing()) {
+			Log.d(TAG, "Dismissing fb dialog");
+			fb_dialog.dismiss();
+			lb = null;
+		}
+
+	}
+
+	
 	/**
 	 * 
 	 * We get this callback after the facebook SSO
@@ -306,35 +366,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	}
 
-	public void onResume() {
-		super.onResume();
-
-		mainapp = (VidiomApp) getApplication();
-		Log.d(TAG, " onResume ");
-		setContentView(R.layout.library_layout);
-
-		makeCursorAndAdapter();
-
-		registerForContextMenu(getListView());
-
-		lb = new LoginButton(this);
-		lb.init(mainapp.getFacebook(), VidiomApp.FB_LOGIN_PERMISSIONS, this);
-
-		if (importPreference) {
-			ImporterThread importer = new ImporterThread();
-			importer.run();
-		}
-
-		if (got_facebook_sso_callback) {
-			got_facebook_sso_callback = false;
-			// show facebook dialog again
-			Log.d(TAG, "We have been called back by fb sso, showing dialog");
-			showFacebookOptionsMenu();
-
-		}
-
-	}
-
+	
 	private class VideoFilesSimpleCursorAdapter extends SimpleCursorAdapter {
 
 		public VideoFilesSimpleCursorAdapter(Context context, int layout,
@@ -346,16 +378,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		@Override
 		public void setViewImage(ImageView v, String s) {
 
-			/*
-			 * String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA,
-			 * MediaStore.Video.Thumbnails.VIDEO_ID };
-			 * 
-			 * Cursor thumbCursor = managedQuery(
-			 * MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, thumbColumns,
-			 * MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
-			 */
-
-			Log.d(TAG, "We have " + s);
+			Log.d(TAG, "Finding a thumbnail : We have filepath " + s);
 
 			String[] mediaColumns = { MediaStore.Video.Media._ID,
 					MediaStore.Video.Media.DATA };
@@ -409,7 +432,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		// SELECT VIDEOS
 		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
-				+ " b.host_uri as host_uri , b.host_video_url as host_video_url FROM "
+				+ " b.host_uri as host_uri , b.host_video_url as host_video_url, b.host_video_url as progressBar1 FROM "
 				+ " videofiles a LEFT OUTER JOIN hosts b ON"
 				+ " a._id = b.sdrecord_id "
 				+ " ORDER BY a.created_datetime DESC ";
@@ -482,11 +505,16 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				DatabaseHelper.SDFileRecord.TITLE,
 				DatabaseHelper.SDFileRecord.DESCRIPTION,
-				DatabaseHelper.SDFileRecord.FILEPATH, "filepath2", };
+				DatabaseHelper.SDFileRecord.FILEPATH, 
+				//Dummy columns to fill in more information
+				"filepath2", "progressBar1"
+				
+				};
 
+		//The list of view IDs that the above columns map to.
 		int[] to = new int[] { android.R.id.text1, android.R.id.text2,
 				R.id.text3, R.id.text4, R.id.text5, R.id.text6,
-				R.id.videoThumbnailimageView, R.id.text7 };
+				R.id.videoThumbnailimageView, R.id.text7, R.id.progressBar1 };
 
 		listAdapter = new VideoFilesSimpleCursorAdapter(this,
 				R.layout.library_list_item, libraryCursor, from, to);
@@ -496,6 +524,36 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			public boolean setViewValue(View view, Cursor cursor,
 					int columnIndex) {
 
+				//Uploading progress bar
+				if (columnIndex == cursor.getColumnIndexOrThrow("progressBar1")) {
+					
+					//check with dbutils if this particular video is uploading,
+					
+					long video_id = cursor
+							.getLong(cursor
+									.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
+					Log.d(TAG, "Checking ID " + video_id + " for any uploads in progress.");
+					HashSet<Integer>uploading_in_progress = mainapp.isSDFileRecordUploadingToAnyService(video_id);
+					ProgressBar pb = (ProgressBar) view.findViewById(R.id.progressBar1);
+					
+					// We need the views' parent to get to the textview
+					View p = view.getRootView();
+					TextView tvpb = (TextView) p.findViewById(R.id.textPB1);
+					if (uploading_in_progress == null || uploading_in_progress.size() == 0) {
+						Log.d(TAG, "No uploads in progress for ID:" + video_id);
+						pb.setIndeterminate(false);
+						tvpb.setText(R.string.no_uploads_in_progress);
+					} else {
+						Log.d(TAG, "Some uploads in progress for ID:" + video_id);
+						pb.setIndeterminate(true);
+						tvpb.setText(R.string.uploading_in_progress_);
+						//XXX
+						// show textually what service is being uploaded to.
+					}
+					
+					return true;
+				}
+				
 				if (columnIndex == cursor.getColumnIndexOrThrow("filepath2")) {
 
 					TextView filesizeview = (TextView) view
@@ -563,6 +621,9 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
 
+					//XXX when coalescing the same video rows per hosted URL
+					// this is where to grab ALL hosted URLS
+					//
 					// Load all possible records , from
 					// " hosts b WHERE a._id = b.sdrecord_id "
 
@@ -582,31 +643,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		dbutils.close();
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		Log.d(TAG, " onDestroy ");
-		if (libraryCursor != null) {
-			libraryCursor.close();
-		}
-		if (dbutils != null) {
-			dbutils.close();
-		}
-	}
-
-	@Override
-	public void onPause() {
-
-		super.onPause();
-		Log.d(TAG, "On pause");
-
-		if (fb_dialog != null && fb_dialog.isShowing()) {
-			Log.d(TAG, "Dismissing fb dialog");
-			fb_dialog.dismiss();
-			lb = null;
-		}
-
-	}
 
 	@Override
 	protected void onListItemClick(ListView l, View v, final int position,
@@ -768,10 +804,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			// publish to video bin
 
 			// Dont allow simultanous uploads to video bin for the same video.
-			if (!dbutils.isSDFileRecordUploading(sdrecord_id,
+			if (!mainapp.isSDFileRecordUploading(sdrecord_id,
 					PublishingUtils.TYPE_VB)) {
 
-				dbutils.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+				mainapp.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
 						PublishingUtils.TYPE_VB);
 
 				String[] strs_vb = dbutils
@@ -780,6 +816,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// start videobin thread
 				pu.videoUploadToVideoBin(this, handler, moviePath, strs_vb[0],
 						strs_vb[1], emailPreference, sdrecord_id);
+				
+				reloadList();
 
 			}
 
@@ -808,14 +846,16 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			// FTP server upload
 
 			// Don't allow simultaneous uploads to FTP for the same video.
-			if (!dbutils.isSDFileRecordUploading(sdrecord_id,
+			if (!mainapp.isSDFileRecordUploading(sdrecord_id,
 					PublishingUtils.TYPE_FTP)) {
 
-				dbutils.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+				mainapp.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
 						PublishingUtils.TYPE_FTP);
 
 				pu.videoUploadToFTPserver(this, handler, moviefilename,
 						moviePath, emailPreference, sdrecord_id);
+				
+				reloadList();
 
 			}
 			break;
@@ -840,16 +880,18 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 				// Don't allow simultaneous uploads to Youtube for the same
 				// video.
-				if (!dbutils.isSDFileRecordUploading(sdrecord_id,
+				if (!mainapp.isSDFileRecordUploading(sdrecord_id,
 						PublishingUtils.TYPE_YT)) {
 
-					dbutils.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
+					mainapp.addSDFileRecordIDtoUploadingTrack(sdrecord_id,
 							PublishingUtils.TYPE_YT);
 
 					// This launches the youtube upload process
 					pu.getYouTubeAuthTokenWithPermissionAndUpload(this,
 							possibleEmail, moviePath, handler, emailPreference,
 							sdrecord_id);
+					
+					reloadList();
 
 				}
 
@@ -1132,13 +1174,13 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 								// session will be valid.
 
 								if (mainapp.getFacebook().isSessionValid()
-										&& !dbutils.isSDFileRecordUploading(
+										&& !mainapp.isSDFileRecordUploading(
 												sdrecord_id,
 												PublishingUtils.TYPE_FB)) {
 									// we have a valid session, and we arent
 									// already uploading this file.
 
-									dbutils.addSDFileRecordIDtoUploadingTrack(
+									mainapp.addSDFileRecordIDtoUploadingTrack(
 											sdrecord_id,
 											PublishingUtils.TYPE_FB);
 
@@ -1151,7 +1193,8 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 											mainapp.getFacebook(), moviePath,
 											strs[0], strs[1], emailPreference,
 											sdrecord_id);
-
+									
+									reloadList();
 								}
 
 							}

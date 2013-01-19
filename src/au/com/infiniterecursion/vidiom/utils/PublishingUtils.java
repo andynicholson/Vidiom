@@ -69,6 +69,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.activity.VidiomActivity;
 import au.com.infiniterecursion.vidiom.sslemail.SSLEmailSender;
 import au.com.infiniterecursion.vidiom.utils.GoogleAuthoriser.AuthorizationListener;
@@ -120,11 +121,13 @@ public class PublishingUtils {
 	private String tags = null;
 	private GoogleAuthoriser authorizer;
 
-	public PublishingUtils(Resources res, DBUtils dbutils) {
+	private VidiomApp mainapp;
+	
+	public PublishingUtils(Resources res, DBUtils dbutils, VidiomApp app) {
 
 		this.res = res;
 		this.dbutils = dbutils;
-
+		this.mainapp = app;
 	}
 
 	public static String showDate(long timemillis) {
@@ -234,6 +237,10 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					
+					mainapp.removeSDFileRecordIDfromUploadingTrack(
+							sdrecord_id, TYPE_FB);
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -283,7 +290,7 @@ public class PublishingUtils {
 						dbutils.creatHostDetailRecordwithNewVideoUploaded(
 								sdrecord_id, url, hosted_url, "");
 
-						dbutils.removeSDFileRecordIDfromUploadingTrack(
+						mainapp.removeSDFileRecordIDfromUploadingTrack(
 								sdrecord_id, TYPE_FB);
 
 						// Use the handler to execute a Runnable on the
@@ -309,7 +316,9 @@ public class PublishingUtils {
 				} else {
 
 					// an error -- fb_response is NULL.
-
+					mainapp.removeSDFileRecordIDfromUploadingTrack(
+							sdrecord_id, TYPE_FB);
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -385,6 +394,9 @@ public class PublishingUtils {
 					url = new URI(res.getString(R.string.http_videobin_org_add));
 				} catch (URISyntaxException e) {
 					// Ours is a fixed URL, so not likely to get here.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_VB);
+					
 					e.printStackTrace();
 					return;
 
@@ -470,6 +482,9 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_VB);
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -519,7 +534,7 @@ public class PublishingUtils {
 						res.getString(R.string.http_videobin_org_add),
 						response, "");
 
-				dbutils.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+				mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 						TYPE_VB);
 
 				// Use the handler to execute a Runnable on the
@@ -597,6 +612,9 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -650,6 +668,9 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -702,6 +723,11 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -757,6 +783,9 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -791,6 +820,9 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -816,6 +848,10 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -841,6 +877,10 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -866,6 +906,11 @@ public class PublishingUtils {
 					// Use the handler to execute a Runnable on the
 					// main thread in order to have access to the
 					// UI elements.
+					
+					mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+							TYPE_FTP);
+
+					
 					handler.postDelayed(new Runnable() {
 						public void run() {
 							// Update UI
@@ -907,7 +952,7 @@ public class PublishingUtils {
 				dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 						ftpHostName, ftpHostName, "");
 
-				dbutils.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
+				mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id,
 						TYPE_FTP);
 
 				// Use the handler to execute a Runnable on the
@@ -1116,7 +1161,7 @@ public class PublishingUtils {
 						.toString(sdrecord_id) });
 		// add our branding to the description.
 		String uploadUrl = uploadMetaData(activity, handler,
-				file.getAbsolutePath(), strs[0], strs[1], true);
+				file.getAbsolutePath(), strs[0], strs[1], true, sdrecord_id);
 
 		Log.d(TAG, "uploadUrl=" + uploadUrl + " youtube account name is "
 				+ this.youTubeName);
@@ -1217,7 +1262,7 @@ public class PublishingUtils {
 			dbutils.creatHostDetailRecordwithNewVideoUploaded(sdrecord_id,
 					uploadUrl, YOUTUBE_PLAYER_URL + videoId, "");
 
-			dbutils.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
+			mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
 
 			// Use the handler to execute a Runnable on the
 			// main thread in order to have access to the
@@ -1244,7 +1289,7 @@ public class PublishingUtils {
 
 	private String uploadMetaData(final Activity activity,
 			final Handler handler, String filePath, String title,
-			String description, boolean retry) throws IOException {
+			String description, boolean retry, long sdrecord_id) throws IOException {
 		String uploadUrl = INITIAL_UPLOAD_URL;
 
 		HttpURLConnection urlConnection = getGDataUrlConnection(uploadUrl);
@@ -1337,6 +1382,8 @@ public class PublishingUtils {
 			responseCode = -1;
 			outStreamWriter = null;
 
+			mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
+			
 			// Use the handler to execute a Runnable on the
 			// main thread in order to have access to the
 			// UI elements.
@@ -1366,9 +1413,11 @@ public class PublishingUtils {
 						youTubeName, clientLoginToken);
 				// Try again with fresh token
 				return uploadMetaData(activity, handler, filePath, title,
-						description, false);
+						description, false, sdrecord_id);
 			} else {
 
+				mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
+				
 				// Probably not authorised!
 
 				// Need to setup a Youtube account.
@@ -1664,6 +1713,8 @@ public class PublishingUtils {
 
 						Log.d(TAG, " Error in fetchAuthToken! ");
 
+						mainapp.removeSDFileRecordIDfromUploadingTrack(sdrecord_id, TYPE_YT);
+						
 						// Use the handler to execute a Runnable on the
 						// main thread in order to have access to the
 						// UI elements.
