@@ -17,6 +17,7 @@ import android.app.ListActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -78,7 +79,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private String[] video_absolutepath;
 	private String[] video_filename;
 	private Integer[] video_ids;
-	private String[] hosted_urls;
 
 	private boolean videos_available;
 
@@ -121,7 +121,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	private String moviePath;
 	private String moviefilename;
-	private String hosted_url;
+	private String[] hosted_urls;
 	private long sdrecord_id;
 
 	private SharedPreferences prefs;
@@ -438,19 +438,27 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 	private void makeCursorAndAdapter() {
 		dbutils.genericWriteOpen();
 
-		// SELECT VIDEOS
-		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
+		
+		// SELECT VIDEOS -- with dummy columns to dynamically update in list view.
+		
+		String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, " +
+				"a._id as _id , a.title as title, a.description as description, a.filepath as host_video_url, a.filepath as progressBar1 "
+				+ " FROM videofiles a "
+				+ " ORDER BY a.created_datetime DESC ";
+		libraryCursor = dbutils.rawQuery(join_sql, new String[] {});
+		
+		
+		// This query is for videofiles (unused)
+		//libraryCursor = dbutils.query(DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null, null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
+
+		/* unused join
+		 * String join_sql = " SELECT a.filename as filename , a.filepath as filepath, a.filepath as filepath2, a.length_secs as length_secs , a.created_datetime as created_datetime, a._id as _id , a.title as title, a.description as description, "
 				+ " b.host_uri as host_uri , b.host_video_url as host_video_url, b.host_video_url as progressBar1 FROM "
 				+ " videofiles a LEFT OUTER JOIN hosts b ON"
 				+ " a._id = b.sdrecord_id "
 				+ " ORDER BY a.created_datetime DESC ";
-
-		// This query is for videofiles (unused)
-		// libraryCursor = dbutils.generic_write_db.query(
-		// DatabaseHelper.SDFILERECORD_TABLE_NAME, null, null, null, null,
-		// null, DatabaseHelper.SDFileRecord.DEFAULT_SORT_ORDER);
-
-		libraryCursor = dbutils.rawQuery(join_sql, new String[] {});
+		 */
+	
 
 		if (libraryCursor == null) {
 			return;
@@ -460,7 +468,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			ArrayList<Integer> video_ids_al = new ArrayList<Integer>();
 			ArrayList<String> video_paths_al = new ArrayList<String>();
 			ArrayList<String> video_filenames_al = new ArrayList<String>();
-			ArrayList<String> hosted_urls_al = new ArrayList<String>();
+		
 
 			do {
 				long video_id = libraryCursor
@@ -478,11 +486,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 								.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.FILENAME));
 				video_filenames_al.add(video_filename);
 
-				String hosted_url = libraryCursor
-						.getString(libraryCursor
-								.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
-				hosted_urls_al.add(hosted_url);
-
 			} while (libraryCursor.moveToNext());
 
 			video_ids = video_ids_al.toArray(new Integer[video_ids_al.size()]);
@@ -490,8 +493,6 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 					.toArray(new String[video_paths_al.size()]);
 			video_filename = video_filenames_al
 					.toArray(new String[video_filenames_al.size()]);
-			hosted_urls = hosted_urls_al.toArray(new String[hosted_urls_al
-					.size()]);
 
 			videos_available = true;
 
@@ -507,10 +508,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				DatabaseHelper.SDFileRecord.FILENAME,
 				DatabaseHelper.SDFileRecord.LENGTH_SECS,
 				DatabaseHelper.SDFileRecord.CREATED_DATETIME,
-
-				// Linked HOSTs details
 				DatabaseHelper.HostDetails.HOST_VIDEO_URL,
-
 				DatabaseHelper.SDFileRecord.TITLE,
 				DatabaseHelper.SDFileRecord.DESCRIPTION,
 				DatabaseHelper.SDFileRecord.FILEPATH,
@@ -616,15 +614,25 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// repr. into a string saying "not uploaded yet"
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL)) {
-					String url = cursor.getString(cursor
-							.getColumnIndexOrThrow(DatabaseHelper.HostDetails.HOST_VIDEO_URL));
+					long video_id = cursor.getLong(cursor
+							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord._ID));
+					Log.d(TAG, "Checking ID " + video_id
+							+ " for any hosted URLs.");
+					
+					//Grab all URLs from dbutils 
+					String[] urls = dbutils.getHostedURLsFromID(new String[] {Long.toString(video_id)});
+					String url_repr = "";
+		
 					TextView host_details = (TextView) view
 							.findViewById(R.id.text4);
-
-					if ("".equals(url) || url == null || url.length() <= 0) {
-						url = "Not uploaded yet.";
+					if (urls == null || urls.length == 0) {
+						url_repr = "Not uploaded yet.";
+					} else {
+						for (int i = 0; i < urls.length ; i ++) {
+							url_repr = url_repr + urls[i] + "\n"; 
+						}
 					}
-					host_details.setText(url);
+					host_details.setText(url_repr);
 
 					return true;
 				}
@@ -634,11 +642,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				if (columnIndex == cursor
 						.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME)) {
 
-					// XXX when coalescing the same video rows per hosted URL
-					// this is where to grab ALL hosted URLS
-					//
-					// Load all possible records , from
-					// " hosts b WHERE a._id = b.sdrecord_id "
+
 
 					long time_in_mills = cursor.getLong(cursor
 							.getColumnIndexOrThrow(DatabaseHelper.SDFileRecord.CREATED_DATETIME));
@@ -725,9 +729,12 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		moviePath = video_absolutepath[info.position];
 		sdrecord_id = video_ids[info.position];
 		moviefilename = video_filename[info.position];
-		hosted_url = hosted_urls[info.position];
+		//hosted_url = hosted_urls[info.position];
+		
+		hosted_urls = dbutils.getHostedURLsFromID(new String[] { Long.toString(sdrecord_id) });
+		
 		Log.d(TAG, " operation on " + moviePath + " id " + sdrecord_id
-				+ " filename " + moviefilename + " hosted url " + hosted_url);
+				+ " filename " + moviefilename );
 
 		switch (item.getItemId()) {
 
@@ -931,13 +938,25 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 		case MENU_ITEM_9:
 			// Email the HOSTED URL field of the currently selected video
-
-			if (hosted_url != null && hosted_url.length() > 0) {
+			
+			// XXX get which URL from user if more than one!!
+		
+			if (hosted_urls != null && hosted_urls.length > 0 && hosted_urls[0].length() > 0) {
+				
+				Log.d(TAG, "Emailing the following URL " + hosted_urls[0]);
+				
 				Intent i = new Intent(Intent.ACTION_SEND);
 				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				i.setType("message/rfc822");
-				i.putExtra(Intent.EXTRA_TEXT, hosted_url);
-				this.startActivity(i);
+				i.putExtra(Intent.EXTRA_TEXT, hosted_urls[0]);
+				try {
+					this.startActivity(i);
+				}
+				catch (ActivityNotFoundException e) {
+					e.printStackTrace();
+					Log.e(TAG, "Emailing caught ActivityNotFoundException - can't email URL ");
+				}
+				
 			} else {
 				Toast.makeText(
 						this,
@@ -951,10 +970,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 			// View the HOSTED URL field of the currently selected video in a
 			// web browser.
 
-			if (hosted_url != null && hosted_url.length() > 0) {
+			// XXX get which URL from user if more than one!!
+			if (hosted_urls != null && hosted_urls.length > 0 && hosted_urls[0].length() > 0) {
 				Intent i2 = new Intent(Intent.ACTION_VIEW);
 				i2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				i2.setData(Uri.parse(hosted_url));
+				i2.setData(Uri.parse(hosted_urls[0]));
 				this.startActivity(i2);
 			} else {
 				Toast.makeText(
@@ -973,10 +993,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 							.show();
 				}
 			});
+			// XXX get which URL from user if more than one!!
 
 			new Thread(new Runnable() {
 				public void run() {
-					if (hosted_url != null && hosted_url.length() > 0) {
+					if (hosted_urls != null && hosted_urls.length > 0 && hosted_urls[0].length() > 0) {
 
 						// Check there is a valid twitter OAuth tokens.
 						String twitterToken = prefs.getString("twitterToken",
@@ -996,7 +1017,7 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 									TwitterOAuthActivity.consumerSecret);
 							twitter.setOAuthAccessToken(a);
 
-							String status = "New video:" + hosted_url;
+							String status = "New video:" + hosted_urls[0];
 							try {
 								// Twitter update
 								twitter.updateStatus(status);

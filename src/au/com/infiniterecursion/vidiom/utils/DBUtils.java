@@ -1,5 +1,7 @@
 package au.com.infiniterecursion.vidiom.utils;
 
+import java.util.ArrayList;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -212,8 +214,8 @@ public class DBUtils {
 		return rez;
 	}
 
-	public String getHostedURLFromID(String[] sdrecord_id) {
-		String rez = null;
+	public String[] getHostedURLsFromID(String[] sdrecord_id) {
+		ArrayList<String> rez = new ArrayList<String>();
 
 		genericWriteOpen();
 
@@ -225,14 +227,14 @@ public class DBUtils {
 				+ DatabaseHelper.SDFileRecord._ID + " AND " + "s."
 				+ DatabaseHelper.SDFileRecord._ID + " = ?", sdrecord_id);
 
-		if (strs.moveToFirst()) {
-			rez = strs.getString(0);
+		while (strs.moveToNext()) {
+			rez.add(strs.getString(0));
 		}
 
 		strs.close();
 		close();
 
-		return rez;
+		return (String[]) rez.toArray(new String[rez.size()]);
 	}
 
 	/*
@@ -327,6 +329,16 @@ public class DBUtils {
 		if (generic_write_db != null) {
 			return generic_write_db.rawQuery(join_sql, objects);
 		} else 
+			return null;
+	}
+
+	public Cursor query(String table, String[] columns,
+			String selection, String[] selectionArgs, String groupBy, String having,
+			String orderBy) {
+		// wrapper
+		if (generic_write_db != null) {
+			return generic_write_db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy);
+		} else
 			return null;
 	}
 

@@ -1616,13 +1616,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 				public void run() {
 
 					// Check there is a hosted URL for a start..
-					String hosted_url_to_tweet = db_utils
-							.getHostedURLFromID(new String[] { Long
+										
+					// XXX get which URL from user if more than one!!
+					
+					String[] hosted_urls_to_tweet = db_utils
+							.getHostedURLsFromID(new String[] { Long
 									.toString(latestsdrecord_id) });
-					Log.d(TAG, " checking " + hosted_url_to_tweet
+					
+					Log.d(TAG, " checking " + hosted_urls_to_tweet[0]
 							+ " in auto twitter publishing");
 
-					if (hosted_url_to_tweet != null) {
+					if (hosted_urls_to_tweet != null && hosted_urls_to_tweet[0] != null && hosted_urls_to_tweet[0].length() > 0) {
 
 						// Check there is a valid twitter OAuth tokens.
 						String twitterToken = prefs.getString("twitterToken",
@@ -1642,7 +1646,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 									TwitterOAuthActivity.consumerSecret);
 							twitter.setOAuthAccessToken(a);
 
-							String status = "New video:" + hosted_url_to_tweet;
+							String status = "New video:" + hosted_urls_to_tweet[0];
 							try {
 								twitter.updateStatus(status);
 								runOnUiThread(new Runnable() {
