@@ -137,7 +137,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 
 	// Message queue
 	private Handler handler;
-	// Database
 	private DBUtils db_utils;
 	// Publishing utilities
 	private PublishingUtils pu;
@@ -257,8 +256,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback,
 		//
 
 		handler = new Handler();
-		db_utils = new DBUtils(getBaseContext());
-		pu = new PublishingUtils(res, db_utils, mainapp);
+		db_utils = mainapp.getDBUtils();
+		pu = new PublishingUtils(res, mainapp);
 		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
 		// dump stats

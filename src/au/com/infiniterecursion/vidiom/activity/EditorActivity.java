@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import uk.co.halfninja.videokit.Videokit;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -13,6 +14,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -30,6 +32,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import au.com.infiniterecursion.vidiom.VidiomApp;
 import au.com.infiniterecursion.vidiom.utils.DBUtils;
 import au.com.infiniterecursion.vidiom.utils.RangeSeekBar;
 import au.com.infiniterecursion.vidiom.utils.RangeSeekBar.OnRangeSeekBarChangeListener;
@@ -71,6 +74,7 @@ public class EditorActivity extends Activity {
 
 	Videokit vk = new Videokit();
 
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD_MR1)
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -280,7 +284,8 @@ public class EditorActivity extends Activity {
 		// Check the new transcoded copy
 		if (new_file.exists() && new_file.length() > 0) {
 
-			DBUtils db_utils = new DBUtils(getBaseContext());
+			VidiomApp mainapp = (VidiomApp) getApplication();
+			DBUtils db_utils = mainapp.getDBUtils();
 			// Add this to our library!
 			long latestsdrecord_id = db_utils
 					.createSDFileRecordwithNewVideoRecording(output,
@@ -361,6 +366,7 @@ public class EditorActivity extends Activity {
 			mContext = c;
 		}
 
+		@TargetApi(Build.VERSION_CODES.GINGERBREAD_MR1)
 		public View getView(int position, View convertView, ViewGroup parent) {
 			//
 			// TimeUs (in microseconds) is

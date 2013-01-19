@@ -75,7 +75,7 @@ import au.com.infiniterecursion.vidiompro.R;
 public class LibraryActivity extends ListActivity implements VidiomActivity {
 
 	// Database
-	DBUtils dbutils;
+	private DBUtils dbutils;
 	private String[] video_absolutepath;
 	private String[] video_filename;
 	private Integer[] video_ids;
@@ -140,9 +140,10 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 		importPreference = prefs.getBoolean("importPreference", true);
 
 		Log.d(TAG, " onCreate ");
-		dbutils = new DBUtils(getBaseContext());
 		mainapp = (VidiomApp) getApplication();
-		pu = new PublishingUtils(getResources(), dbutils, mainapp);
+		dbutils = mainapp.getDBUtils();
+		
+		pu = new PublishingUtils(getResources(), mainapp);
 		handler = new Handler();
 
 		got_facebook_sso_callback = false;

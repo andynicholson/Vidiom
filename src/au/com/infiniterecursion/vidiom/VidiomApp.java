@@ -18,6 +18,7 @@ import java.util.Map;
 import android.app.Application;
 import android.util.Log;
 import au.com.infiniterecursion.vidiom.facebook.SessionStore;
+import au.com.infiniterecursion.vidiom.utils.DBUtils;
 
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.Facebook;
@@ -41,12 +42,15 @@ public class VidiomApp extends Application {
 	public boolean support_v10 = false;
 	public boolean support_v11 = false;
 
-	//Static variable 
+	//Static variables 
 	
 	// A Map of SDRecord id and to a set of flags indicating this record is
 	// being uploaded by a thread (particular service id).
 	private static Map<Long, HashSet<Integer>> in_progress_uploads;
 		
+	// Database
+	private static DBUtils db_utils;
+	
 	/*
 	 * On application startup, get the home position from the preferences.
 	 * 
@@ -90,6 +94,8 @@ public class VidiomApp extends Application {
 		
 		// Uploading tracking
 		in_progress_uploads = new HashMap<Long, HashSet<Integer>>();
+		
+		db_utils = new DBUtils(getBaseContext()); 
 	}
 
 	public void onTerminate() {
@@ -101,6 +107,10 @@ public class VidiomApp extends Application {
 		return mFacebook;
 	}
 
+	public DBUtils getDBUtils() {
+		return db_utils;
+	}
+	
 	public AsyncFacebookRunner getAsyncFacebookRunner() {
 		return mAsyncRunner;
 

@@ -123,10 +123,10 @@ public class PublishingUtils {
 
 	private VidiomApp mainapp;
 	
-	public PublishingUtils(Resources res, DBUtils dbutils, VidiomApp app) {
+	public PublishingUtils(Resources res, VidiomApp app) {
 
 		this.res = res;
-		this.dbutils = dbutils;
+		this.dbutils = app.getDBUtils();
 		this.mainapp = app;
 	}
 
