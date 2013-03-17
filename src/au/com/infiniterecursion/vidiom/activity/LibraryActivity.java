@@ -422,11 +422,11 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				// generate one.
 
 				// XXX Check cache, and load from filepath, using code above.
-				/*
-				 * Log .d( TAG, " We have id " + thumb_cursor
-				 * .getLong(thumb_cursor
-				 * .getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
-				 */
+				
+				  Log .d( TAG, "In thumb_cursor , we have id " + thumb_cursor
+				  .getLong(thumb_cursor
+				  .getColumnIndexOrThrow(MediaStore.Video.Media._ID)));
+				 
 
 				Bitmap bm = MediaStore.Video.Thumbnails
 						.getThumbnail(
@@ -439,9 +439,29 @@ public class LibraryActivity extends ListActivity implements VidiomActivity {
 				}
 
 			} else {
+				
+				Log.d(TAG, " Thumb_cursor is empty ");
+				
 				// set default icon
 				v.setImageResource(R.drawable.icon);
 
+				
+				// Perhaps the MediaStore has been reset. We need to re-enable it
+				// Send the info to the inbuilt Android Media Scanner
+
+				// Save the name and description of a video in a
+				// ContentValues map.
+				ContentValues values = new ContentValues(2);
+				values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+				values.put(MediaStore.Video.Media.DATA, s);
+
+				Uri uri = getContentResolver()
+						.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+								values);
+
+				sendBroadcast(new Intent(
+						Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+				
 			}
 
 		}
